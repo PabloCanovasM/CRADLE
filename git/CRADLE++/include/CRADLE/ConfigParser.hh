@@ -4,6 +4,7 @@
 #include "CLI11.hpp"
 
 #include <string>
+#include <complex>
 
 namespace CRADLE {
 
@@ -22,14 +23,14 @@ struct General {
 };
 
 struct CouplingConstants {
-  double CS = 0.0 ;
-  double CSP = 0.0 ;
-  double CV = 1.0;
-  double CVP = 1.0 ;
-  double CT = 0.0;
-  double CTP = 0.0;
-  double CA = 1.2754;
-  double CAP = 1.2754;
+  std::complex<double> CS = std::complex<double>(0.0,0.0);
+  std::complex<double> CSP = std::complex<double>(0.0,0.0);
+  std::complex<double> CV = std::complex<double>(1.0,0.0);
+  std::complex<double> CVP = std::complex<double>(1.0,0.0);
+  std::complex<double> CT = std::complex<double>(0.0,0.0);
+  std::complex<double> CTP = std::complex<double>(0.0,0.0);
+  std::complex<double> CA = std::complex<double>(1.2754,0.0);
+  std::complex<double> CAP = std::complex<double>(1.2754,0.0);
   double a = std::nan("");
   double b = std::nan("");
 };
@@ -43,18 +44,18 @@ struct Cuts {
 struct BetaDecay {
   std::string Default = "Auto";
   std::string FermiFunction = "";
-  double PolarisationX;
-  double PolarisationY;
-  double PolarisationZ;
+  double PolarisationX=0;
+  double PolarisationY=0;
+  double PolarisationZ=0;
   bool RadiativeCorrection = true ;
   double OmegaValue = 0.001 ;
   bool ElectronCapture = true ;
 };
 
 struct EnvOptions {
-  std::string AMEdata = "/Users/victor/Documents/git/Utilities/Mass/mass_1.mas20.txt" ;
-  std::string Gammadata = "/Users/victor/Documents/git/Utilities/PhotonEvaporation5.7/";
-  std::string Radiationdata = "/Users/victor/Documents/git/Utilities/RadioactiveDecay5.6/" ;
+  std::string AMEdata="/home/canovasmontes/Documents/master_ref/CRADLE/Nuclear_Databases/AMEdata_.txt";
+  std::string Gammadata="/home/canovasmontes/Documents/master_ref/CRADLE/GammaData/";
+  std::string Radiationdata="/home/canovasmontes/Documents/master_ref/CRADLE/RadiationData/";
 };
 
 struct ConfigOptions{

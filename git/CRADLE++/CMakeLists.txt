@@ -67,6 +67,7 @@ endif()
 
 add_library(Cradle SHARED src/ConfigParser.cc src/DecayChannel.cc src/DecayManager.cc src/DecayMode.cc src/Particle.cc src/SpectrumGenerator.cc)
 add_executable(CRADLE++ src/CRADLE++.cc)
+add_executable(test src/main_test.cc)
 
 find_package(Boost REQUIRED)
 find_package(GSL REQUIRED)
@@ -89,7 +90,7 @@ target_link_libraries(Cradle PUBLIC ${Boost_LIBRARIES})
 target_link_libraries(Cradle PUBLIC ${CMAKE_THREAD_LIBS_INIT})
 
 target_link_libraries(CRADLE++ PRIVATE Cradle)
-
+target_link_libraries(test PRIVATE Cradle)
 
 # add_custom_command(TARGET CRADLE++
 #                    POST_BUILD

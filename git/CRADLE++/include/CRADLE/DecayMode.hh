@@ -115,6 +115,37 @@ class BetaPlusVirtualSoft: public DecayMode {
 };
 //////////////////////////////////////////////////////////////////////
 
+class BetaMinusPolarised: public DecayMode {
+  public:
+    static BetaMinusPolarised& GetInstance() {
+      static BetaMinusPolarised instance;
+      return instance;
+    }
+    std::vector<Particle*> Decay(Particle*, double, double);
+
+  protected:
+    BetaMinusPolarised();
+    BetaMinusPolarised(BetaMinusPolarised const& copy);
+    BetaMinusPolarised& operator=(BetaMinusPolarised const& copy);
+};
+
+
+class BetaPlusPolarised: public DecayMode {
+  public:
+    static BetaPlusPolarised& GetInstance() {
+      static BetaPlusPolarised instance;
+      return instance;
+    }
+    std::vector<Particle*> Decay(Particle*, double, double);
+
+  protected:
+    BetaPlusPolarised();
+    BetaPlusPolarised(BetaPlusPolarised const& copy);
+    BetaPlusPolarised& operator=(BetaPlusPolarised const& copy);
+};
+
+///////////////////////////////////////////////////////////////////////
+
 class ShellEC: public DecayMode {
   public:
     static ShellEC& GetInstance() {

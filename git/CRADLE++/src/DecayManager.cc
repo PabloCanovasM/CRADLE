@@ -1,10 +1,11 @@
-#include "CRADLE/DecayManager.hh"
+  #include "CRADLE/DecayManager.hh"
 #include "CRADLE/Utilities.hh"
 #include "CRADLE/DecayChannel.hh"
 #include "CRADLE/Particle.hh"
 #include "CRADLE/DecayMode.hh"
 #include "CRADLE/SpectrumGenerator.hh"
 #include "CRADLE/RadiativeCorrections.hh"
+#include "CRADLE/Polarisation.hh"
 #include "CRADLE/ECshell.hh"
 
 #define BOOST_TIMER_ENABLE_DEPRECATED
@@ -15,6 +16,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <future>
+#include <complex>
 // 
 // #include <iostream>
 // #include <iomanip>
@@ -166,6 +168,8 @@ void DecayManager::RegisterBasicDecayModes() {
   RegisterDecayMode("BetaPlusRadiative", BetaPlusRadiative::GetInstance());
   RegisterDecayMode("BetaMinusVirtualSoft", BetaMinusVirtualSoft::GetInstance());
   RegisterDecayMode("BetaPlusVirtualSoft", BetaPlusVirtualSoft::GetInstance());
+  RegisterDecayMode("BetaMinusPolarised", BetaMinusPolarised::GetInstance());
+  RegisterDecayMode("BetaPlusPolarised", BetaPlusPolarised::GetInstance());
   RegisterDecayMode("KshellEC", ShellEC::GetInstance());
   RegisterDecayMode("LshellEC", ShellEC::GetInstance());
   RegisterDecayMode("MshellEC", ShellEC::GetInstance());
@@ -191,6 +195,8 @@ void DecayManager::RegisterBasicSpectrumGenerators() {
   RegisterSpectrumGenerator("IT", DeltaSpectrumGenerator::GetInstance());
   RegisterSpectrumGenerator("BetaPlus", SimpleBetaDecay::GetInstance());
   RegisterSpectrumGenerator("BetaMinus", SimpleBetaDecay::GetInstance());
+  RegisterSpectrumGenerator("BetaPlusPolarised", SimpleBetaDecay::GetInstance()); //remove once proper generator implemented
+  RegisterSpectrumGenerator("BetaMinusPolarised", SimpleBetaDecay::GetInstance()); //remove once proper generator implemented
   RegisterSpectrumGenerator("ShellEC", DeltaSpectrumGenerator::GetInstance());
 }
 
@@ -261,6 +267,10 @@ bool DecayManager::GenerateNucleus(string name, int Z, int A) {
     //cout << "Q : " << Q << endl;
     //cout << "Modifier : " << modifier << endl;
     //cout << "\n" <<endl;
+
+    bool PolarisedNuclei = false;
+    if ((configOptions.betaDecay.PolarisationX != 0) || (configOptions.betaDecay.PolarisationY != 0) || (configOptions.betaDecay.PolarisationZ != 0))
+      PolarisedNuclei = true;
 
     if (Q > 0. ) {
       //std::cout << "Q > 0" << "\n" ;
@@ -336,11 +346,88 @@ bool DecayManager::GenerateNucleus(string name, int Z, int A) {
         }
         
       }
-      else if (configOptions.betaDecay.RadiativeCorrection == false && ((mode.find("BetaPlus")!= std::string::npos)||(mode.find("BetaMinus")!= std::string::npos) )) {
+      else if (configOptions.betaDecay.RadiativeCorrection == false && (PolarisedNuclei == false) && ((mode.find("BetaPlus")!= std::string::npos)||(mode.find("BetaMinus")!= std::string::npos))) {
         std::cout << "RC false" << "\n" ;
         std::cout << "Intensity : " << intensity << "\n" ;
         std::cout << "\n" ;
         DecayChannel* dc = new DecayChannel(mode, &GetDecayMode(mode), Q, intensity, lifetime, excitationEnergy, daughterExcitationEnergy);
+        p->AddDecayChannel(dc) ;
+      }
+      else if (configOptions.betaDecay.RadiativeCorrection == false && (PolarisedNuclei == true) && ((mode.find("BetaPlus")!= std::string::npos)||(mode.find("BetaMinus")!= std::string::npos) )) {
+        std::cout << "RC false" << "\n" ;
+        std::cout << "Intensity : " << intensity << "\n" ;
+
+        //computation of maximum values:
+        std::complex<double> CS = configOptions.couplingConstants.CS;
+        std::complex<double> CSP = configOptions.couplingConstants.CSP;
+        std::complex<double> CV = configOptions.couplingConstants.CV;
+        std::complex<double> CVP = configOptions.couplingConstants.CVP;
+        std::complex<double> CA = configOptions.couplingConstants.CA;
+        std::complex<double> CAP = configOptions.couplingConstants.CAP;
+        std::complex<double> CT = configOptions.couplingConstants.CT;
+        std::complex<double> CTP = configOptions.couplingConstants.CTP;
+        
+        int Z = p->GetCharge() ;
+        int A = p->GetCharge() + p->GetNeutrons(); 
+        double R = utilities::ApproximateRadius(A);
+        int betaType = Z/std::abs(Z);
+        
+        if (mode == "BetaPlus") {
+          betaType = -betaType ;
+        }
+
+        double j_in = utilities::GetJpi(A,Z,excitationEnergy);
+        j_in = std::abs(j_in); //polarity not needed, only absolute value of J
+        std::cout << "Z : " << Z << " A : " << A << " J_in : " << j_in << " Decay Type: " << betaType << " Q : " << Q << std::endl;
+        int Z_d = Z + betaType;
+        double j_f = utilities::GetJpi(A,Z_d,daughterExcitationEnergy);
+        j_f = std::abs(j_f);
+        std::cout << "Z : " << Z_d << " A : " << A << " J_f : " << j_f << " Level Energy: " << daughterExcitationEnergy << std::endl;
+
+        double mf = 0.;
+        double mgt = 0.;
+        if (configOptions.betaDecay.Default == "Fermi") {
+            mf = 1.;
+          } 
+          else if (configOptions.betaDecay.Default == "Gamow-Teller") {
+            mgt = 1.;
+          } 
+          else if (configOptions.betaDecay.Default == "Mixed") {
+            mf = 1. ;
+            mgt = 1. ;
+          }
+          else if (configOptions.betaDecay.Default == "Auto") {
+            if (j_f == 0. && j_in == 0.)/// J check
+            {
+              std::cout << "Fermi Transition" << "\n";
+              mf = 1;
+            } else if (j_f-j_in == 0. || std::abs(j_f-j_in) == 1.) {
+               std::cout << "GT Transition" << "\n";
+               mgt = 1;
+             } else {
+               std::cout << "Mixed Transition" << "\n";
+               mf = 1;
+               mgt = 1;
+             }
+          }
+
+        double lambdaFactor = polarisation::lambdaJiJf_factor(j_in,j_f);
+        std::cout << "lambda factor: " << lambdaFactor << std::endl;
+
+        double* max_A = polarisation::maximumA(CS, CSP, CT, CTP, CV, CVP, CA, CAP, mf, mgt, j_in, j_f, betaType, Z, Q);
+        std::cout << "Maximum of A: " << *(max_A+1) << " at a total energy of " << *(max_A) << " kev " << std::endl;
+        delete max_A;
+
+        double* max_B = polarisation::maximumB(CS, CSP, CT, CTP, CV, CVP, CA, CAP, mf, mgt, j_in, j_f, betaType, Z, Q);
+        std::cout << "Maximum of B: " << *(max_B+1) << " at a total energy of " << *(max_B) << " kev " << std::endl;
+        delete max_B;
+
+        double* max_D = polarisation::maximumD(CS, CSP, CT, CTP, CV, CVP, CA, CAP, mf, mgt, j_in, j_f, betaType, Z, Q);
+        std::cout << "Maximum of D: " << *(max_D+1) << " at a total energy of " << *(max_D) << " kev " << std::endl;
+        delete max_D;
+
+        std::cout << "\n" ;
+        DecayChannel* dc = new DecayChannel(mode+"Polarised", &GetDecayMode(mode+"Polarised"), Q, intensity, lifetime, excitationEnergy, daughterExcitationEnergy);
         p->AddDecayChannel(dc) ;
       } 
       else if (configOptions.betaDecay.RadiativeCorrection == true && ((mode.find("BetaPlus")!= std::string::npos)||(mode.find("BetaMinus")!= std::string::npos) )) {
@@ -356,14 +443,14 @@ bool DecayManager::GenerateNucleus(string name, int Z, int A) {
         else {
           mgt = 1. ;
         }
-        double CS = configOptions.couplingConstants.CS;
-        double CSP = configOptions.couplingConstants.CSP;
-        double CV = configOptions.couplingConstants.CV;
-        double CVP = configOptions.couplingConstants.CVP;
-        double CA = configOptions.couplingConstants.CA;
-        double CAP = configOptions.couplingConstants.CAP;
-        double CT = configOptions.couplingConstants.CT;
-        double CTP = configOptions.couplingConstants.CTP;
+        double CS = configOptions.couplingConstants.CS.real();
+        double CSP = configOptions.couplingConstants.CSP.real();
+        double CV = configOptions.couplingConstants.CV.real();
+        double CVP = configOptions.couplingConstants.CVP.real();
+        double CA = configOptions.couplingConstants.CA.real();
+        double CAP = configOptions.couplingConstants.CAP.real();
+        double CT = configOptions.couplingConstants.CT.real();
+        double CTP = configOptions.couplingConstants.CTP.real();
         double a_conf = configOptions.couplingConstants.a;
         double b_conf = configOptions.couplingConstants.b;
 

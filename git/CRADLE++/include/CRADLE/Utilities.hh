@@ -16,7 +16,6 @@
 #include <boost/numeric/ublas/io.hpp>
 #include <boost/math/special_functions/gamma.hpp>
 #include <boost/math/special_functions/legendre.hpp>
-#include <complex>
 #include "gsl/gsl_sf_gamma.h"
 #include "gsl/gsl_sf_result.h"
 #include "gsl/gsl_complex_math.h"
@@ -208,6 +207,11 @@ namespace utilities {
     return mf*mf*(cs*cs+cv*cv+csp*csp+cvp*cvp)+mgt*mgt*(ct*ct+ctp*ctp+ca*ca+cap*cap);
   }
 
+  inline double CalculateXiBetaDecay(std::complex<double> cs, std::complex<double> csp, std::complex<double> ct, std::complex<double> ctp, 
+  std::complex<double> cv, std::complex<double> cvp, std::complex<double> ca, std::complex<double> cap, double mf, double mgt) {
+    return mf*mf*(norm(cs)+norm(cv)+norm(csp)+norm(cvp))+mgt*mgt*(norm(ct)+norm(ctp)+norm(ca)+norm(cap));
+  }
+  
   inline double CalculateFierz(double cs, double csp, double ct, double ctp, double cv, double cvp, double ca, double cap, double mf, double mgt, double a, double b)
   {
     if (std::isnan(a) && std::isnan(b)){
@@ -218,10 +222,36 @@ namespace utilities {
     }
   }
 
+  inline double CalculateFierz(std::complex<double> cs, std::complex<double> csp, std::complex<double> ct, std::complex<double> ctp, std::complex<double> cv, 
+    std::complex<double> cvp, std::complex<double> ca, std::complex<double> cap, double mf, double mgt, double a, double b, double Z, double betaType)
+  {
+    if (std::isnan(a) && std::isnan(b)){
+    double gamma = std::sqrt(1. - std::pow(FINESTRUCTURE * Z, 2.));
+    return 2.*gamma*betaType*(mf*mf*(cs*conj(cv)+csp*conj(cvp)).real()+mgt*mgt*(ct*conj(ca)+ctp*conj(cap)).real())/CalculateXiBetaDecay(cs, csp, ct, ctp, cv, cvp, ca, cap, mf, mgt);
+  }
+    else {
+      return b;
+    }
+  }
+
   inline double CalculateBetaNeutrinoAsymmetry(double cs, double csp, double ct, double ctp, double cv, double cvp, double ca, double cap, double mf, double mgt, double a, double b)
   {
     if (std::isnan(a) && std::isnan(b)){
     return (mf*mf*(-cs*cs-csp*csp+cv*cv+cvp*cvp)+mgt*mgt/3.*(ct*ct+ctp*ctp-ca*ca-cap*cap))/CalculateXiBetaDecay(cs, csp, ct, ctp, cv, cvp, ca, cap, mf, mgt);
+  }
+    else {
+      return a;
+    }
+  }
+
+  inline double CalculateBetaNeutrinoAsymmetry(std::complex<double> cs, std::complex<double> csp, std::complex<double> ct, std::complex<double> ctp, std::complex<double> cv, 
+    std::complex<double> cvp, std::complex<double> ca, std::complex<double> cap, double mf, double mgt, double a, double b, double energy, double Z, double betaType)
+  {
+    if (std::isnan(a) && std::isnan(b)){
+    double coulombCorr = FINESTRUCTURE*Z/std::sqrt(1-EMASSC2*EMASSC2/energy/energy);
+    double a = mf*mf*(-norm(cs)-norm(csp)+norm(cv)+norm(cvp)-betaType*2.*(cs*conj(cv)+csp*conj(cvp)).imag())+
+              mgt*mgt/3.*(-norm(ca)-norm(cap)+norm(ct)+norm(ctp)+betaType*2.*(ct*conj(ca)+ctp*conj(cap)).imag());
+    return a/CalculateXiBetaDecay(cs, csp, ct, ctp, cv, cvp, ca, cap, mf, mgt);
   }
     else {
       return a;
@@ -432,14 +462,14 @@ namespace utilities {
                                       int betaType) {
 
     DecayManager& dm = DecayManager::GetInstance();
-    double CS = dm.configOptions.couplingConstants.CS;
-    double CSP = dm.configOptions.couplingConstants.CSP;
-    double CV = dm.configOptions.couplingConstants.CV;
-    double CVP = dm.configOptions.couplingConstants.CVP;
-    double CA = dm.configOptions.couplingConstants.CA;
-    double CAP = dm.configOptions.couplingConstants.CAP;
-    double CT = dm.configOptions.couplingConstants.CT;
-    double CTP = dm.configOptions.couplingConstants.CTP;
+    double CS = dm.configOptions.couplingConstants.CS.real();
+    double CSP = dm.configOptions.couplingConstants.CSP.real();
+    double CV = dm.configOptions.couplingConstants.CV.real();
+    double CVP = dm.configOptions.couplingConstants.CVP.real();
+    double CA = dm.configOptions.couplingConstants.CA.real();
+    double CAP = dm.configOptions.couplingConstants.CAP.real();
+    double CT = dm.configOptions.couplingConstants.CT.real();
+    double CTP = dm.configOptions.couplingConstants.CTP.real();
     double a_conf = dm.configOptions.couplingConstants.a;
     double b_conf = dm.configOptions.couplingConstants.b;
 
@@ -581,7 +611,7 @@ namespace utilities {
     std::complex<double> pt;
 
     pt = 0.5 * p +
-         0.5 * std::sqrt(std::complex<double>(p * p -
+         0.5 * std::sqrt(double(p * p -
                                               betaType * 2 * FINESTRUCTURE * Z * Wt * l));
 
     double y = betaType * FINESTRUCTURE * Z * W / p;
@@ -829,6 +859,7 @@ namespace utilities {
   inline double GetAMEMass(std::string filename, int Z, int A) {
     std::ifstream ameDataFile(filename.c_str());
     std::string line;
+    DecayManager& dm = DecayManager::GetInstance();
 
 
     int skipHeader = 36;
@@ -868,7 +899,7 @@ namespace utilities {
 	std::string atomicMassString = line.substr(106, 15).replace(3, 1, "");
 	std::replace(atomicMassString.begin(), atomicMassString.end(), '#', '.');
 	atomicMass = std::stod(atomicMassString)*1e-6*UMASSC2;
-	if (z == Z && a == A) {
+  if (z == Z && a == A && dm.configOptions.general.Verbosity > 1) {
           std::cout << "Found AME atomic mass for " << a << name << ": " << atomicMass << std::endl;
 	  return atomicMass;
 	}

@@ -7,6 +7,7 @@
 
 #include <string>
 #include <sstream>
+#include <complex>
 
 namespace CRADLE {
 
@@ -205,14 +206,14 @@ std::vector<Particle*> BetaMinus::Decay(Particle* initState, double Q, double da
   ublas::vector<double> elFourMomentum (4);
 
   DecayManager& dm = DecayManager::GetInstance();
-  double CS = dm.configOptions.couplingConstants.CS;
-  double CSP = dm.configOptions.couplingConstants.CSP;
-  double CV = dm.configOptions.couplingConstants.CV;
-  double CVP = dm.configOptions.couplingConstants.CVP;
-  double CA = dm.configOptions.couplingConstants.CA;
-  double CAP = dm.configOptions.couplingConstants.CAP;
-  double CT = dm.configOptions.couplingConstants.CT;
-  double CTP = dm.configOptions.couplingConstants.CTP;
+  double CS = dm.configOptions.couplingConstants.CS.real();
+  double CSP = dm.configOptions.couplingConstants.CSP.real();
+  double CV = dm.configOptions.couplingConstants.CV.real();
+  double CVP = dm.configOptions.couplingConstants.CVP.real();
+  double CA = dm.configOptions.couplingConstants.CA.real();
+  double CAP = dm.configOptions.couplingConstants.CAP.real();
+  double CT = dm.configOptions.couplingConstants.CT.real();
+  double CTP = dm.configOptions.couplingConstants.CTP.real();
   double a_conf = dm.configOptions.couplingConstants.a;
   double b_conf = dm.configOptions.couplingConstants.b;
 
@@ -263,7 +264,6 @@ std::vector<Particle*> BetaMinus::Decay(Particle* initState, double Q, double da
     }
     dist = spectrumGen->GenerateSpectrum(initState, recoil, Q); //// changement de Q en E0 par SL 10/05/2023
     double gamma = std::sqrt(1-std::pow(utilities::FINESTRUCTURE*recoil->GetCharge(), 2.));
-    int i=0;
     for ( int i = 0; i<dist->size(); i++) {                                  ////// changement de boucle et element par ((*dist)[i]) par SL 10/05/2023
       double E = ((*dist)[i])[0]+utilities::EMASSC2;
       double SH = ((*dist)[i])[1];
@@ -272,7 +272,7 @@ std::vector<Particle*> BetaMinus::Decay(Particle* initState, double Q, double da
     DecayManager::GetInstance().RegisterDistribution(oss.str(), dist);
     }
 
-  // std::cout << "Found distribution" << std::endl;
+  //std::cout << "Found distribution" << std::endl;
 
   std::vector<double> p;
 
@@ -364,14 +364,14 @@ std::vector<Particle*> BetaPlus::Decay(Particle* initState, double Q, double dau
   //mgt = 0.;
   ////////////////////////////////////////////////
 
-  double CS = dm.configOptions.couplingConstants.CS;
-  double CSP = dm.configOptions.couplingConstants.CSP;
-  double CV = dm.configOptions.couplingConstants.CV;
-  double CVP = dm.configOptions.couplingConstants.CVP;
-  double CA = dm.configOptions.couplingConstants.CA;
-  double CAP = dm.configOptions.couplingConstants.CAP;
-  double CT = dm.configOptions.couplingConstants.CT;
-  double CTP = dm.configOptions.couplingConstants.CTP;
+  double CS = dm.configOptions.couplingConstants.CS.real();
+  double CSP = dm.configOptions.couplingConstants.CSP.real();
+  double CV = dm.configOptions.couplingConstants.CV.real();
+  double CVP = dm.configOptions.couplingConstants.CVP.real();
+  double CA = dm.configOptions.couplingConstants.CA.real();
+  double CAP = dm.configOptions.couplingConstants.CAP.real();
+  double CT = dm.configOptions.couplingConstants.CT.real();
+  double CTP = dm.configOptions.couplingConstants.CTP.real();
   double a_conf = dm.configOptions.couplingConstants.a;
   double b_conf = dm.configOptions.couplingConstants.b;
 
@@ -455,14 +455,14 @@ std::vector<Particle*> BetaMinusRadiative::Decay(Particle* initState, double Q, 
   ublas::vector<double> elFourMomentum (4);
 
   DecayManager& dm = DecayManager::GetInstance();
-  double CS = dm.configOptions.couplingConstants.CS;
-  double CSP = dm.configOptions.couplingConstants.CSP;
-  double CV = dm.configOptions.couplingConstants.CV;
-  double CVP = dm.configOptions.couplingConstants.CVP;
-  double CA = dm.configOptions.couplingConstants.CA;
-  double CAP = dm.configOptions.couplingConstants.CAP;
-  double CT = dm.configOptions.couplingConstants.CT;
-  double CTP = dm.configOptions.couplingConstants.CTP;
+  double CS = dm.configOptions.couplingConstants.CS.real();
+  double CSP = dm.configOptions.couplingConstants.CSP.real();
+  double CV = dm.configOptions.couplingConstants.CV.real();
+  double CVP = dm.configOptions.couplingConstants.CVP.real();
+  double CA = dm.configOptions.couplingConstants.CA.real();
+  double CAP = dm.configOptions.couplingConstants.CAP.real();
+  double CT = dm.configOptions.couplingConstants.CT.real();
+  double CTP = dm.configOptions.couplingConstants.CTP.real();
   double a_conf = dm.configOptions.couplingConstants.a;
   double b_conf = dm.configOptions.couplingConstants.b;
 
@@ -638,14 +638,14 @@ std::vector<Particle*> BetaMinusVirtualSoft::Decay(Particle* initState, double Q
   ublas::vector<double> elFourMomentum (4);
 
   DecayManager& dm = DecayManager::GetInstance();
-  double CS = dm.configOptions.couplingConstants.CS;
-  double CSP = dm.configOptions.couplingConstants.CSP;
-  double CV = dm.configOptions.couplingConstants.CV;
-  double CVP = dm.configOptions.couplingConstants.CVP;
-  double CA = dm.configOptions.couplingConstants.CA;
-  double CAP = dm.configOptions.couplingConstants.CAP;
-  double CT = dm.configOptions.couplingConstants.CT;
-  double CTP = dm.configOptions.couplingConstants.CTP;
+  double CS = dm.configOptions.couplingConstants.CS.real();
+  double CSP = dm.configOptions.couplingConstants.CSP.real();
+  double CV = dm.configOptions.couplingConstants.CV.real();
+  double CVP = dm.configOptions.couplingConstants.CVP.real();
+  double CA = dm.configOptions.couplingConstants.CA.real();
+  double CAP = dm.configOptions.couplingConstants.CAP.real();
+  double CT = dm.configOptions.couplingConstants.CT.real();
+  double CTP = dm.configOptions.couplingConstants.CTP.real();
   double a_conf = dm.configOptions.couplingConstants.a;
   double b_conf = dm.configOptions.couplingConstants.b;
 
@@ -771,6 +771,125 @@ std::vector<Particle*> BetaMinusVirtualSoft::Decay(Particle* initState, double Q
   }
   return finalStates;
 }
+
+std::vector<Particle*> BetaMinusPolarised::Decay(Particle* initState, double Q, double daughterExEn) {
+  std::vector<Particle*> finalStates;
+
+  // std::cout << "In BetaMinus Polarised Decay " << std::endl;
+  // std::cout << "Address: " << initState << std::endl;
+  std::ostringstream oss;
+  oss << initState->GetCharge()+initState->GetNeutrons() << utilities::atoms[initState->GetCharge()];
+  //std::cout << oss.str() << std::endl;
+  Particle* recoil = DecayManager::GetInstance().GetNewParticle(oss.str(), initState->GetCharge()+1, initState->GetCharge()+initState->GetNeutrons());
+  recoil->SetExcitationEnergy(daughterExEn);
+    
+  Particle* e = DecayManager::GetInstance().GetNewParticle("e-");
+  Particle* enu = DecayManager::GetInstance().GetNewParticle("enubar");
+
+  // std::cout << "Recoil " << recoil->GetCharge() << " " << recoil->GetNeutrons() << " " << recoil << std::endl;
+
+  oss.str("");
+  oss.clear();
+  oss << "BetaMinusPolarised:Z" << recoil->GetCharge() << "A" << recoil->GetCharge() + recoil->GetNeutrons() << "Q" << Q;
+  //Work in the COM frame
+  ublas::vector<double> elFourMomentum (4);
+
+  DecayManager& dm = DecayManager::GetInstance();
+  double CS = dm.configOptions.couplingConstants.CS.real();
+  double CSP = dm.configOptions.couplingConstants.CSP.real();
+  double CV = dm.configOptions.couplingConstants.CV.real();
+  double CVP = dm.configOptions.couplingConstants.CVP.real();
+  double CA = dm.configOptions.couplingConstants.CA.real();
+  double CAP = dm.configOptions.couplingConstants.CAP.real();
+  double CT = dm.configOptions.couplingConstants.CT.real();
+  double CTP = dm.configOptions.couplingConstants.CTP.real();
+  double a_conf = dm.configOptions.couplingConstants.a;
+  double b_conf = dm.configOptions.couplingConstants.b;
+
+  double mf = 0.;
+  double mgt = 0.;
+  
+  if (dm.configOptions.betaDecay.Default == "Fermi") {
+    mf = 1.;
+  } 
+  else if (dm.configOptions.betaDecay.Default == "Gamow-Teller") {
+    mgt = 1.;
+  } 
+  else if (dm.configOptions.betaDecay.Default == "Mixed") {
+    mf = 1. ;
+    mgt = 1. ;
+  }
+  else if (dm.configOptions.betaDecay.Default == "Auto") {
+    std::string Type;
+    try{
+      Type = DecayManager::GetInstance().GetBetaType(oss.str());
+    } catch (const std::invalid_argument& e) {
+      Type = utilities::FindBetaType(initState, recoil);
+      DecayManager::GetInstance().RegisterBetaType(oss.str(), Type);
+    }
+    if (Type == "Fermi") {
+      mf = 1.;
+    } else if (Type == "Gamow-Teller") {
+      mgt = 1.;
+    } else {  
+      mgt = 1. ;
+      mf = 1. ;
+    }
+  } 
+  //mgt = 0. ;
+  //mf = 1. ;
+  double a = utilities::CalculateBetaNeutrinoAsymmetry(CS, CSP, CT, CTP, CV, CVP, CA, CAP, mf, mgt, a_conf, b_conf);
+  double fierz = utilities::CalculateFierz(CS, CSP, CT, CTP, CV, CVP, CA, CAP, mf, mgt, a_conf, b_conf);
+
+  //std::cout << "fierz " << fierz << " a " << a << std::endl;
+  
+  std::vector<std::vector<double> >* dist;
+  try {
+    dist = DecayManager::GetInstance().GetDistribution(oss.str());
+  } catch (const std::invalid_argument& e) {
+    bool advancedFermi = false;
+    if (dm.configOptions.betaDecay.FermiFunction == "Advanced") { //// réécriture de la condition par SL 10/05/2023
+      advancedFermi = true;
+    }
+    dist = spectrumGen->GenerateSpectrum(initState, recoil, Q); //// changement de Q en E0 par SL 10/05/2023
+    double gamma = std::sqrt(1-std::pow(utilities::FINESTRUCTURE*recoil->GetCharge(), 2.));
+    int i=0;
+    for ( int i = 0; i<dist->size(); i++) {                                  ////// changement de boucle et element par ((*dist)[i]) par SL 10/05/2023
+      double E = ((*dist)[i])[0]+utilities::EMASSC2;
+      double SH = ((*dist)[i])[1];
+      ((*dist)[i])[1] = SH*(1+gamma*fierz*utilities::EMASSC2/E);
+    }
+    DecayManager::GetInstance().RegisterDistribution(oss.str(), dist);
+    }
+
+  std::vector<double> p;
+
+  double elEnergy = utilities::RandomFromDistribution(*dist)+utilities::EMASSC2;
+  double elMomentum = std::sqrt(elEnergy*elEnergy-std::pow(utilities::EMASSC2, 2.));
+  ublas::vector<double> enuDir = utilities::RandomDirection();
+
+  p.push_back(1.);
+  p.push_back(a*elMomentum/elEnergy);
+  ublas::vector<double> eDir = utilities::GetParticleDirection(enuDir, p);
+
+  elFourMomentum(0) = elEnergy;
+  elFourMomentum(1) = elMomentum*eDir[0];
+  elFourMomentum(2) = elMomentum*eDir[1];
+  elFourMomentum(3) = elMomentum*eDir[2];
+
+  e->SetMomentum(elFourMomentum);
+
+  ublas::vector<double> velocity = -initState->GetVelocity();
+  ThreeBodyDecay(velocity, e, enu, recoil, enuDir, Q);
+
+  finalStates.push_back(recoil);
+  finalStates.push_back(e);
+  finalStates.push_back(enu);
+
+  return finalStates;
+}
+
+
 ////////////////////////////////////////////////////////////////
 
 std::vector<Particle*> BetaPlusRadiative::Decay(Particle* initState, double Q, double daughterExEn) {
@@ -838,14 +957,14 @@ std::vector<Particle*> BetaPlusRadiative::Decay(Particle* initState, double Q, d
   //mgt = 0. ;
   ////////////////////////////////////////////////
 
-  double CS = dm.configOptions.couplingConstants.CS;
-  double CSP = dm.configOptions.couplingConstants.CSP;
-  double CV = dm.configOptions.couplingConstants.CV;
-  double CVP = dm.configOptions.couplingConstants.CVP;
-  double CA = dm.configOptions.couplingConstants.CA;
-  double CAP = dm.configOptions.couplingConstants.CAP;
-  double CT = dm.configOptions.couplingConstants.CT;
-  double CTP = dm.configOptions.couplingConstants.CTP;
+  double CS = dm.configOptions.couplingConstants.CS.real();
+  double CSP = dm.configOptions.couplingConstants.CSP.real();
+  double CV = dm.configOptions.couplingConstants.CV.real();
+  double CVP = dm.configOptions.couplingConstants.CVP.real();
+  double CA = dm.configOptions.couplingConstants.CA.real();
+  double CAP = dm.configOptions.couplingConstants.CAP.real();
+  double CT = dm.configOptions.couplingConstants.CT.real();
+  double CTP = dm.configOptions.couplingConstants.CTP.real();
   double a_conf = dm.configOptions.couplingConstants.a;
   double b_conf = dm.configOptions.couplingConstants.b;
 
@@ -1064,14 +1183,14 @@ std::vector<Particle*> BetaPlusVirtualSoft::Decay(Particle* initState, double Q,
   //mgt = 0.;
   ////////////////////////////////////////////////
 
-  double CS = dm.configOptions.couplingConstants.CS;
-  double CSP = dm.configOptions.couplingConstants.CSP;
-  double CV = dm.configOptions.couplingConstants.CV;
-  double CVP = dm.configOptions.couplingConstants.CVP;
-  double CA = dm.configOptions.couplingConstants.CA;
-  double CAP = dm.configOptions.couplingConstants.CAP;
-  double CT = dm.configOptions.couplingConstants.CT;
-  double CTP = dm.configOptions.couplingConstants.CTP;
+  double CS = dm.configOptions.couplingConstants.CS.real();
+  double CSP = dm.configOptions.couplingConstants.CSP.real();
+  double CV = dm.configOptions.couplingConstants.CV.real();
+  double CVP = dm.configOptions.couplingConstants.CVP.real();
+  double CA = dm.configOptions.couplingConstants.CA.real();
+  double CAP = dm.configOptions.couplingConstants.CAP.real();
+  double CT = dm.configOptions.couplingConstants.CT.real();
+  double CTP = dm.configOptions.couplingConstants.CTP.real();
   double a_conf = dm.configOptions.couplingConstants.a;
   double b_conf = dm.configOptions.couplingConstants.b;
 
@@ -1178,6 +1297,134 @@ std::vector<Particle*> BetaPlusVirtualSoft::Decay(Particle* initState, double Q,
   }
   return finalStates;
 }
+
+
+std::vector<Particle*> BetaPlusPolarised::Decay(Particle* initState, double Q, double daughterExEn) {
+  std::vector<Particle*> finalStates;
+
+  DecayManager& dm = DecayManager::GetInstance();
+
+  double E0 = Q-2*utilities::EMASSC2;
+
+  //std::cout << "In BetaPlusPolarised Decay " << std::endl;
+  //std::cout << "Address: " << initState << std::endl;
+  std::ostringstream oss;
+  oss << initState->GetCharge()+initState->GetNeutrons() << utilities::atoms[initState->GetCharge()-2];
+  Particle* recoil = DecayManager::GetInstance().GetNewParticle(oss.str(), initState->GetCharge()-1, initState->GetCharge()+initState->GetNeutrons());
+  recoil->SetExcitationEnergy(daughterExEn);
+  Particle* pos = DecayManager::GetInstance().GetNewParticle("e+");
+  Particle* enubar = DecayManager::GetInstance().GetNewParticle("enu");
+
+  oss.str("");
+  oss.clear();
+
+  oss << "BetaPlusPolarised:Z" << recoil->GetCharge() << "A" << recoil->GetCharge() + recoil->GetNeutrons() << "Q" << Q;
+  //Work in the COM frame
+  ublas::vector<double> enubarDir = utilities::RandomDirection();
+
+  ublas::vector<double> posFourMomentum (4);
+
+  double mf = 0.;
+  double mgt = 0.;
+
+  /////////ajout de SL 12/05/2023//////////////
+
+  if (dm.configOptions.betaDecay.Default == "Fermi") {
+    mf = 1.;
+  } 
+  else if (dm.configOptions.betaDecay.Default == "Gamow-Teller") {
+    mgt = 1.;
+  } 
+  else if (dm.configOptions.betaDecay.Default == "Mixed") {
+    mf = 1. ;
+    mgt = 1. ;
+  }
+  else if (dm.configOptions.betaDecay.Default == "Auto") {
+    std::string Type;
+    try{
+      Type = DecayManager::GetInstance().GetBetaType(oss.str());
+    } catch (const std::invalid_argument& e) {
+      Type = utilities::FindBetaType(initState, recoil);
+      DecayManager::GetInstance().RegisterBetaType(oss.str(), Type);
+    }
+    if (Type == "Fermi") {
+      mf = 1.;
+    } else if (Type == "Gamow-Teller") {
+      mgt = 1.;
+    } else {
+      mgt = 1. ;
+      mf = 1. ;
+    }
+  }
+  //std::cout << "mf : " << mf << "\n";
+  //std::cout << "mgt : " << mgt << "\n";
+  //mf = 1.;
+  //mgt = 0.;
+  ////////////////////////////////////////////////
+
+  double CS = dm.configOptions.couplingConstants.CS.real();
+  double CSP = dm.configOptions.couplingConstants.CSP.real();
+  double CV = dm.configOptions.couplingConstants.CV.real();
+  double CVP = dm.configOptions.couplingConstants.CVP.real();
+  double CA = dm.configOptions.couplingConstants.CA.real();
+  double CAP = dm.configOptions.couplingConstants.CAP.real();
+  double CT = dm.configOptions.couplingConstants.CT.real();
+  double CTP = dm.configOptions.couplingConstants.CTP.real();
+  double a_conf = dm.configOptions.couplingConstants.a;
+  double b_conf = dm.configOptions.couplingConstants.b;
+
+  double a = utilities::CalculateBetaNeutrinoAsymmetry(CS, CSP, CT, CTP, CV, CVP, CA, CAP, mf, mgt, a_conf, b_conf);
+  double fierz = utilities::CalculateFierz(CS, CSP, CT, CTP, CV, CVP, CA, CAP, mf, mgt, a_conf, b_conf);
+
+  //std::cout <<" b = " << fierz <<"\t a = " << a << std::endl;
+  //std::cout << "a : " << a << "\n";
+
+  std::vector<std::vector<double> >* dist;
+  try {
+    dist = DecayManager::GetInstance().GetDistribution(oss.str());
+  } catch (const std::invalid_argument& e) {
+    bool advancedFermi = false;
+    if (dm.configOptions.betaDecay.FermiFunction == "Advanced") { //// réécriture de la condition par SL 10/05/2023
+      advancedFermi = true;
+    }
+    dist = spectrumGen->GenerateSpectrum(initState, recoil, E0); //// changement de Q en E0 par SL 10/05/2023
+    double gamma = std::sqrt(1-std::pow(utilities::FINESTRUCTURE*recoil->GetCharge(), 2.));
+    int i=0;
+    for ( int i = 0; i<dist->size(); i++) {                                  ////// changement de boucle et element par ((*dist)[i]) par SL 10/05/2023
+      double E = ((*dist)[i])[0]+utilities::EMASSC2;
+      double SH = ((*dist)[i])[1];
+      ((*dist)[i])[1] = SH*(1+gamma*fierz*utilities::EMASSC2/E);
+    }
+    DecayManager::GetInstance().RegisterDistribution(oss.str(), dist);
+    }
+
+
+  // ublas::vector<std::vector<double> >* dist;
+  double posEnergy = utilities::RandomFromDistribution(*dist) + utilities::EMASSC2;
+  double posMomentum = std::sqrt(posEnergy*posEnergy-std::pow(utilities::EMASSC2, 2.));
+
+  std::vector<double> p;
+  p.push_back(1.);
+  p.push_back(a*posMomentum/posEnergy);
+  ublas::vector<double> posDir = utilities::GetParticleDirection(enubarDir, p);
+  posFourMomentum(0) = posEnergy;
+  posFourMomentum(1) = posMomentum*posDir[0];
+  posFourMomentum(2) = posMomentum*posDir[1];
+  posFourMomentum(3) = posMomentum*posDir[2];
+
+  pos->SetMomentum(posFourMomentum);
+
+  ublas::vector<double> velocity = -initState->GetVelocity();
+  ThreeBodyDecay(velocity, pos, enubar, recoil, enubarDir, E0);
+
+
+  finalStates.push_back(recoil);
+  finalStates.push_back(pos);
+  finalStates.push_back(enubar);
+
+  return finalStates;
+}
+
 /////////////////////////////////////////////////////
 
 std::vector<Particle*> ShellEC::Decay(Particle* initState, double Q, double daughterExEn) {
@@ -1334,6 +1581,10 @@ BetaPlusRadiative::BetaPlusRadiative() { }
 BetaMinusVirtualSoft::BetaMinusVirtualSoft() { }
 
 BetaPlusVirtualSoft::BetaPlusVirtualSoft() { }
+
+BetaMinusPolarised::BetaMinusPolarised() { }
+
+BetaPlusPolarised::BetaPlusPolarised() { }
 
 ShellEC::ShellEC () { } 
 
