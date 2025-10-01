@@ -51,12 +51,7 @@ namespace polarisation {
   const double a_CORR = -1.0;
   const double EULER_MASCHERONI_CONSTANT = 0.577215664901532;  /**< the Euler-Mascheroni constant */
 
-  enum DecayType { FERMI, GAMOW_TELLER, MIXED };
-
-  const std::string atoms[] = {"H", "He", "Li", "Be", "B", "C", "N", "O", "F", "Ne", "Na", "Mg", "Al", "Si", "P", "S", "Cl", "Ar", "K", "Ca", "Sc", "Ti", "V", "Cr", "Mn", "Fe", "Co", "Ni", "Cu", "Zn", "Ga", "Ge", "As", "Se", "Br", "Kr", "Rb", "Sr", "Y", "Zr", "Nb", "Mo", "Tc", "Ru", "Rh", "Pd", "Ag", "Cd", "In", "Sn", "Sb", "Te", "I", "Xe", "Cs", "Ba", "La", "Ce", "Pr", "Nd", "Pm", "Sm", "Eu", "Gd", "Tb", "Dy", "Ho", "Er", "Tm", "Yb", "Lu", "Hf", "Ta", "W", "Re", "Os", "Ir", "Pt", "Au", "Hg", "Tl", "Pb", "Bi", "Po", "At", "Rn", "Fr", "Ra", "Ac", "Th", "Pa", "U", "Np", "Pu", "Am", "Cm", "Bk", "Cf", "Es", "Fm", "Md", "No", "Lr", "Rf", "Db", "Sg", "Bh", "Hs", "Mt"};
-
-
-  //Polarisation Variables
+  //Polarisation Variables (from Nuclear Physics 4 (1957) 206-212; by J. D. Jackson)
 
   inline double lambdaJiJf_factor(double j_i, double j_f){
     if (j_f == (j_i - 1)){
@@ -74,10 +69,10 @@ namespace polarisation {
 
   inline double CalculateBetaAssymetry(std::complex<double> cs, std::complex<double> csp, std::complex<double> ct, std::complex<double> ctp, 
   std::complex<double> cv, std::complex<double> cvp, std::complex<double> ca, std::complex<double> cap, double mf, double mgt, double j_i, double j_f, int betaType, int Z, double energy){
-    double coulombCorr = FINESTRUCTURE*Z/std::sqrt(energy*energy/EMASSC2/EMASSC2-1);
+    double coulombCorr = FINESTRUCTURE*Z/std::sqrt(energy*energy/EMASSC2/EMASSC2-1); //alpha*Z*m_e/p_e
     double gamma_ratio = std::sqrt(1. - std::pow(FINESTRUCTURE * Z, 2.))*EMASSC2/energy; //gamma*m_e/E
     double A = mgt*mgt*lambdaJiJf_factor(j_i,j_f)*(2.*betaType*(ct*conj(ctp)-ca*conj(cap)).real()+2.*coulombCorr*(ct*conj(cap)+ctp*conj(ca)).imag()); 
-    if (j_i == j_f){
+    if (j_i == j_f){ //Mixed decay factors
       A += mf*mgt*std::sqrt(j_i/(j_i+1))*(2.*(cs*conj(ctp)+csp*conj(ct)-cv*conj(cap)-cvp*conj(ca)).real()+
                                           2*betaType*coulombCorr*(cs*conj(cap)+csp*conj(ca)-cv*conj(ctp)-cvp*conj(ct)).imag()); 
       }
@@ -89,7 +84,7 @@ namespace polarisation {
   std::complex<double> cv, std::complex<double> cvp, std::complex<double> ca, std::complex<double> cap, double mf, double mgt, double j_i, double j_f, int betaType, int Z, double energy){
     double gamma_ratio = std::sqrt(1. - std::pow(FINESTRUCTURE * Z, 2.))*EMASSC2/energy; //gamma*m_e/E
     double B = 2.*mgt*mgt*lambdaJiJf_factor(j_i,j_f)*(gamma_ratio*(ct*conj(cap)+ctp*conj(ca)).real()+betaType*(ct*conj(ctp)+ca*conj(cap)).real());
-    if (j_i == j_f){
+    if (j_i == j_f){ //Mixed decay factors
       B -= mf*mgt*std::sqrt(j_i/(j_i+1))*(2.*(cs*conj(ctp)+csp*conj(ct)+cv*conj(cap)+cvp*conj(ca)).real()+
                                               2.*betaType*gamma_ratio*(cs*conj(cap)+csp*conj(ca)+cv*conj(ctp)+cvp*conj(ct)).real()); 
     }
@@ -99,7 +94,8 @@ namespace polarisation {
 
   inline double CalculateDTripleCorrelation(std::complex<double> cs, std::complex<double> csp, std::complex<double> ct, std::complex<double> ctp, 
   std::complex<double> cv, std::complex<double> cvp, std::complex<double> ca, std::complex<double> cap, double mf, double mgt, double j_i, double j_f, int betaType, int Z, double energy){
-    if (j_i == j_f){
+    //Only mixed decay factors
+    if (j_i == j_f){ 
     double coulombCorr = FINESTRUCTURE*Z/std::sqrt(energy*energy/EMASSC2/EMASSC2-1);
     double D = mf*mgt*std::sqrt(j_i/(j_i+1))*(-2.*coulombCorr*(cs*conj(ca)+csp*conj(cap)-cv*conj(ct)-cvp*conj(ctp)).real()+
                                               2.*(cs*conj(ct)+csp*conj(ctp)-cv*conj(ca)-cvp*conj(cap)).imag());
@@ -109,10 +105,10 @@ namespace polarisation {
       return 0;
   }
 
-  //Maximum Functions 
+  //Maximum Functions for A, B, D
 
-  //A: iterate over the energy due to non-zero coulomb Corrections
-  inline double* maximumA(std::complex<double> cs, std::complex<double> csp, std::complex<double> ct, std::complex<double> ctp, 
+  //A: iterate over the energy due to non-zero coulomb Corrections, dependnt on energy
+  inline double* MaximumA(std::complex<double> cs, std::complex<double> csp, std::complex<double> ct, std::complex<double> ctp, 
     std::complex<double> cv, std::complex<double> cvp, std::complex<double> ca, std::complex<double> cap, double mf, double mgt, double j_i, double j_f, int betaType, int Z, double E0)  {
     double* max_A_point = new double[2]; // (energy of the maximum, value of the maximum for the abs)
     max_A_point[1] = -1.0; //since we look at the abs, first one will trigger; 
@@ -131,7 +127,7 @@ namespace polarisation {
   }
 
   //B: iterate over the energy
-  inline double* maximumB(std::complex<double> cs, std::complex<double> csp, std::complex<double> ct, std::complex<double> ctp, 
+  inline double* MaximumB(std::complex<double> cs, std::complex<double> csp, std::complex<double> ct, std::complex<double> ctp, 
   std::complex<double> cv, std::complex<double> cvp, std::complex<double> ca, std::complex<double> cap, double mf, double mgt, double j_i, double j_f, int betaType, int Z, double E0)  {
     double* max_B_point = new double[2]; // (energy of the maximum, value of the maximum for the abs)
     max_B_point[1] = -1.0; //since we look at the abs
@@ -150,7 +146,7 @@ namespace polarisation {
   }
 
   //D: iterate over the energy
-  inline double* maximumD(std::complex<double> cs, std::complex<double> csp, std::complex<double> ct, std::complex<double> ctp, 
+  inline double* MaximumD(std::complex<double> cs, std::complex<double> csp, std::complex<double> ct, std::complex<double> ctp, 
   std::complex<double> cv, std::complex<double> cvp, std::complex<double> ca, std::complex<double> cap, double mf, double mgt, double j_i, double j_f, int betaType, int Z, double E0)  {
      double* max_D_point = new double[2];  // (energy of the maximum, value of the maximum)
     max_D_point[1] = -1.0;
@@ -168,6 +164,59 @@ namespace polarisation {
     return max_D_point;
   }
 
+ 
+  inline double CalculateAngularCorrelationFactor(double a, double b, double A, double B, double D, double E, double cosTheta_e, double cosTheta_enu, double phi){
+  /*Computation of the angular dependent factor (ie proportional to xi) in formula 1 from the Jackson 1957 paper referenced above*/
+    ublas::vector<double> elDir (3);
+    ublas::vector<double> enuDir (3);
+    
+    //electron in XZ plane, using axial symmetry in Z direction (direction of J)
+    double sinTheta_e = std::sqrt(1-cosTheta_e);
+    elDir(0) = sinTheta_e;
+    elDir(1) = 0; 
+    elDir(2) = cosTheta_e;
+
+    double sinTheta_enu = std::sqrt(1-cosTheta_enu);
+    enuDir(0) = sinTheta_enu*std::cos(phi);
+    enuDir(1) = sinTheta_enu*std::sin(phi);
+    enuDir(2) = cosTheta_enu;
+
+    double beta_e = std::sqrt(1-EMASSC2*EMASSC2/E/E); // p_e/E_e; p_nu/E_nu = 1
+    
+    double angCorrFactor = 0.;
+    angCorrFactor += a*beta_e*(elDir(0)*enuDir(0)+elDir(1)*enuDir(1)+elDir(2)*enuDir(2));
+    //angCorrFactor += b*EMASSC2/E;(ask if necessary)
+    angCorrFactor += A*beta_e*elDir(2);
+    angCorrFactor += B*enuDir(2);
+    angCorrFactor += D*beta_e*(elDir(0)*enuDir(1)-elDir(1)*enuDir(0));
+
+    return angCorrFactor;
+  }
+
+  inline double* MaximumAngCorrFactor(double a, double b, double A, double B, double D, double E){
+    double* maxAngCorrFactor = new double[4];
+
+    maxAngCorrFactor[3] = std::numeric_limits<double>::lowest(); //not sure if value is nonpositive
+    for (int z_e = -100; z_e <= 100; z_e++){
+      for (int z_enu = -100; z_enu <= 100; z_enu++){
+	for (int phi = 0; phi < 360; phi++){
+	  double cosTheta_e = ((double) z_e)/100;
+	  double cosTheta_enu = ((double) z_enu)/100;
+	  double radPhi = phi*PI/180;
+	  double angCorrFactor = CalculateAngularCorrelationFactor(a, b, A, B, D, E, cosTheta_e, cosTheta_enu, radPhi);
+	  if (angCorrFactor > maxAngCorrFactor[3]){
+	    maxAngCorrFactor[0] = cosTheta_e;
+	    maxAngCorrFactor[1] = cosTheta_enu;
+	    maxAngCorrFactor[2] = radPhi;
+	    maxAngCorrFactor[3] = angCorrFactor;
+	  }
+	}
+      }
+      if (z_e%10 == 0)
+	std::cout << "cos(theta_e) = "<< ((double) z_e)/100 << std::endl;
+    }
+    return maxAngCorrFactor;
+  }
 }//closing polarisation namespace
 }//closing CRADLE namespace
 #endif

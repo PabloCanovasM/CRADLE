@@ -414,15 +414,15 @@ bool DecayManager::GenerateNucleus(string name, int Z, int A) {
         double lambdaFactor = polarisation::lambdaJiJf_factor(j_in,j_f);
         std::cout << "lambda factor: " << lambdaFactor << std::endl;
 
-        double* max_A = polarisation::maximumA(CS, CSP, CT, CTP, CV, CVP, CA, CAP, mf, mgt, j_in, j_f, betaType, Z, Q);
+        double* max_A = polarisation::MaximumA(CS, CSP, CT, CTP, CV, CVP, CA, CAP, mf, mgt, j_in, j_f, betaType, Z, Q);
         std::cout << "Maximum of A: " << *(max_A+1) << " at a total energy of " << *(max_A) << " kev " << std::endl;
         delete max_A;
 
-        double* max_B = polarisation::maximumB(CS, CSP, CT, CTP, CV, CVP, CA, CAP, mf, mgt, j_in, j_f, betaType, Z, Q);
+        double* max_B = polarisation::MaximumB(CS, CSP, CT, CTP, CV, CVP, CA, CAP, mf, mgt, j_in, j_f, betaType, Z, Q);
         std::cout << "Maximum of B: " << *(max_B+1) << " at a total energy of " << *(max_B) << " kev " << std::endl;
         delete max_B;
 
-        double* max_D = polarisation::maximumD(CS, CSP, CT, CTP, CV, CVP, CA, CAP, mf, mgt, j_in, j_f, betaType, Z, Q);
+        double* max_D = polarisation::MaximumD(CS, CSP, CT, CTP, CV, CVP, CA, CAP, mf, mgt, j_in, j_f, betaType, Z, Q);
         std::cout << "Maximum of D: " << *(max_D+1) << " at a total energy of " << *(max_D) << " kev " << std::endl;
         delete max_D;
 
