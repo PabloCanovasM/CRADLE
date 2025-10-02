@@ -171,19 +171,19 @@ namespace polarisation {
     ublas::vector<double> enuDir (3);
     
     //electron in XZ plane, using axial symmetry in Z direction (direction of J)
-    double sinTheta_e = std::sqrt(1-cosTheta_e);
+    double sinTheta_e = std::sqrt(1-cosTheta_e*cosTheta_e);
     elDir(0) = sinTheta_e;
     elDir(1) = 0; 
     elDir(2) = cosTheta_e;
 
-    double sinTheta_enu = std::sqrt(1-cosTheta_enu);
+    double sinTheta_enu = std::sqrt(1-cosTheta_enu*cosTheta_enu);
     enuDir(0) = sinTheta_enu*std::cos(phi);
     enuDir(1) = sinTheta_enu*std::sin(phi);
     enuDir(2) = cosTheta_enu;
 
     double beta_e = std::sqrt(1-EMASSC2*EMASSC2/E/E); // p_e/E_e; p_nu/E_nu = 1
     
-    double angCorrFactor = 0.;
+    double angCorrFactor = 1.;
     angCorrFactor += a*beta_e*(elDir(0)*enuDir(0)+elDir(1)*enuDir(1)+elDir(2)*enuDir(2));
     //angCorrFactor += b*EMASSC2/E;(ask if necessary)
     angCorrFactor += A*beta_e*elDir(2);
@@ -193,10 +193,8 @@ namespace polarisation {
     return angCorrFactor;
   }
 
-  inline double* MaximumAngCorrFactor(double a, double b, double A, double B, double D, double E){
-    double* maxAngCorrFactor = new double[4];
-
-    maxAngCorrFactor[3] = std::numeric_limits<double>::lowest(); //not sure if value is nonpositive
+  inline double MaximumAngCorrFactor(double a, double b, double A, double B, double D, double E){
+    double maxAngCorrFactor =  std::numeric_limits<double>::lowest(); //not sure if value is nonpositive
     for (int z_e = -100; z_e <= 100; z_e++){
       for (int z_enu = -100; z_enu <= 100; z_enu++){
 	for (int phi = 0; phi < 360; phi++){
@@ -204,19 +202,15 @@ namespace polarisation {
 	  double cosTheta_enu = ((double) z_enu)/100;
 	  double radPhi = phi*PI/180;
 	  double angCorrFactor = CalculateAngularCorrelationFactor(a, b, A, B, D, E, cosTheta_e, cosTheta_enu, radPhi);
-	  if (angCorrFactor > maxAngCorrFactor[3]){
-	    maxAngCorrFactor[0] = cosTheta_e;
-	    maxAngCorrFactor[1] = cosTheta_enu;
-	    maxAngCorrFactor[2] = radPhi;
-	    maxAngCorrFactor[3] = angCorrFactor;
+	  if (angCorrFactor > maxAngCorrFactor)
+	    maxAngCorrFactor = angCorrFactor;
 	  }
 	}
-      }
-      if (z_e%10 == 0)
-	std::cout << "cos(theta_e) = "<< ((double) z_e)/100 << std::endl;
+      if (z_e%10 == 0) std::cout << "cos(theta_e) = "<< ((double) z_e)/100 << std::endl;
     }
     return maxAngCorrFactor;
   }
+  
 }//closing polarisation namespace
 }//closing CRADLE namespace
 #endif
