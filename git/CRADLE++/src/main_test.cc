@@ -92,13 +92,14 @@ namespace CRADLE{
 	  for (int phi = 0; phi < phiRes; phi++){
 	    double angCorrFactor = polarisation::CalculateAngularCorrelationFactor(a, 0, A, B, D, E, ((double) z_e)/zRes, ((double) z_enu)/zRes, phi*2*polarisation::PI/phiRes);
 	    angCorrFactor = std::abs(angCorrFactor) > 1e-4 ? angCorrFactor : 0;  
-	    file_content << std::setprecision(3) << angCorrFactor << '\t';
+	    file_content << std::fixed << std::setprecision(4) << angCorrFactor << '\t';
 	  }
 	  file_content << '\n'; 
 	}
 	if (z_e%5 == 0) std::cout << "cos(theta_e) = "<< ((double) z_e)/zRes << std::endl;	
       }
       if (giveMaximum){
+	std::cout << "Finding maximum" << std::endl;
 	double maxAngCorrFactor = polarisation::MaximumAngCorrFactor(a,0,A,B,D,E);
 	std::cout << "Maximum value: " << maxAngCorrFactor << std::endl;
       }	
@@ -210,38 +211,46 @@ int main(){
   }
 
   if (double_var_ang_corr_test){
+    double varList[3];
+    std::string varNames[3] = {"a","A","D"};
     std::stringstream fileNameSS;
-    std::cout << "Non Zero A and B" << std::endl;  
-    std::cout << "Positive A, positive B" << std::endl;
-    std::cout << "Low Energy" << std::endl;
-    fileNameSS << "posA_posB_lowE.txt";
-    fileStream.open(fileNameSS.str());
-    fileStream << CRADLE::test::maximum_inspection_test(0, 1, 1, 0, 600, 10, 24, false);
-    fileStream.flush();
-    fileStream.close();
-    fileNameSS.str("");
-    std::cout << "High Energy" << std::endl;
-    fileNameSS << "posA_posB_hiE.txt"; 
-    fileStream.open(fileNameSS.str());
-    fileStream << CRADLE::test::maximum_inspection_test(0, 1, 1, 0, 5000, 10, 24, false);
-    fileStream.flush();
-    fileStream.close();
-    fileNameSS.str("");  
-    std::cout << "Positive A, negative B" << std::endl;
-    std::cout << "Low Energy" << std::endl; 
-    fileNameSS << "posA_negB_lowE.txt";
-    fileStream.open(fileNameSS.str());
-    fileStream << CRADLE::test::maximum_inspection_test(0, 1, -1, 0, 600, 10, 24, false);
-    fileStream.flush();
-    fileStream.close();
-    fileNameSS.str("");
-    std::cout << "High Energy" << std::endl;
-    fileNameSS << "posA_negB_hiE.txt";
-    fileStream.open(fileNameSS.str());
-    fileStream << CRADLE::test::maximum_inspection_test(0, 1, -1, 0, 5000, 10, 24, false);
-    fileStream.flush();
-    fileStream.close();
-    fileNameSS.str("");
+    for (int i = 0; i < 3; i++){
+      for (int j = 0; j < 3; j++)
+	  varList[j] = j == i ? 1 : 0;
+      int zRes = i == 2 ? 40 : 10;
+      std::cout << "Non Zero " << varNames[i] << " and B" << std::endl;  
+      std::cout << "Positive " << varNames[i] << ", positive B" << std::endl;
+      std::cout << "Low Energy" << std::endl;
+      fileNameSS << "pos" << varNames[i] << "_posB_lowE.txt";
+      fileStream.open(fileNameSS.str());
+      fileStream << CRADLE::test::maximum_inspection_test(varList[0], varList[1], 1, varList[2], 520, zRes, 24, true);
+      fileStream.flush();
+      fileStream.close();
+      fileNameSS.str("");
+      std::cout << "High Energy" << std::endl;
+      fileNameSS << "pos" << varNames[i] << "_posB_hiE.txt"; 
+      fileStream.open(fileNameSS.str());
+      fileStream << CRADLE::test::maximum_inspection_test(varList[0], varList[1], 1, varList[2], 5000, zRes, 24, true);
+      fileStream.flush();
+      fileStream.close();
+      fileNameSS.str("");  
+      std::cout << "Positive " << varNames[i] << ", negative B" << std::endl;
+      std::cout << "Low Energy" << std::endl; 
+      fileNameSS << "pos" << varNames[i] << "_negB_lowE.txt";
+      fileStream.open(fileNameSS.str());
+      fileStream << CRADLE::test::maximum_inspection_test(varList[0], varList[1], -1, varList[2], 520, zRes, 24, true);
+      fileStream.flush();
+      fileStream.close();
+      fileNameSS.str("");
+      std::cout << "High Energy" << std::endl;
+      fileNameSS << "pos" << varNames[i] << "_negB_hiE.txt"; 
+      fileStream.open(fileNameSS.str());
+      fileStream << CRADLE::test::maximum_inspection_test(varList[0], varList[1], -1 , varList[2], 5000, zRes, 24, true);
+      fileStream.flush();
+      fileStream.close();
+      fileNameSS.str("");
+    }
+    
   }
   
   delete CRADLE::test::cConst;
