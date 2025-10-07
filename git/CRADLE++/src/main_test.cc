@@ -85,18 +85,20 @@ namespace CRADLE{
       return file_content.str();
     }
 
-    inline std::string maximum_inspection_test(double a, double A, double B, double D, double E, int zRes, int phiRes, bool giveMaximum){
+
+    
+    inline std::string maximum_inspection_test(double a, double A, double B, double D, double E, int zeRes, int znuRes, int phiRes, bool giveMaximum){
       std::stringstream file_content;
-      for (int z_e = -zRes; z_e <= zRes; z_e++){
-	for (int z_enu = -zRes; z_enu <= zRes; z_enu++){
+      for (int z_e = -zeRes; z_e <= zeRes; z_e++){
+	for (int z_enu = -znuRes; z_enu <= znuRes; z_enu++){
 	  for (int phi = 0; phi < phiRes; phi++){
-	    double angCorrFactor = polarisation::CalculateAngularCorrelationFactor(a, 0, A, B, D, E, ((double) z_e)/zRes, ((double) z_enu)/zRes, phi*2*polarisation::PI/phiRes);
-	    angCorrFactor = std::abs(angCorrFactor) > 1e-4 ? angCorrFactor : 0;  
-	    file_content << std::fixed << std::setprecision(4) << angCorrFactor << '\t';
+	    double angCorrFactor = polarisation::CalculateAngularCorrelationFactor(a, 0, A, B, D, E, ((double) z_e)/zeRes, ((double) z_enu)/znuRes, phi*2*polarisation::PI/phiRes);
+	    angCorrFactor = std::abs(angCorrFactor) > 1e-6 ? angCorrFactor : 0;  
+	    file_content << std::fixed << std::setprecision(5) << angCorrFactor << '\t';
 	  }
 	  file_content << '\n'; 
 	}
-	if (z_e%5 == 0) std::cout << "cos(theta_e) = "<< ((double) z_e)/zRes << std::endl;	
+	if (z_e%5 == 0) std::cout << "cos(theta_e) = "<< ((double) z_e)/zeRes << std::endl;	
       }
       if (giveMaximum){
 	std::cout << "Finding maximum" << std::endl;
@@ -105,8 +107,14 @@ namespace CRADLE{
       }	
       return file_content.str();      
     }
+
+    inline std::string maximum_inspection_test(double a, double A, double B, double D, double E, int zRes, int phiRes, bool giveMaximum){	
+      return maximum_inspection_test(a,A,B,D,E,zRes,zRes,phiRes,giveMaximum);      
+    }
   }
 }
+
+
 
 int main(){
   std::ofstream fileStream;
@@ -114,8 +122,10 @@ int main(){
   bool lambda_test = false;
   bool double_cte_gt_test = false;
   bool double_cte_mixed_test = false;
-  bool single_var_ang_corr_test = true;
-  bool double_var_ang_corr_test = true;
+  bool single_var_ang_corr_test = false;
+  bool double_var_B_ang_corr_test = false;
+  bool double_var_A_ang_corr_test = false;
+  bool double_var_D_ang_corr_test = true;
   
   if (lambda_test){
       fileStream.open("lambda_output.txt");
@@ -210,30 +220,55 @@ int main(){
       }
   }
 
-  if (double_var_ang_corr_test){
+  if (double_var_B_ang_corr_test){
     double varList[3];
     std::string varNames[3] = {"a","A","D"};
     std::stringstream fileNameSS;
     for (int i = 0; i < 3; i++){
       for (int j = 0; j < 3; j++)
 	  varList[j] = j == i ? 1 : 0;
+      int znuRes = i == 2 ? 1000 : 10;
       int zRes = i == 2 ? 40 : 10;
       std::cout << "Non Zero " << varNames[i] << " and B" << std::endl;  
       std::cout << "Positive " << varNames[i] << ", positive B" << std::endl;
       std::cout << "Low Energy" << std::endl;
       fileNameSS << "pos" << varNames[i] << "_posB_lowE.txt";
       fileStream.open(fileNameSS.str());
-      fileStream << CRADLE::test::maximum_inspection_test(varList[0], varList[1], 1, varList[2], 520, zRes, 24, true);
+      fileStream << CRADLE::test::maximum_inspection_test(varList[0], varList[1], 1, varList[2], 520, zRes, znuRes, 24, true);
       fileStream.flush();
       fileStream.close();
       fileNameSS.str("");
-      std::cout << "High Energy" << std::endl;
-      fileNameSS << "pos" << varNames[i] << "_posB_hiE.txt"; 
+      std::cout << "Medium Energy" << std::endl;
+      fileNameSS << "pos" << varNames[i] << "_posB_medE.txt"; 
       fileStream.open(fileNameSS.str());
-      fileStream << CRADLE::test::maximum_inspection_test(varList[0], varList[1], 1, varList[2], 5000, zRes, 24, true);
+      fileStream << CRADLE::test::maximum_inspection_test(varList[0], varList[1], 1, varList[2], 800, zRes, znuRes, 24, true);
       fileStream.flush();
       fileStream.close();
       fileNameSS.str("");  
+      std::cout << "High Energy" << std::endl;
+      fileNameSS << "pos" << varNames[i] << "_posB_hiE.txt"; 
+      fileStream.open(fileNameSS.str());
+      fileStream << CRADLE::test::maximum_inspection_test(varList[0], varList[1], 1, varList[2], 5000, zRes, znuRes, 24, true);
+      fileStream.flush();
+      fileStream.close();
+      fileNameSS.str("");
+      std::cout << "High " << varNames[i] << std::endl;
+      fileNameSS << "pos" << varNames[i] << "_posB_hi" << varNames[i]  << ".txt";
+      varList[i] = 2;
+      fileStream.open(fileNameSS.str());
+      fileStream << CRADLE::test::maximum_inspection_test(varList[0], varList[1], 1, varList[2], 5000, zRes, znuRes, 24, true);
+      fileStream.flush();
+      fileStream.close();
+      fileNameSS.str("");
+      varList[i] = 5;
+      std::cout << "Very High " << varNames[i] << std::endl;
+      fileNameSS << "pos" << varNames[i] << "_posB_vhi" << varNames[i]  << ".txt"; 
+      fileStream.open(fileNameSS.str());
+      fileStream << CRADLE::test::maximum_inspection_test(varList[0], varList[1], 1, varList[2], 5000, zRes, znuRes, 24, true);
+      fileStream.flush();
+      fileStream.close();
+      fileNameSS.str("");     
+      varList[i] = 1; //reset for the negative part
       std::cout << "Positive " << varNames[i] << ", negative B" << std::endl;
       std::cout << "Low Energy" << std::endl; 
       fileNameSS << "pos" << varNames[i] << "_negB_lowE.txt";
@@ -248,9 +283,65 @@ int main(){
       fileStream << CRADLE::test::maximum_inspection_test(varList[0], varList[1], -1 , varList[2], 5000, zRes, 24, true);
       fileStream.flush();
       fileStream.close();
+      fileNameSS.str("");     
+    }
+  } 
+  if (double_var_A_ang_corr_test){
+    double varList[2];
+    std::string varNames[2] = {"a","D"};
+    std::stringstream fileNameSS;
+    for (int i = 0; i < 2; i++){
+      for (int j = 0; j < 2; j++)
+	  varList[j] = j == i ? 1 : 0;
+      int zeRes = i == 1 ? 1000 : 10;
+      int zRes = i == 1 ? 40 : 10;
+      int E = 100000; //very high, to make beta almost 1 
+      std::cout << "Non Zero " << varNames[i] << " and A" << std::endl;
+      double A_vals[5] = {0.1,0.5,1,2,5};
+      std::string A_names[5] = {"xs","s","eq","l","xl"};
+      for (int j = 0; j < 5; j++){
+	double A = A_vals[j];
+	std::cout << "A = +" << A << std::endl;  
+	fileNameSS << "pos" << varNames[i] << "_" << A_names[j]  << "posA.txt";
+	fileStream.open(fileNameSS.str());
+	fileStream << CRADLE::test::maximum_inspection_test(varList[0], A, 0, varList[1], E, zeRes, zRes, 24, true);
+	fileStream.flush();
+	fileStream.close();
+	fileNameSS.str("");
+	std::cout << "A = -" << A << std::endl;  
+	fileNameSS << "pos" << varNames[i] << "_" << A_names[j]  << "negA.txt";
+	fileStream.open(fileNameSS.str());
+	fileStream << CRADLE::test::maximum_inspection_test(varList[0], -A, 0, varList[1], E, zeRes, zRes, 24, true);
+	fileStream.flush();
+	fileStream.close();
+	fileNameSS.str("");
+      }
+    }
+  }
+  if (double_var_D_ang_corr_test){
+    std::stringstream fileNameSS;
+    std::cout << "Non Zero a and D" << std::endl;
+    double D_vals[5] = {0.25,0.5,1,2,4};
+    std::string D_names[5] = {"xs","s","eq","l","xl"};
+    double E = 100000;
+    int zRes = 100;
+    for (int j = 0; j < 5; j++){
+      double D = D_vals[j];
+      std::cout << "D = +" << D << std::endl;  
+      fileNameSS << "posa_" << D_names[j]  << "posD.txt";
+      fileStream.open(fileNameSS.str());
+      fileStream << CRADLE::test::maximum_inspection_test(1, 0, 0, D, E, zRes, zRes, 96, true);
+      fileStream.flush();
+      fileStream.close();
+      fileNameSS.str("");
+      std::cout << "D = -" << D << std::endl;  
+      fileNameSS << "posa_" << D_names[j]  << "negD.txt";
+      fileStream.open(fileNameSS.str());
+      fileStream << CRADLE::test::maximum_inspection_test(1, 0, 0, -D, E, zRes, zRes, 96, true);
+      fileStream.flush();
+      fileStream.close();
       fileNameSS.str("");
     }
-    
   }
   
   delete CRADLE::test::cConst;
