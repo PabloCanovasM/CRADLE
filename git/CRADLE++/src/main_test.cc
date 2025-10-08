@@ -125,7 +125,8 @@ int main(){
   bool single_var_ang_corr_test = false;
   bool double_var_B_ang_corr_test = false;
   bool double_var_A_ang_corr_test = false;
-  bool double_var_D_ang_corr_test = true;
+  bool double_var_D_ang_corr_test = false;
+  bool triple_var_aAB_ang_corr_test = true;
   
   if (lambda_test){
       fileStream.open("lambda_output.txt");
@@ -343,6 +344,28 @@ int main(){
       fileNameSS.str("");
     }
   }
+
+  if (triple_var_aAB_ang_corr_test){
+    std::stringstream fileNameSS;
+    std::cout << "Non Zero a, B, A" << std::endl;
+    double AB_vals[5] = {0.25,0.5,0.6,0.8,1};
+    double E_vals[5] = {520, 600, 800, 1500, 3000};
+    double a = -1.0/3;
+    for (double B : AB_vals){
+      double A = -B;
+      std::cout << "|A| = |B| = " << B << std::endl;
+      for (double E : E_vals){
+	std::cout << "E = " << E << std::endl;
+	fileNameSS << std::setprecision(2) << "AB_" << B << "_E_" << std::setprecision(4) << E <<".txt";
+	fileStream.open(fileNameSS.str());
+	fileStream << CRADLE::test::maximum_inspection_test(a, A, B, 0, E, 20, 24, true);
+	fileStream.flush();
+	fileStream.close();
+	fileNameSS.str("");
+      }
+    }
+  }
+
   
   delete CRADLE::test::cConst;
 }
