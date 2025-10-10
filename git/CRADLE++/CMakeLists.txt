@@ -67,7 +67,6 @@ endif()
 
 add_library(Cradle SHARED src/ConfigParser.cc src/DecayChannel.cc src/DecayManager.cc src/DecayMode.cc src/Particle.cc src/SpectrumGenerator.cc)
 add_executable(CRADLE++ src/CRADLE++.cc)
-add_executable(test src/main_test.cc)
 
 find_package(Boost REQUIRED)
 find_package(GSL REQUIRED)
@@ -88,9 +87,16 @@ set(HEADER_BASE "${CMAKE_CURRENT_SOURCE_DIR}/include")
 target_link_libraries(Cradle PUBLIC ${GSL_LIBRARIES} ${GSL_CBLAS_LIBRARIES})
 target_link_libraries(Cradle PUBLIC ${Boost_LIBRARIES})
 target_link_libraries(Cradle PUBLIC ${CMAKE_THREAD_LIBS_INIT})
+			     
+target_link_libraries(CRADLE++ PRIVATE Cradle)	
 
-target_link_libraries(CRADLE++ PRIVATE Cradle)
-target_link_libraries(test PRIVATE Cradle)
+#Test executable
+add_library(Tests SHARED src_test/lambda_cte_test.cc src_test/ang_corr_factor_test.cc src_test/sampling_test.cc)
+add_executable(Test src_test/main_test.cc)
+
+target_link_libraries(Tests PUBLIC Cradle)
+target_link_libraries(Test PRIVATE Tests)
+
 
 # add_custom_command(TARGET CRADLE++
 #                    POST_BUILD

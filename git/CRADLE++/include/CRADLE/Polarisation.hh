@@ -165,7 +165,7 @@ namespace polarisation {
   }
 
  
-  inline double CalculateAngularCorrelationFactor(double a, double b, double A, double B, double D, double E, double cosTheta_e, double cosTheta_enu, double phi){
+  inline double CalculateAngularCorrelationFactor(double a, double A, double B, double D, double E, double cosTheta_e, double cosTheta_enu, double phi){
   /*Computation of the angular dependent factor (ie proportional to xi) in formula 1 from the Jackson 1957 paper referenced above*/
     ublas::vector<double> elDir (3);
     ublas::vector<double> enuDir (3);
@@ -185,7 +185,6 @@ namespace polarisation {
     
     double angCorrFactor = 1.;
     angCorrFactor += a*beta_e*(elDir(0)*enuDir(0)+elDir(1)*enuDir(1)+elDir(2)*enuDir(2));
-    //angCorrFactor += b*EMASSC2/E;(ask if necessary)
     angCorrFactor += A*beta_e*elDir(2);
     angCorrFactor += B*enuDir(2);
     angCorrFactor += D*beta_e*(elDir(0)*enuDir(1)-elDir(1)*enuDir(0));
@@ -193,20 +192,21 @@ namespace polarisation {
     return angCorrFactor;
   }
 
-  inline double MaximumAngCorrFactor(double a, double b, double A, double B, double D, double E){
+  inline double MaximumAngCorrFactor(double a, double A, double B, double D, double E){
+    /*Search of the maximum using grid search*/
     double maxAngCorrFactor =  std::numeric_limits<double>::lowest(); //not sure if value is nonpositive
-    for (int z_e = -100; z_e <= 100; z_e++){
-      for (int z_enu = -100; z_enu <= 100; z_enu++){
-	for (int phi = 0; phi < 360; phi++){
-	  double cosTheta_e = ((double) z_e)/100;
-	  double cosTheta_enu = ((double) z_enu)/100;
-	  double radPhi = phi*PI/180;
-	  double angCorrFactor = CalculateAngularCorrelationFactor(a, b, A, B, D, E, cosTheta_e, cosTheta_enu, radPhi);
+    for (int z_e = -200; z_e <= 200; z_e++){
+      for (int z_enu = -200; z_enu <= 200; z_enu++){
+	for (int phi = 0; phi < 720; phi++){
+	  double cosTheta_e = ((double) z_e)/200;
+	  double cosTheta_enu = ((double) z_enu)/200;
+	  double radPhi = phi*PI/360;
+	  double angCorrFactor = CalculateAngularCorrelationFactor(a, A, B, D, E, cosTheta_e, cosTheta_enu, radPhi);
 	  if (angCorrFactor > maxAngCorrFactor)
 	    maxAngCorrFactor = angCorrFactor;
 	  }
 	}
-      if (z_e%10 == 0) std::cout << "cos(theta_e) = "<< ((double) z_e)/100 << std::endl;
+      if (z_e%10 == 0) std::cout << "cos(theta_e) = "<< ((double) z_e)/200 << std::endl;
     }
     return maxAngCorrFactor;
   }
