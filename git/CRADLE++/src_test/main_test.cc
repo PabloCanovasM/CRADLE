@@ -17,7 +17,10 @@ namespace CRADLE{
     void RunDoubleVarAAngCorrTest();
     void RunDoubleVarDAngCorrTest();
     void RunTripleVarAngCorrTest();
-    void RunDefaultVNRSampling(double, double, double, double, double, int, std::string);
+    void RunDefaultVNRSamplingTest(double, double, double, double, double, int, std::string);
+    void RunDoubleVarBVNRSamplingTest();
+    void RunDoubleVarAVNRSamplingTest();
+    void RunDoubleVarDVNRSamplingTest();
   }
 }
 
@@ -49,11 +52,17 @@ int main(int argc, char **argv) {
       std::cout << "Angular Correlation Factor Test -> ang_corr_factor" << std::endl;
       std::cout << "Parameters:\n";
       std::cout << "-p 1 for 1 variable test\n";
-      std::cout << "-p <2|3|4> for 2 variable test with B, A or D;\n";
+      std::cout << "-p 2 for 2 variable test, non-zero B and other;\n";
+      std::cout << "-p 3 for 2 variable test, non-zero A and one of a or D;\n";
+      std::cout << "-p 4 for 2 variable test, non-zero D and a;\n";
       std::cout << "-p 5 for triple aAB test" << std::endl;
       std::cout << "\n--------------------------------------------------\n";
-      std::cout << "Syntax: Test sampling -a <a> -A <A> -B <B> -D <D> -E <E> -N <n-decays> -o <output-file> -p <premade-test>" << std::endl;
       std::cout << "Von Neumann Rejection Sampling -> sampling" << std::endl;
+      std::cout << "Syntax: Test sampling -a <a> -A <A> -B <B> -D <D> -E <E> -N <n-decays> -o <output-file> -p <premade-test>" << std::endl;
+      std::cout << "Premade Test:\n";
+      std::cout << "-p 1 for 2 variable test, non-zero B and other;\n";
+      std::cout << "-p 2 for 2 variable test, non-zero A and one of a or D;\n";
+      std::cout << "-p 3 for 2 variable test, non-zero D and a;\n";
       return 0;
     }
     if (testName == "sampling"){
@@ -115,7 +124,7 @@ int main(int argc, char **argv) {
       triple_var_aAB_ang_corr_test = true;
       break;
     default:
-      std::cout << "Parameter does not match keyword of any test" << std::endl;
+      std::cout << "Parameter does not match id of any test" << std::endl;
       return 0;
     }
   }
@@ -162,8 +171,24 @@ int main(int argc, char **argv) {
   if (vonNeumann_reject_sampling_test){
     if (genParam.empty()){
       std::cout << "a = " << a << "\nA = " << A << "\nB = " << B << "\nD = " << D << "\nE = " << E << "\nNumber of decays = " << nDecays << std::endl;
-      CRADLE::test::RunDefaultVNRSampling(a, A, B, D, E, nDecays, oFile);
+      CRADLE::test::RunDefaultVNRSamplingTest(a, A, B, D, E, nDecays, oFile);
       std::cout << "Results saved in " << oFile << std::endl; 
+    } else {
+      int param_id = std::stoi(genParam);
+      switch(param_id) {
+      case 1:
+	CRADLE::test::RunDoubleVarBVNRSamplingTest();
+	break;
+      case 2:
+	CRADLE::test::RunDoubleVarAVNRSamplingTest();
+	break;
+       case 3:
+	CRADLE::test::RunDoubleVarDVNRSamplingTest();
+	break;
+      default:
+	std::cout << "Parameter does not match id of any test" << std::endl;
+	return 0;
+      } 
     }
   }
   
