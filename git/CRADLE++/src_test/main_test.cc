@@ -13,9 +13,9 @@ namespace CRADLE{
     void RunCConstGamovTellerTest();
     void RunCConstMixedTest();
     void RunSingleVarAngCorrTest();
-    void RunDoubleVarBAngCorrTest();
-    void RunDoubleVarAAngCorrTest();
-    void RunDoubleVarDAngCorrTest();
+    void RunDoubleVarBAngCorrTest(bool);
+    void RunDoubleVarAAngCorrTest(bool);
+    void RunDoubleVarDAngCorrTest(bool);
     void RunTripleVarAngCorrTest();
     void RunDefaultVNRSamplingTest(double, double, double, double, double, int, std::string);
     void RunDoubleVarBVNRSamplingTest();
@@ -55,6 +55,7 @@ int main(int argc, char **argv) {
       std::cout << "-p 2 for 2 variable test, non-zero B and other;\n";
       std::cout << "-p 3 for 2 variable test, non-zero A and one of a or D;\n";
       std::cout << "-p 4 for 2 variable test, non-zero D and a;\n";
+      std::cout << "-p <20|30|40> performs above tests but no maximum computed\n";
       std::cout << "-p 5 for triple aAB test" << std::endl;
       std::cout << "\n--------------------------------------------------\n";
       std::cout << "Von Neumann Rejection Sampling -> sampling" << std::endl;
@@ -94,6 +95,7 @@ int main(int argc, char **argv) {
   bool double_var_A_ang_corr_test = false;
   bool double_var_D_ang_corr_test = false;
   bool triple_var_aAB_ang_corr_test = false;
+  bool show_maximum = true;
   bool vonNeumann_reject_sampling_test = false;
 
   if (testName == "lambda") lambda_test = true;
@@ -114,11 +116,23 @@ int main(int argc, char **argv) {
     case 2:
       double_var_B_ang_corr_test = true;
       break;
+    case 20:
+      double_var_B_ang_corr_test = true;
+      show_maximum = false;
+      break;
     case 3:
       double_var_A_ang_corr_test = true;
       break;
+    case 30:
+      double_var_A_ang_corr_test = true;
+      show_maximum = false;
+      break;
     case 4:
       double_var_D_ang_corr_test = true;
+      break;
+    case 40:
+      double_var_D_ang_corr_test = true;
+      show_maximum = false;
       break;
     case 5:
       triple_var_aAB_ang_corr_test = true;
@@ -153,15 +167,15 @@ int main(int argc, char **argv) {
   }
 
   if (double_var_B_ang_corr_test){
-    CRADLE::test::RunDoubleVarBAngCorrTest();
+    CRADLE::test::RunDoubleVarBAngCorrTest(show_maximum);
   }
   
   if (double_var_A_ang_corr_test){
-    CRADLE::test::RunDoubleVarAAngCorrTest();
+    CRADLE::test::RunDoubleVarAAngCorrTest(show_maximum);
   }
   
   if (double_var_D_ang_corr_test){
-    CRADLE::test::RunDoubleVarDAngCorrTest();
+    CRADLE::test::RunDoubleVarDAngCorrTest(show_maximum);
   }
 
   if (triple_var_aAB_ang_corr_test){

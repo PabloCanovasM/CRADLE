@@ -56,7 +56,7 @@ namespace CRADLE{
       }
     }
 
-    void RunDoubleVarBAngCorrTest(){
+    void RunDoubleVarBAngCorrTest(bool compMax){
       std::ofstream fileStream;
       double varList[3];
       std::string varNames[3] = {"a","A","D"};
@@ -64,28 +64,29 @@ namespace CRADLE{
       for (int i = 0; i < 3; i++){
 	for (int j = 0; j < 3; j++)
 	  varList[j] = j == i ? 1 : 0;
-	int znuRes = i == 2 ? 1000 : 10;
-	int zRes = i == 2 ? 40 : 10;
+	int znuRes = i == 2 ? 1000 : 20;
+	int zRes = i == 2 ? 40 : 20;
+	int phiRes = 96;
 	std::cout << "Non Zero " << varNames[i] << " and B" << std::endl;  
 	std::cout << "Positive " << varNames[i] << ", positive B" << std::endl;
 	std::cout << "Low Energy" << std::endl;
 	fileNameSS << "pos" << varNames[i] << "_posB_lowE.txt";
 	fileStream.open(fileNameSS.str());
-	fileStream << MaximumInspectionTest(varList[0], varList[1], 1, varList[2], 520, zRes, znuRes, 24, true);
+	fileStream << MaximumInspectionTest(varList[0], varList[1], 1, varList[2], 520, zRes, znuRes, phiRes, compMax);
 	fileStream.flush();
 	fileStream.close();
 	fileNameSS.str("");
 	std::cout << "Medium Energy" << std::endl;
 	fileNameSS << "pos" << varNames[i] << "_posB_medE.txt"; 
 	fileStream.open(fileNameSS.str());
-	fileStream << MaximumInspectionTest(varList[0], varList[1], 1, varList[2], 800, zRes, znuRes, 24, true);
+	fileStream << MaximumInspectionTest(varList[0], varList[1], 1, varList[2], 800, zRes, znuRes, phiRes, compMax);
 	fileStream.flush();
 	fileStream.close();
 	fileNameSS.str("");  
 	std::cout << "High Energy" << std::endl;
 	fileNameSS << "pos" << varNames[i] << "_posB_hiE.txt"; 
 	fileStream.open(fileNameSS.str());
-	fileStream << MaximumInspectionTest(varList[0], varList[1], 1, varList[2], 5000, zRes, znuRes, 24, true);
+	fileStream << MaximumInspectionTest(varList[0], varList[1], 1, varList[2], 5000, zRes, znuRes, phiRes, compMax);
 	fileStream.flush();
 	fileStream.close();
 	fileNameSS.str("");
@@ -93,7 +94,7 @@ namespace CRADLE{
 	fileNameSS << "pos" << varNames[i] << "_posB_hi" << varNames[i]  << ".txt";
 	varList[i] = 2;
 	fileStream.open(fileNameSS.str());
-	fileStream << MaximumInspectionTest(varList[0], varList[1], 1, varList[2], 5000, zRes, znuRes, 24, true);
+	fileStream << MaximumInspectionTest(varList[0], varList[1], 1, varList[2], 5000, zRes, znuRes, phiRes, compMax);
 	fileStream.flush();
 	fileStream.close();
 	fileNameSS.str("");
@@ -101,7 +102,7 @@ namespace CRADLE{
 	std::cout << "Very High " << varNames[i] << std::endl;
 	fileNameSS << "pos" << varNames[i] << "_posB_vhi" << varNames[i]  << ".txt"; 
 	fileStream.open(fileNameSS.str());
-	fileStream << MaximumInspectionTest(varList[0], varList[1], 1, varList[2], 5000, zRes, znuRes, 24, true);
+	fileStream << MaximumInspectionTest(varList[0], varList[1], 1, varList[2], 5000, zRes, znuRes, phiRes, compMax);
 	fileStream.flush();
 	fileStream.close();
 	fileNameSS.str("");     
@@ -110,21 +111,21 @@ namespace CRADLE{
 	std::cout << "Low Energy" << std::endl; 
 	fileNameSS << "pos" << varNames[i] << "_negB_lowE.txt";
 	fileStream.open(fileNameSS.str());
-	fileStream << MaximumInspectionTest(varList[0], varList[1], -1, varList[2], 520, zRes, 24, true);
+	fileStream << MaximumInspectionTest(varList[0], varList[1], -1, varList[2], 520,  zRes, 24,  compMax);
 	fileStream.flush();
 	fileStream.close();
 	fileNameSS.str("");
 	std::cout << "High Energy" << std::endl;
 	fileNameSS << "pos" << varNames[i] << "_negB_hiE.txt"; 
 	fileStream.open(fileNameSS.str());
-	fileStream << MaximumInspectionTest(varList[0], varList[1], -1 , varList[2], 5000, zRes, 24, true);
+	fileStream << MaximumInspectionTest(varList[0], varList[1], -1 , varList[2], 5000, zRes, 24, compMax);
 	fileStream.flush();
 	fileStream.close();
 	fileNameSS.str("");     
       }
     }
 
-    void RunDoubleVarAAngCorrTest(){
+    void RunDoubleVarAAngCorrTest(bool compMax){
       std::ofstream fileStream;
       double varList[2];
       std::string varNames[2] = {"a","D"};
@@ -132,8 +133,8 @@ namespace CRADLE{
       for (int i = 0; i < 2; i++){
 	for (int j = 0; j < 2; j++)
 	  varList[j] = j == i ? 1 : 0;
-	int zeRes = i == 1 ? 1000 : 10;
-	int zRes = i == 1 ? 40 : 10;
+	int zeRes = i == 1 ? 1000 : 20;
+	int zRes = i == 1 ? 40 : 20;
 	int E = 100000; //very high, to make beta almost 1 
 	std::cout << "Non Zero " << varNames[i] << " and A" << std::endl;
 	double A_vals[5] = {0.1,0.5,1,2,5};
@@ -143,14 +144,14 @@ namespace CRADLE{
 	  std::cout << "A = +" << A << std::endl;  
 	  fileNameSS << "pos" << varNames[i] << "_" << A_names[j]  << "posA.txt";
 	  fileStream.open(fileNameSS.str());
-	  fileStream << MaximumInspectionTest(varList[0], A, 0, varList[1], E, zeRes, zRes, 24, true);
+	  fileStream << MaximumInspectionTest(varList[0], A, 0, varList[1], E, zeRes, zRes, 96, compMax);
 	  fileStream.flush();
 	  fileStream.close();
 	  fileNameSS.str("");
 	  std::cout << "A = -" << A << std::endl;  
 	  fileNameSS << "pos" << varNames[i] << "_" << A_names[j]  << "negA.txt";
 	  fileStream.open(fileNameSS.str());
-	  fileStream << MaximumInspectionTest(varList[0], -A, 0, varList[1], E, zeRes, zRes, 24, true);
+	  fileStream << MaximumInspectionTest(varList[0], -A, 0, varList[1], E, zeRes, zRes, 96, compMax);
 	  fileStream.flush();
 	  fileStream.close();
 	  fileNameSS.str("");
@@ -158,7 +159,7 @@ namespace CRADLE{
       }
     }
     
-    void RunDoubleVarDAngCorrTest(){
+    void RunDoubleVarDAngCorrTest(bool compMax){
       std::ofstream fileStream;
       std::stringstream fileNameSS;
       std::cout << "Non Zero a and D" << std::endl;
@@ -171,14 +172,14 @@ namespace CRADLE{
 	std::cout << "D = +" << D << std::endl;  
 	fileNameSS << "posa_" << D_names[j]  << "posD.txt";
 	fileStream.open(fileNameSS.str());
-	fileStream << MaximumInspectionTest(1, 0, 0, D, E, zRes, zRes, 96, true);
+	fileStream << MaximumInspectionTest(1, 0, 0, D, E, zRes, zRes, 96, compMax);
 	fileStream.flush();
 	fileStream.close();
 	fileNameSS.str("");
 	std::cout << "D = -" << D << std::endl;  
 	fileNameSS << "posa_" << D_names[j]  << "negD.txt";
 	fileStream.open(fileNameSS.str());
-	fileStream << MaximumInspectionTest(1, 0, 0, -D, E, zRes, zRes, 96, true);
+	fileStream << MaximumInspectionTest(1, 0, 0, -D, E, zRes, zRes, 96, compMax);
 	fileStream.flush();
 	fileStream.close();
 	fileNameSS.str("");

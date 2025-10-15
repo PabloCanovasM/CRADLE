@@ -87,7 +87,7 @@ namespace CRADLE{
 	RunDefaultVNRSamplingTest(varList[0], varList[1], 1, varList[2], 800, 300000, fileNameSS.str()); 
 	fileNameSS.str("");  
 	std::cout << "High Energy" << std::endl;
-	fileNameSS << "pos" << varNames[i] << "_posB_hiE.txt"; 
+	fileNameSS << "sample_pos" << varNames[i] << "_posB_hiE.txt"; 
 	RunDefaultVNRSamplingTest(varList[0], varList[1], 1, varList[2], 5000, 300000, fileNameSS.str());
 	fileNameSS.str("");
 	std::cout << "High " << varNames[i] << std::endl;
@@ -104,7 +104,7 @@ namespace CRADLE{
 	std::cout << "Positive " << varNames[i] << ", negative B" << std::endl;
 	std::cout << "Low Energy" << std::endl; 
 	fileNameSS << "sample_pos" << varNames[i] << "_negB_lowE.txt";
-	RunDefaultVNRSamplingTest(varList[0], varList[1], -1, varList[2], 5000, 300000, fileNameSS.str());
+	RunDefaultVNRSamplingTest(varList[0], varList[1], -1, varList[2], 520, 300000, fileNameSS.str());
 	fileNameSS.str("");
 	std::cout << "High Energy" << std::endl;
 	fileNameSS << "sample_pos" << varNames[i] << "_negB_hiE.txt"; 
@@ -128,11 +128,11 @@ namespace CRADLE{
 	for (int j = 0; j < 5; j++){
 	  double A = A_vals[j];
 	  std::cout << "A = +" << A << std::endl;  
-	  fileNameSS << "pos" << varNames[i] << "_" << A_names[j]  << "posA.txt";
+	  fileNameSS << "sample_pos" << varNames[i] << "_" << A_names[j]  << "posA.txt";
 	  RunDefaultVNRSamplingTest(varList[0], A, 0, varList[1], E, N, fileNameSS.str());
 	  fileNameSS.str("");
 	  std::cout << "A = -" << A << std::endl;  
-	  fileNameSS << "pos" << varNames[i] << "_" << A_names[j]  << "negA.txt";
+	  fileNameSS << "sample_pos" << varNames[i] << "_" << A_names[j]  << "negA.txt";
 	  RunDefaultVNRSamplingTest(varList[0], -A, 0, varList[1], E, N, fileNameSS.str());
 	  fileNameSS.str("");
 	}
@@ -149,11 +149,11 @@ namespace CRADLE{
       for (int j = 0; j < 5; j++){
 	double D = D_vals[j];
 	std::cout << "D = +" << D << std::endl;  
-	fileNameSS << "posa_" << D_names[j]  << "posD.txt";
+	fileNameSS << "sample_posa_" << D_names[j]  << "posD.txt";
 	RunDefaultVNRSamplingTest(1, 0, 0, D, E, N, fileNameSS.str());
 	fileNameSS.str("");
 	std::cout << "D = -" << D << std::endl;  
-	fileNameSS << "posa_" << D_names[j]  << "negD.txt";
+	fileNameSS << "sample_posa_" << D_names[j]  << "negD.txt";
 	RunDefaultVNRSamplingTest(1, 0, 0, -D, E, N, fileNameSS.str());
 	fileNameSS.str("");
       }
