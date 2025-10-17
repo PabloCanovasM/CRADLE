@@ -223,7 +223,7 @@ namespace utilities {
   }
 
   inline double CalculateFierz(std::complex<double> cs, std::complex<double> csp, std::complex<double> ct, std::complex<double> ctp, std::complex<double> cv, 
-    std::complex<double> cvp, std::complex<double> ca, std::complex<double> cap, double mf, double mgt, double a, double b, double Z, double betaType)
+    std::complex<double> cvp, std::complex<double> ca, std::complex<double> cap, double mf, double mgt, double a, double b, int Z, int betaType)
   {
     if (std::isnan(a) && std::isnan(b)){
     double gamma = std::sqrt(1. - std::pow(FINESTRUCTURE * Z, 2.));
@@ -245,7 +245,7 @@ namespace utilities {
   }
 
   inline double CalculateBetaNeutrinoAsymmetry(std::complex<double> cs, std::complex<double> csp, std::complex<double> ct, std::complex<double> ctp, std::complex<double> cv, 
-    std::complex<double> cvp, std::complex<double> ca, std::complex<double> cap, double mf, double mgt, double a, double b, double energy, double Z, double betaType)
+    std::complex<double> cvp, std::complex<double> ca, std::complex<double> cap, double mf, double mgt, double a, double b, double energy, int Z, int betaType)
   {
     if (std::isnan(a) && std::isnan(b)){
     double coulombCorr = FINESTRUCTURE*Z/std::sqrt(1-EMASSC2*EMASSC2/energy/energy);

@@ -186,7 +186,7 @@ namespace CRADLE{
       }
     }
 
-    void RunTripleVarAngCorrTest(){
+    void RunTripleVarAngCorrTest(bool compMax){
       std::ofstream fileStream;
       std::stringstream fileNameSS;
       std::cout << "Non Zero a, B, A" << std::endl;
@@ -200,7 +200,7 @@ namespace CRADLE{
 	  std::cout << "E = " << E << std::endl;
 	  fileNameSS << std::setprecision(2) << "AB_" << B << "_E_" << std::setprecision(4) << E <<".txt";
 	  fileStream.open(fileNameSS.str());
-	  fileStream << MaximumInspectionTest(a, A, B, 0, E, 20, 24, true);
+	  fileStream << MaximumInspectionTest(a, A, B, 0, E, 100, 12, compMax);
 	  fileStream.flush();
 	  fileStream.close();
 	  fileNameSS.str("");

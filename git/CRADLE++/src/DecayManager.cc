@@ -411,7 +411,7 @@ bool DecayManager::GenerateNucleus(string name, int Z, int A) {
              }
           }
 
-        double lambdaFactor = polarisation::lambdaJiJf_factor(j_in,j_f);
+        double lambdaFactor = polarisation::SmallLambdaJiJfFactor(j_in,j_f);
         std::cout << "lambda factor: " << lambdaFactor << std::endl;
 
         double* max_A = polarisation::MaximumA(CS, CSP, CT, CTP, CV, CVP, CA, CAP, mf, mgt, j_in, j_f, betaType, Z, Q);

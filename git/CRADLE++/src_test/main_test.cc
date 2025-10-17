@@ -12,11 +12,13 @@ namespace CRADLE{
     void RunLambdaTest();
     void RunCConstGamovTellerTest();
     void RunCConstMixedTest();
+    void RunCConst2FermiTest();
+    void RunCConst2GamovTellerTest();
     void RunSingleVarAngCorrTest();
     void RunDoubleVarBAngCorrTest(bool);
     void RunDoubleVarAAngCorrTest(bool);
     void RunDoubleVarDAngCorrTest(bool);
-    void RunTripleVarAngCorrTest();
+    void RunTripleVarAngCorrTest(bool);
     void RunDefaultVNRSamplingTest(double, double, double, double, double, int, std::string);
     void RunDoubleVarBVNRSamplingTest();
     void RunDoubleVarAVNRSamplingTest();
@@ -47,7 +49,8 @@ int main(int argc, char **argv) {
       std::cout << "Lambda Test -> lambda" << std::endl;
       std::cout << "\n--------------------------------------------------\n" << std::endl;
       std::cout << "Coupling Constant Test -> c_const" << std::endl;
-      std::cout << "-p gt for Gamov-Teller, -p  m for Mixed" << std::endl;
+      std::cout << "-p gt for Gamov-Teller ABD, -p  m for Mixed ABD" << std::endl;
+      std::cout << "-p gt2 for Gamov-Teller abc, -p f2 for Fermi abc" << std::endl;
       std::cout << "\n--------------------------------------------------\n" << std::endl;
       std::cout << "Angular Correlation Factor Test -> ang_corr_factor" << std::endl;
       std::cout << "Parameters:\n";
@@ -55,8 +58,8 @@ int main(int argc, char **argv) {
       std::cout << "-p 2 for 2 variable test, non-zero B and other;\n";
       std::cout << "-p 3 for 2 variable test, non-zero A and one of a or D;\n";
       std::cout << "-p 4 for 2 variable test, non-zero D and a;\n";
-      std::cout << "-p <20|30|40> performs above tests but no maximum computed\n";
       std::cout << "-p 5 for triple aAB test" << std::endl;
+      std::cout << "-p <20|30|40|50> performs above tests but no maximum computed\n";
       std::cout << "\n--------------------------------------------------\n";
       std::cout << "Von Neumann Rejection Sampling -> sampling" << std::endl;
       std::cout << "Syntax: Test sampling -a <a> -A <A> -B <B> -D <D> -E <E> -N <n-decays> -o <output-file> -p <premade-test>" << std::endl;
@@ -90,6 +93,8 @@ int main(int argc, char **argv) {
   bool lambda_test = false;
   bool double_cte_gt_test = false;
   bool double_cte_mixed_test = false;
+  bool double_cte2_gt_test = false;
+  bool double_cte2_f_test = false;
   bool single_var_ang_corr_test = false;
   bool double_var_B_ang_corr_test = false;
   bool double_var_A_ang_corr_test = false;
@@ -102,6 +107,8 @@ int main(int argc, char **argv) {
   else if (testName == "c_const"){
     if (genParam == "gt") double_cte_gt_test = true;
     else if (genParam == "m") double_cte_mixed_test = true;
+    else if (genParam == "f2") double_cte2_f_test = true;
+    else if (genParam == "gt2") double_cte2_gt_test = true;
     else{
       std::cout << "Parameter does not match keyword of any test" << std::endl;
       return 0;
@@ -137,6 +144,10 @@ int main(int argc, char **argv) {
     case 5:
       triple_var_aAB_ang_corr_test = true;
       break;
+    case 50:
+      triple_var_aAB_ang_corr_test = true;
+      show_maximum = false;
+      break;
     default:
       std::cout << "Parameter does not match id of any test" << std::endl;
       return 0;
@@ -162,6 +173,14 @@ int main(int argc, char **argv) {
     CRADLE::test::RunCConstMixedTest();
   }
 
+  if (double_cte2_gt_test){
+    CRADLE::test::RunCConst2GamovTellerTest();
+  }
+
+  if (double_cte2_f_test){
+    CRADLE::test::RunCConst2FermiTest();
+  }
+
   if (single_var_ang_corr_test){
     CRADLE::test::RunSingleVarAngCorrTest();
   }
@@ -179,7 +198,7 @@ int main(int argc, char **argv) {
   }
 
   if (triple_var_aAB_ang_corr_test){
-    CRADLE::test::RunTripleVarAngCorrTest();
+    CRADLE::test::RunTripleVarAngCorrTest(show_maximum);
   }
 
   if (vonNeumann_reject_sampling_test){
