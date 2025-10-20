@@ -47,6 +47,8 @@ struct BetaDecay {
   double PolarisationX=0;
   double PolarisationY=0;
   double PolarisationZ=0;
+  double PolarisationMag=0;
+  double Alignment=0;
   bool RadiativeCorrection = true ;
   double OmegaValue = 0.001 ;
   bool ElectronCapture = true ;

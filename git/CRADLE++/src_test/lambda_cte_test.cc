@@ -137,7 +137,7 @@ namespace CRADLE{
       }
 
       double b = utilities::CalculateFierz(cConst[0], cConst[1], cConst[2], cConst[3], cConst[4], cConst[5], cConst[6], cConst[7], mf, mgt, std::nan(""), std::nan(""), Z, betaType);
-
+      double xi_test = utilities::CalculateXiBetaDecay(cConst[0], cConst[1], cConst[2], cConst[3], cConst[4], cConst[5], cConst[6], cConst[7], mf, mgt);
       //To deal with single variable terms, set 1 term to 1, the rest 0.
 
       for (int i = 0; i < 8; i++){
@@ -145,14 +145,18 @@ namespace CRADLE{
 	(cConst + i)->real(i == c_const1 ? 1 : 0);
       }
       double E = utilities::EMASSC2 + 0.1; /*not relevant, term prop to coulomb corr = 0*/
-      double a_singlei = utilities::CalculateBetaNeutrinoAsymmetry(cConst[0], cConst[1], cConst[2], cConst[3], cConst[4], cConst[5], cConst[6], cConst[7], mf, mgt, std::nan(""), std::nan(""), E, Z, betaType)/2;
-      double c_singlei = polarisation::CalculateAlignmentCorrelation(cConst[2], cConst[3], cConst[6], cConst[7], mf, mgt, j_in, j_f, betaType, Z, E, j_in*j_in /*maximum alignment*/)/2;
+      double a_singlei = utilities::CalculateBetaNeutrinoAsymmetry(cConst[0], cConst[1], cConst[2], cConst[3], cConst[4], cConst[5], cConst[6], cConst[7], mf, mgt, std::nan(""), std::nan(""), E, Z, betaType)/xi_test;
+      if (std::isnan(a_singlei)) a_singlei = 0;
+      double c_singlei = polarisation::CalculateAlignmentCorrelation(cConst[2], cConst[3], cConst[6], cConst[7], mf, mgt, j_in, j_f, betaType, Z, E, j_in*j_in /*maximum alignment*/)/xi_test;
+      if (std::isnan(c_singlei)) c_singlei = 0;
       for (int i = 0; i < 8; i++){
 	(cConst + i)->imag(0);
 	(cConst + i)->real(i == c_const2 ? 1 : 0);
       }
-      double a_singlej = utilities::CalculateBetaNeutrinoAsymmetry(cConst[0], cConst[1], cConst[2], cConst[3], cConst[4], cConst[5], cConst[6], cConst[7], mf, mgt, std::nan(""), std::nan(""), E, Z, betaType)/2;
-      double c_singlej = polarisation::CalculateAlignmentCorrelation(cConst[2], cConst[3], cConst[6], cConst[7], mf, mgt, j_in, j_f, betaType, Z, E, j_in*j_in /*maximum alignment*/)/2;
+      double a_singlej = utilities::CalculateBetaNeutrinoAsymmetry(cConst[0], cConst[1], cConst[2], cConst[3], cConst[4], cConst[5], cConst[6], cConst[7], mf, mgt, std::nan(""), std::nan(""), E, Z, betaType)/xi_test;
+      if (std::isnan(a_singlej)) a_singlej = 0;
+      double c_singlej = polarisation::CalculateAlignmentCorrelation(cConst[2], cConst[3], cConst[6], cConst[7], mf, mgt, j_in, j_f, betaType, Z, E, j_in*j_in /*maximum alignment*/)/xi_test;
+      if (std::isnan(c_singlej)) c_singlej = 0;
       
       std::cout << "\tConstant a: " << (changea ? "No" : "Yes") << std::endl;
       std::cout << "\tConstant c: " << (changec ? "No" : "Yes") << std::endl;

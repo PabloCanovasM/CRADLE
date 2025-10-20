@@ -64,9 +64,11 @@ namespace CRADLE {
   void SetBetaDecayOptions (CLI::App& app, BetaDecay& betaDecay) {
     CLI::App* comp = app.add_subcommand("BetaDecay", "This is the beta decay subcommand")->ignore_case();
     comp->add_option("--FermiFunction", betaDecay.FermiFunction, "");
-    comp->add_option("--PolarisationX", betaDecay.PolarisationX, "");
-    comp->add_option("--PolarisationY", betaDecay.PolarisationY, "");
-    comp->add_option("--PolarisationZ", betaDecay.PolarisationZ, "");
+    comp->add_option("--PolarisationX", betaDecay.PolarisationX, "X component of polarisation direction"); 
+    comp->add_option("--PolarisationY", betaDecay.PolarisationY, "Y component of polarisation direction");
+    comp->add_option("--PolarisationZ", betaDecay.PolarisationZ, "Z component of polarisation direction");
+    comp->add_option("--PolarisationMag", betaDecay.PolarisationMag, "Magnitude of polarisation. Previous 3 options provide the direction");
+    comp->add_option("--Alignment",betaDecay.Alignment,"Value of <(J*j)^2>");
     comp->add_option("-r, --radiativecorrection", betaDecay.RadiativeCorrection, "Radiative Correction");
     comp->add_option("--Cs", betaDecay.OmegaValue, "Cs value");
     comp->add_option("-E, --electroncapture", betaDecay.ElectronCapture, "Electron Capture");

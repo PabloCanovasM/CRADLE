@@ -249,8 +249,8 @@ namespace utilities {
   {
     if (std::isnan(a) && std::isnan(b)){
     double coulombCorr = FINESTRUCTURE*Z/std::sqrt(1-EMASSC2*EMASSC2/energy/energy);
-    double a = mf*mf*(-norm(cs)-norm(csp)+norm(cv)+norm(cvp)-betaType*2.*(cs*conj(cv)+csp*conj(cvp)).imag())+
-              mgt*mgt/3.*(-norm(ca)-norm(cap)+norm(ct)+norm(ctp)+betaType*2.*(ct*conj(ca)+ctp*conj(cap)).imag());
+    double a = mf*mf*(-norm(cs)-norm(csp)+norm(cv)+norm(cvp)-betaType*coulombCorr*2.*(cs*conj(cv)+csp*conj(cvp)).imag())+
+              mgt*mgt/3.*(-norm(ca)-norm(cap)+norm(ct)+norm(ctp)+betaType*coulombCorr*2.*(ct*conj(ca)+ctp*conj(cap)).imag());
     return a/CalculateXiBetaDecay(cs, csp, ct, ctp, cv, cvp, ca, cap, mf, mgt);
   }
     else {
