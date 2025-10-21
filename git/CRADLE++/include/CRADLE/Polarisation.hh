@@ -245,7 +245,7 @@ namespace polarisation {
 }
 
   inline double CalculateAngularCorrelationFactor(double a, double b, double c, double A, double B, double D, double E, vector<double> elDir, vector<double> enuDir, vector<double> polDir){
-    /*Computation of the angular dependent factor (ie proportional to xi) in formula 1 from the Jackson 1957 paper referenced above. Includes b and c term, noting c already accounts for the J dependent factor. Here starting from vectors themselves, so j isn't bound to j axis*/
+    /*Computation of the angular dependent factor (ie proportional to xi) in formula 1 from the Jackson 1957 paper referenced above. Includes b and c term, noting c already accounts for the J dependent factor. Here starting from vectors themselves, so j isn't bound to z axis*/
 
     double beta_e = std::sqrt(1-EMASSC2*EMASSC2/E/E); // p_e/E_e; p_nu/E_nu = 1
     
@@ -279,15 +279,18 @@ namespace polarisation {
     return maxAngCorrFactor;
   }
 
-  inline double MaximumAngCorrFactor(double a, double b, double c, double A, double B, double D, double E, double J){                     
+  inline double MaximumF(double a, double A, double B, double K, double znu){
+    return std::sqrt((a*a-K*K)*znu*znu+K*K+A*A+2*a*A*znu)+B*znu;
+  }
+
+  inline double AnalyticalMaximumAngCorrFactor(double a, double b, double c, double A, double B, double D, double E){                     
     /*Search of the maximum value analitically*/
     double beta = std::sqrt(1-EMASSC2*EMASSC2/E/E);
-    //scale a, c, A and D by beta; and A, B and D by J. Note is meant to contain the alignment-dependent factor already
+    //scale a, c, A and D by beta; Note that c is meant to contain the alignment-dependent factor already
     a *= beta;
     c *= beta;
-    A *= beta*J;
-    D *= beta*J;
-    B *= J;
+    A *= beta;
+    D *= beta;
 
     double K = std::sqrt(D*D+(a+c/3)*(a+c/3));
     double a_st = a-2.*c/3;
@@ -301,35 +304,102 @@ namespace polarisation {
     vector<double> F_cand(4, 0);
     double F_max;
     //computing the values at the extrema of the interval
-    F_cand(0) = std::sqrt(A*A+a_st*a_st+2*a_st*A)+B;
-    F_cand(1) = std::sqrt(A*A+a_st*a_st-2*a_st*A)-B;
+    F_cand(0) = MaximumF(a_st, A, B, K, 1);
+    F_cand(1) = MaximumF(a_st, A, B, K, -1);
 
     if (A_m == 0) {
       znu_m = -C_m/B_m;
       if ((znu_m > -1) && (znu_m < 1)) {
-	F_cand(2) = std::sqrt((a_st*a_st-K*K)*znu_m*znu_m+K*K+A*A+2*a_st*A*znu_m)+B*znu_m;
+	F_cand(2) = MaximumF(a_st, A, B, K, znu_m);
       }
     }else{
       double det = B_m*B_m - 4*A_m*C_m;
       if (det > 0){
 	znu_m = (-B_m+std::sqrt(det))/2/A_m;
 	if ((znu_m > -1) && (znu_m < 1)) {
-	  F_cand(2) = std::sqrt((a_st*a_st-K*K)*znu_m*znu_m+K*K+A*A+2*a_st*A*znu_m)+B*znu_m;
+	  F_cand(2) = MaximumF(a_st, A, B, K, znu_m);
 	} 
 	znu_m2 = (-B_m-std::sqrt(det))/2/A_m;
 	if ((znu_m2 > -1) && (znu_m2 < 1)) {
-	  F_cand(3) = std::sqrt((a_st*a_st-K*K)*znu_m2*znu_m2+K*K+A*A+2*a_st*A*znu_m2)+B*znu_m2;
+	  F_cand(3) = MaximumF(a_st, A, B, K, znu_m2);
 	}
       }
     }
-
+    
     F_max = norm_inf(F_cand);
     F_max += 1 + b*EMASSC2/E; //adding the constant terms
     return F_max;
   }
   
-  vector<double> MaximumAngCorrFactorPos(double a, double b, double c, double A, double B, double D, double E){
+  inline vector<double> MaximumAngCorrFactorPos(double a, double b, double c, double A, double B, double D, double E){
     /*Search of the position of the maximum analitically*/
+    double beta = std::sqrt(1-EMASSC2*EMASSC2/E/E);
+    //scale a, c, A and D by beta; and A, B and D by J. Note is meant to contain the alignment-dependent factor already
+    a *= beta;
+    c *= beta;
+    A *= beta;
+    D *= beta;
+      
+    vector<double> max_pos(3);
+
+    double K = std::sqrt(D*D+(a+c/3)*(a+c/3));
+    double a_st = a-2.*c/3;
+
+    max_pos(2) = std::atan2(D,a+c/3); //phi
+
+    //F_max = max(sqrt((a_st*u+A)**2+K**2*(1-u**2))+B*u)
+
+    double A_m = (a_st*a_st-K*K)*(a_st*a_st-K*K-B*B);
+    double B_m = 2*a_st*A*(a_st*a_st-K*K-B*B);
+    double C_m = a_st*a_st*A*A-A*A*B*B-B*B*K*K;
+    double znu_m, znu_m2; //candidates for maximum
+    vector<double> F_cand(4, 0);
+    double F_max;
+    //computing the values at the extrema of the interval
+    F_cand(0) = MaximumF(a_st, A, B, K, 1);
+    F_cand(1) = MaximumF(a_st, A, B, K, -1);
+
+    if (A_m == 0) {
+      znu_m = -C_m/B_m;
+      if ((znu_m > -1) && (znu_m < 1)) {
+	F_cand(2) = MaximumF(a_st, A, B, K, znu_m);
+      }
+    }else{
+      double det = B_m*B_m - 4*A_m*C_m;
+      if (det > 0){
+	znu_m = (-B_m+std::sqrt(det))/2/A_m;
+	if ((znu_m > -1) && (znu_m < 1)) {
+	  F_cand(2) = MaximumF(a_st, A, B, K, znu_m);
+	} 
+	znu_m2 = (-B_m-std::sqrt(det))/2/A_m;
+	if ((znu_m2 > -1) && (znu_m2 < 1)) {
+	  F_cand(3) = MaximumF(a_st, A, B, K, znu_m2);
+	}
+      }
+    }
+
+    std::cout << znu_m << ", " <<  znu_m2 << std::endl;
+
+    int indexMax = index_norm_inf(F_cand);
+    switch (indexMax){
+    case 0:
+      max_pos(1) = 1; //znu
+      max_pos(0) = std::copysign(1.,A + a_st); //ze
+      break;
+    case 1:
+      max_pos(1) = -1;
+      max_pos(0) = std::copysign(1.,A - a_st);
+      break;
+    case 2:
+      max_pos(1) = znu_m;
+      max_pos(0) = (a_st*znu_m+A)/(MaximumF(a_st,A,0,K,znu_m));
+      break;
+    case 3:
+      max_pos(1) = znu_m2;
+      max_pos(0) = (a_st*znu_m+A)/(MaximumF(a_st,A,0,K,znu_m2));
+      break;
+    }
+    return max_pos;
   }
   
 }//closing polarisation namespace

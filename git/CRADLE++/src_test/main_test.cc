@@ -15,14 +15,16 @@ namespace CRADLE{
     void RunCConst2FermiTest();
     void RunCConst2GamovTellerTest();
     void RunSingleVarAngCorrTest();
-    void RunDoubleVarBAngCorrTest(bool);
-    void RunDoubleVarAAngCorrTest(bool);
-    void RunDoubleVarDAngCorrTest(bool);
-    void RunTripleVarAngCorrTest(bool);
-    void RunDefaultVNRSamplingTest(double, double, double, double, double, int, std::string);
+    void RunDoubleVarBAngCorrTest(int);
+    void RunDoubleVarAAngCorrTest(int);
+    void RunDoubleVarcAngCorrTest(int);
+    void RunDoubleVarDAngCorrTest(int);
+    void RunTripleVarAngCorrTest(int);
+    void RunDefaultVNRSamplingTest(double, double, double, double, double, double, double, int, std::string);
     void RunDoubleVarBVNRSamplingTest();
     void RunDoubleVarAVNRSamplingTest();
     void RunDoubleVarDVNRSamplingTest();
+    void RunDoubleVarcVNRSamplingTest();
   }
 }
 
@@ -34,6 +36,8 @@ int main(int argc, char **argv) {
 
   std::string ofile;
   double a = 0;
+  double b = 0;
+  double c = 0;
   double A = 0;
   double B = 0;
   double D = 0;
@@ -58,21 +62,28 @@ int main(int argc, char **argv) {
       std::cout << "-p 2 for 2 variable test, non-zero B and other;\n";
       std::cout << "-p 3 for 2 variable test, non-zero A and one of a or D;\n";
       std::cout << "-p 4 for 2 variable test, non-zero D and a;\n";
-      std::cout << "-p 5 for triple aAB test" << std::endl;
-      std::cout << "-p <20|30|40|50> performs above tests but no maximum computed\n";
+      std::cout << "-p 5 for 2 variable test, non-zero c and one of a, A or D;\n";
+      std::cout << "-p 6 for triple aAB test" << std::endl;
+      std::cout << "-p <20|30|40|60> gives maximum computed with grid search\n";
+      std::cout << "-p <21|31|41|51|61> gives maximum computed analytically\n";
       std::cout << "\n--------------------------------------------------\n";
       std::cout << "Von Neumann Rejection Sampling -> sampling" << std::endl;
-      std::cout << "Syntax: Test sampling -a <a> -A <A> -B <B> -D <D> -E <E> -N <n-decays> -o <output-file> -p <premade-test>" << std::endl;
+      std::cout << "Syntax: Test sampling -a <a> -b <b> -c <c> -A <A> -B <B> -D <D> -E <E> -N <n-decays> -o <output-file> -p <premade-test>" << std::endl;
       std::cout << "Premade Test:\n";
       std::cout << "-p 1 for 2 variable test, non-zero B and other;\n";
-      std::cout << "-p 2 for 2 variable test, non-zero A and one of a or D;\n";
-      std::cout << "-p 3 for 2 variable test, non-zero D and a;\n";
+      std::cout << "-p 2 for 2 variable test, non-zero c and one of a, A or D;\n";
+      std::cout << "-p 3 for 2 variable test, non-zero A and one of a or D;\n";
+      std::cout << "-p 4 for 2 variable test, non-zero D and a;\n";
       return 0;
     }
     if (testName == "sampling"){
 
        if (*i == "-a")
 	 a = std::stod(*(++i));
+       else if (*i == "-b")
+	 b = std::stod(*(++i));
+       else if (*i == "-c")
+	 c = std::stod(*(++i));
        else if (*i == "-A")
 	 A = std::stod(*(++i));
        else if (*i == "-B")
@@ -99,8 +110,9 @@ int main(int argc, char **argv) {
   bool double_var_B_ang_corr_test = false;
   bool double_var_A_ang_corr_test = false;
   bool double_var_D_ang_corr_test = false;
+  bool double_var_c_ang_corr_test = false;
   bool triple_var_aAB_ang_corr_test = false;
-  bool show_maximum = true;
+  int show_maximum = 0;
   bool vonNeumann_reject_sampling_test = false;
 
   if (testName == "lambda") lambda_test = true;
@@ -125,28 +137,51 @@ int main(int argc, char **argv) {
       break;
     case 20:
       double_var_B_ang_corr_test = true;
-      show_maximum = false;
+      show_maximum = 1;
+      break;
+    case 21:
+      double_var_B_ang_corr_test = true;
+      show_maximum = 2;
       break;
     case 3:
       double_var_A_ang_corr_test = true;
       break;
     case 30:
       double_var_A_ang_corr_test = true;
-      show_maximum = false;
+      show_maximum = 1;
+      break;
+    case 31:
+      double_var_A_ang_corr_test = true;
+      show_maximum = 2;
       break;
     case 4:
       double_var_D_ang_corr_test = true;
       break;
     case 40:
       double_var_D_ang_corr_test = true;
-      show_maximum = false;
+      show_maximum = 1;
+      break;
+    case 41:
+      double_var_D_ang_corr_test = true;
+      show_maximum = 2;
       break;
     case 5:
+      double_var_c_ang_corr_test = true;
+      break;
+    case 51:
+      double_var_c_ang_corr_test = true;
+      show_maximum = 2;
+      break;
+    case 6:
       triple_var_aAB_ang_corr_test = true;
       break;
-    case 50:
+    case 60:
       triple_var_aAB_ang_corr_test = true;
-      show_maximum = false;
+      show_maximum = 1;
+      break;
+    case 61:
+      triple_var_aAB_ang_corr_test = true;
+      show_maximum = 2;
       break;
     default:
       std::cout << "Parameter does not match id of any test" << std::endl;
@@ -201,10 +236,14 @@ int main(int argc, char **argv) {
     CRADLE::test::RunTripleVarAngCorrTest(show_maximum);
   }
 
+  if (double_var_c_ang_corr_test){
+    CRADLE::test::RunDoubleVarcAngCorrTest(show_maximum);
+  }
+
   if (vonNeumann_reject_sampling_test){
     if (genParam.empty()){
-      std::cout << "a = " << a << "\nA = " << A << "\nB = " << B << "\nD = " << D << "\nE = " << E << "\nNumber of decays = " << nDecays << std::endl;
-      CRADLE::test::RunDefaultVNRSamplingTest(a, A, B, D, E, nDecays, oFile);
+      std::cout << "a = " << a << "\nb = " << b << "\nc = " << c << "\nA = " << A << "\nB = " << B << "\nD = " << D << "\nE = " << E << "\nNumber of decays = " << nDecays << std::endl;
+      CRADLE::test::RunDefaultVNRSamplingTest(a, b, c, A, B, D, E, nDecays, oFile);
       std::cout << "Results saved in " << oFile << std::endl; 
     } else {
       int param_id = std::stoi(genParam);
@@ -213,9 +252,12 @@ int main(int argc, char **argv) {
 	CRADLE::test::RunDoubleVarBVNRSamplingTest();
 	break;
       case 2:
-	CRADLE::test::RunDoubleVarAVNRSamplingTest();
+	CRADLE::test::RunDoubleVarcVNRSamplingTest();
 	break;
        case 3:
+	CRADLE::test::RunDoubleVarAVNRSamplingTest();
+	break;
+      case 4:
 	CRADLE::test::RunDoubleVarDVNRSamplingTest();
 	break;
       default:
