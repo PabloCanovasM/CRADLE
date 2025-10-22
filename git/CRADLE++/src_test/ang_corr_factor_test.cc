@@ -45,6 +45,8 @@ namespace CRADLE{
       return MaximumInspectionTest(a,c,A,B,D,E,zRes,zRes,phiRes,giveMaximum);      
     }
 
+    
+
     void RunSingleVarAngCorrTest(){
       std::ofstream fileStream;
       double varList[5];
@@ -61,6 +63,11 @@ namespace CRADLE{
 	fileStream.close();
 	fileNameSS.str("");
       }
+      std::cout << "Negative c" << std::endl;  
+      fileStream.open("c_simple_neg.txt");
+      fileStream << MaximumInspectionTest(0, -1, 0, 0, 0, 5000, 10, 24, 0);
+      fileStream.flush();
+      fileStream.close();
     }
 
     void RunDoubleVarBAngCorrTest(int compMax){
@@ -247,6 +254,52 @@ namespace CRADLE{
 	}
       }
     }
+    
+    void RunMaximumAngCorrTest(){
+      std::string varNames[5] = {"a","c","A","B","D"};
+      double varList[5];
+      std::ofstream fileStream;
+      std::stringstream fileNameSS;
+      double E = 100000;
+      for (int i = 0; i < 5; i++){
+	for (int j = 0; j < 5; j++) varList[j] = i == j ? 1 : 0; //setting rest of vars to 0 except the first variable of the test
+	std::cout << "Non-Zero element: " << varNames[i] << std::endl;
+	fileNameSS << varNames[i] << "_maxF_test.txt" ;
+	fileStream.open(fileNameSS.str());
+	for (int val = -10; val < 11; val += 1){
+	  varList[i] = val/10.; 
+	  double maxF = polarisation::AnalyticalMaximumAngCorrFactor(varList[0], 0, varList[1], varList[2], varList[3], varList[4], E);
+	  ublas::vector<double> maxpos = polarisation::MaximumAngCorrFactorPos(varList[0], 0, varList[1], varList[2], varList[3], varList[4], E);
+	  fileStream << std::fixed << std::setprecision(4) << varList[i] << "\t" <<  maxF;
+	  for (double ang : maxpos) fileStream << "\t" << ang;
+	  fileStream << "\n";
+        }
+	fileStream.flush();
+	fileStream.close();
+	fileNameSS.str("");
+	varList[i] = 1; //reset first var for 2 var tests. 
+	for (int j = i+1; j < 5; j++){
+	  std::cout << "Non-Zero elements: " << varNames[i] << " and " << varNames[j] << std::endl;
+	  fileNameSS << varNames[i] << varNames[j] << "_maxF_test.txt" ;
+	  fileStream.open(fileNameSS.str());
+	  for (int ratio = -30; ratio < 31; ratio++){
+	    if (ratio == 0) continue;
+	    varList[j] = ratio/10.;
+	    double maxF = polarisation::AnalyticalMaximumAngCorrFactor(varList[0], 0, varList[1], varList[2], varList[3], varList[4], E);
+	    ublas::vector<double> maxpos = polarisation::MaximumAngCorrFactorPos(varList[0], 0, varList[1], varList[2], varList[3], varList[4], E);
+	    fileStream << std::fixed << std::setprecision(4) << varList[j] << "\t" <<  maxF;
+	    for (double ang : maxpos){
+	      fileStream << "\t" << ang;
+	    }
+	    fileStream << "\n";
+	  }
+	  fileStream.flush();
+	  fileStream.close();
+	  fileNameSS.str("");
+	  varList[j] = 0; //reset
+	}
+      }
+    } 
     
   }//end of test namespace
 }

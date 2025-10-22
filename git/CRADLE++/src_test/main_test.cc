@@ -20,6 +20,7 @@ namespace CRADLE{
     void RunDoubleVarcAngCorrTest(int);
     void RunDoubleVarDAngCorrTest(int);
     void RunTripleVarAngCorrTest(int);
+    void RunMaximumAngCorrTest();
     void RunDefaultVNRSamplingTest(double, double, double, double, double, double, double, int, std::string);
     void RunDoubleVarBVNRSamplingTest();
     void RunDoubleVarAVNRSamplingTest();
@@ -51,11 +52,11 @@ int main(int argc, char **argv) {
     if (*i == "-h" || *i == "--help") {
       std::cout << "Syntax: Test <name-of-test> -p <general-param>" << std::endl;
       std::cout << "Lambda Test -> lambda" << std::endl;
-      std::cout << "\n--------------------------------------------------\n" << std::endl;
+      std::cout << "--------------------------------------------------" << std::endl;
       std::cout << "Coupling Constant Test -> c_const" << std::endl;
       std::cout << "-p gt for Gamov-Teller ABD, -p  m for Mixed ABD" << std::endl;
       std::cout << "-p gt2 for Gamov-Teller abc, -p f2 for Fermi abc" << std::endl;
-      std::cout << "\n--------------------------------------------------\n" << std::endl;
+      std::cout << "--------------------------------------------------" << std::endl;
       std::cout << "Angular Correlation Factor Test -> ang_corr_factor" << std::endl;
       std::cout << "Parameters:\n";
       std::cout << "-p 1 for 1 variable test\n";
@@ -63,17 +64,19 @@ int main(int argc, char **argv) {
       std::cout << "-p 3 for 2 variable test, non-zero A and one of a or D;\n";
       std::cout << "-p 4 for 2 variable test, non-zero D and a;\n";
       std::cout << "-p 5 for 2 variable test, non-zero c and one of a, A or D;\n";
-      std::cout << "-p 6 for triple aAB test" << std::endl;
+      std::cout << "-p 6 for triple aAB test\n";
       std::cout << "-p <20|30|40|60> gives maximum computed with grid search\n";
-      std::cout << "-p <21|31|41|51|61> gives maximum computed analytically\n";
-      std::cout << "\n--------------------------------------------------\n";
+      std::cout << "-p <21|31|41|51|61> gives maximum computed analytically" << std::endl;
+      std::cout << "--------------------------------------------------" << std::endl;
+      std::cout << "Maximum Angular Correlation -> max_f" << std::endl;
+      std::cout << "--------------------------------------------------" << std::endl;
       std::cout << "Von Neumann Rejection Sampling -> sampling" << std::endl;
       std::cout << "Syntax: Test sampling -a <a> -b <b> -c <c> -A <A> -B <B> -D <D> -E <E> -N <n-decays> -o <output-file> -p <premade-test>" << std::endl;
       std::cout << "Premade Test:\n";
       std::cout << "-p 1 for 2 variable test, non-zero B and other;\n";
       std::cout << "-p 2 for 2 variable test, non-zero c and one of a, A or D;\n";
       std::cout << "-p 3 for 2 variable test, non-zero A and one of a or D;\n";
-      std::cout << "-p 4 for 2 variable test, non-zero D and a;\n";
+      std::cout << "-p 4 for 2 variable test, non-zero D and a" << std::endl;
       return 0;
     }
     if (testName == "sampling"){
@@ -112,10 +115,12 @@ int main(int argc, char **argv) {
   bool double_var_D_ang_corr_test = false;
   bool double_var_c_ang_corr_test = false;
   bool triple_var_aAB_ang_corr_test = false;
+  bool maximum_ang_coor_factor_test = false;
   int show_maximum = 0;
   bool vonNeumann_reject_sampling_test = false;
 
   if (testName == "lambda") lambda_test = true;
+  else if (testName == "max_f") maximum_ang_coor_factor_test = true;
   else if (testName == "c_const"){
     if (genParam == "gt") double_cte_gt_test = true;
     else if (genParam == "m") double_cte_mixed_test = true;
@@ -238,6 +243,10 @@ int main(int argc, char **argv) {
 
   if (double_var_c_ang_corr_test){
     CRADLE::test::RunDoubleVarcAngCorrTest(show_maximum);
+  }
+
+  if (maximum_ang_coor_factor_test){
+    CRADLE::test::RunMaximumAngCorrTest();
   }
 
   if (vonNeumann_reject_sampling_test){

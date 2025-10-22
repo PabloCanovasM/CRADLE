@@ -50,7 +50,9 @@ namespace CRADLE{
       //compute the maximum of Angular Correlation Factor = F_max once
       std::ofstream fileStream;
       double F_max = polarisation::AnalyticalMaximumAngCorrFactor(a, b, c, A, B, D, E);
-
+      std::cout << F_max << std::endl;
+      ublas::vector<double> pos = polarisation::MaximumAngCorrFactorPos(a, b, c, A, B, D, E); 
+      std::cout << pos(0) << ", " << pos(1) << ", " << pos(2) << std::endl;
       fileStream.open(fileName);
       int logRate = nDecays/20;
       for(int count = 0; count < nDecays; count++){
@@ -123,11 +125,11 @@ namespace CRADLE{
 	for (int j = 0; j < 5; j++){
 	  double c = c_vals[j];
 	  std::cout << "c = +" << c << std::endl;  
-	  fileNameSS << "sample_pos" << varNames[i] << "_" << c_names[j]  << "posA.txt";
+	  fileNameSS << "sample_pos" << varNames[i] << "_" << c_names[j]  << "posc.txt";
 	  RunDefaultVNRSamplingTest(varList[0], 0, c, varList[1], 0, varList[2], E, N, fileNameSS.str());
 	  fileNameSS.str("");
 	  std::cout << "c = -" << c << std::endl;  
-	  fileNameSS << "sample_pos" << varNames[i] << "_" << c_names[j]  << "negA.txt";
+	  fileNameSS << "sample_pos" << varNames[i] << "_" << c_names[j]  << "negc.txt";
 	  RunDefaultVNRSamplingTest(varList[0], 0, -c, varList[1], 0, varList[2], E, N, fileNameSS.str());
 	  fileNameSS.str("");
 	}
