@@ -123,10 +123,10 @@ namespace polarisation {
       return 0;
   }
 
-  inline double CalculateAlignmentCorrelation(std::complex<double> ct, std::complex<double> ctp, std::complex<double> ca, std::complex<double> cap, double mf, double mgt, double j_i, double j_f, int betaType, int Z, double energy, double align /*<(J*j)^2>*/){
+  inline double CalculateAlignmentCorrelation(std::complex<double> cs, std::complex<double> csp, std::complex<double> ct, std::complex<double> ctp, std::complex<double> cv, std::complex<double> cvp, std::complex<double> ca, std::complex<double> cap, double mf, double mgt, double j_i, double j_f, int betaType, int Z, double energy, double align /*<(J*j)^2>*/){
     double coulombCorr = FINESTRUCTURE*Z/std::sqrt(energy*energy/EMASSC2/EMASSC2-1);
     double c = mgt*mgt*BigLambdaJiJfFactor(j_i,j_f)*(norm(ct)+norm(ctp)-norm(ca)-norm(cap)+2*betaType*coulombCorr*(ct*conj(ca)+ctp*conj(cap)).imag());
-    return c*AlignmentFactor(j_i,align)/utilities::CalculateXiBetaDecay(0, 0, ct, ctp, 0, 0, ca, cap, mf, mgt);
+    return c*AlignmentFactor(j_i,align)/utilities::CalculateXiBetaDecay(cs, csp, ct, ctp, cv, cvp, ca, cap, mf, mgt);
   }
   
 
@@ -245,7 +245,7 @@ namespace polarisation {
 }
 
   inline double CalculateAngularCorrelationFactor(double a, double b, double c, double A, double B, double D, double E, vector<double> elDir, vector<double> enuDir, vector<double> polDir){
-    /*Computation of the angular dependent factor (ie proportional to xi) in formula 1 from the Jackson 1957 paper referenced above. Includes b and c term, noting c already accounts for the J dependent factor. Here starting from vectors themselves, so j isn't bound to z axis*/
+    /*Computation of the angular dependent factor (ie proportional to xi) in formula 1 from the Jackson 1957 paper referenced above. Includes b and c term, noting that c, A, B and D already account for the polarisation and alignment dependent factors. Here starting from vectors themselves, so j isn't bound to z axis. polDir is unit vector*/
 
     double beta_e = std::sqrt(1-EMASSC2*EMASSC2/E/E); // p_e/E_e; p_nu/E_nu = 1
     
@@ -286,7 +286,7 @@ namespace polarisation {
   inline double AnalyticalMaximumAngCorrFactor(double a, double b, double c, double A, double B, double D, double E){                     
     /*Search of the maximum value analitically*/
     double beta = std::sqrt(1-EMASSC2*EMASSC2/E/E);
-    //scale a, c, A and D by beta; Note that c is meant to contain the alignment-dependent factor already
+    //scale a, c, A and D by beta; Note that c is meant to contain the alignment-dependent factor already and A, B and D are multiplied by J as well
     a *= beta;
     c *= beta;
     A *= beta;
@@ -302,7 +302,7 @@ namespace polarisation {
     double C_m = a_st*a_st*A*A-A*A*B*B-B*B*K*K;
     double znu_m, znu_m2; //candidates for maximum
     vector<double> F_cand(4, 0);
-    double F_max;
+
     //computing the values at the extrema of the interval
     F_cand(0) = MaximumF(a_st, A, B, K, 1);
     F_cand(1) = MaximumF(a_st, A, B, K, -1);
@@ -328,7 +328,7 @@ namespace polarisation {
       }
     }
     
-    F_max = norm_inf(F_cand);
+    double F_max = *std::max_element(F_cand.begin(),F_cand.end());
     F_max += 1 + b*EMASSC2/E; //adding the constant terms
     return F_max;
   }
@@ -361,12 +361,15 @@ namespace polarisation {
     F_cand(0) = MaximumF(a_st, A, B, K, 1);
     F_cand(1) = MaximumF(a_st, A, B, K, -1);
 
-    if (A_m == 0) {
+    if (A_m == 0 && B_m != 0) {
       znu_m = -C_m/B_m;
       if ((znu_m > -1) && (znu_m < 1)) {
 	F_cand(2) = MaximumF(a_st, A, B, K, znu_m);
       }
-    }else{
+    } else if (B_m == 0 && C_m == 0){
+      F_cand(2) = MaximumF(a_st, A, B, K, 0); //cover some edge cases like only D non-zero that should never happen in reality
+      znu_m = 0;
+    } else{
       double det = B_m*B_m - 4*A_m*C_m;
       if (det > 0){
 	znu_m = (-B_m+std::sqrt(det))/2/A_m;
@@ -382,7 +385,7 @@ namespace polarisation {
 
     std::cout << znu_m << ", " <<  znu_m2 << std::endl;
     
-    int indexMax = index_norm_inf(F_cand);
+    int indexMax = std::distance(F_cand.begin(),std::max_element(F_cand.begin(),F_cand.end()));
     switch (indexMax){
     case 0:
       max_pos(1) = 1; //znu

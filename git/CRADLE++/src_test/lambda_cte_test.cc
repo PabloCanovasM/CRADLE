@@ -128,7 +128,7 @@ namespace CRADLE{
 	}
 	file_content << std::setprecision(5) << a << '\t';
 	a_prev = a;
-	double c = polarisation::CalculateAlignmentCorrelation(cConst[2], cConst[3], cConst[6], cConst[7], mf, mgt, j_in, j_f, betaType, Z, en, j_in*j_in /*maximum alignment*/);
+	double c = polarisation::CalculateAlignmentCorrelation(cConst[0], cConst[1], cConst[2], cConst[3], cConst[4], cConst[5], cConst[6], cConst[7], mf, mgt, j_in, j_f, betaType, Z, en, j_in*j_in /*maximum alignment*/);
 	if ((kin_en != 0) && (not changec)){
 	  if ((c_prev != c)) changec = true;
 	}
@@ -147,7 +147,7 @@ namespace CRADLE{
       double E = utilities::EMASSC2 + 0.1; /*not relevant, term prop to coulomb corr = 0*/
       double a_singlei = utilities::CalculateBetaNeutrinoAsymmetry(cConst[0], cConst[1], cConst[2], cConst[3], cConst[4], cConst[5], cConst[6], cConst[7], mf, mgt, std::nan(""), std::nan(""), E, Z, betaType)/xi_test;
       if (std::isnan(a_singlei)) a_singlei = 0;
-      double c_singlei = polarisation::CalculateAlignmentCorrelation(cConst[2], cConst[3], cConst[6], cConst[7], mf, mgt, j_in, j_f, betaType, Z, E, j_in*j_in /*maximum alignment*/)/xi_test;
+      double c_singlei = polarisation::CalculateAlignmentCorrelation(cConst[0], cConst[1], cConst[2], cConst[3], cConst[4], cConst[5], cConst[6], cConst[7], mf, mgt, j_in, j_f, betaType, Z, E, j_in*j_in /*maximum alignment*/)/xi_test;
       if (std::isnan(c_singlei)) c_singlei = 0;
       for (int i = 0; i < 8; i++){
 	(cConst + i)->imag(0);
@@ -155,7 +155,7 @@ namespace CRADLE{
       }
       double a_singlej = utilities::CalculateBetaNeutrinoAsymmetry(cConst[0], cConst[1], cConst[2], cConst[3], cConst[4], cConst[5], cConst[6], cConst[7], mf, mgt, std::nan(""), std::nan(""), E, Z, betaType)/xi_test;
       if (std::isnan(a_singlej)) a_singlej = 0;
-      double c_singlej = polarisation::CalculateAlignmentCorrelation(cConst[2], cConst[3], cConst[6], cConst[7], mf, mgt, j_in, j_f, betaType, Z, E, j_in*j_in /*maximum alignment*/)/xi_test;
+      double c_singlej = polarisation::CalculateAlignmentCorrelation(cConst[0], cConst[1], cConst[2], cConst[3], cConst[4], cConst[5], cConst[6], cConst[7], mf, mgt, j_in, j_f, betaType, Z, E, j_in*j_in /*maximum alignment*/)/xi_test;
       if (std::isnan(c_singlej)) c_singlej = 0;
       
       std::cout << "\tConstant a: " << (changea ? "No" : "Yes") << std::endl;

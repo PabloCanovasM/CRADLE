@@ -269,7 +269,7 @@ bool DecayManager::GenerateNucleus(string name, int Z, int A) {
     //cout << "\n" <<endl;
 
     bool PolarisedNuclei = false;
-    if ((configOptions.betaDecay.PolarisationX != 0) || (configOptions.betaDecay.PolarisationY != 0) || (configOptions.betaDecay.PolarisationZ != 0))
+    if ((configOptions.betaDecay.PolarisationX != 0 || configOptions.betaDecay.PolarisationY != 0 || configOptions.betaDecay.PolarisationZ != 0) && configOptions.betaDecay.PolarisationMag != 0)
       PolarisedNuclei = true;
 
     if (Q > 0. ) {
@@ -356,8 +356,62 @@ bool DecayManager::GenerateNucleus(string name, int Z, int A) {
       else if (configOptions.betaDecay.RadiativeCorrection == false && (PolarisedNuclei == true) && ((mode.find("BetaPlus")!= std::string::npos)||(mode.find("BetaMinus")!= std::string::npos) )) {
         std::cout << "RC false" << "\n" ;
         std::cout << "Intensity : " << intensity << "\n" ;
-        DecayChannel* dc = new DecayChannel(mode+"Polarised", &GetDecayMode(mode+"Polarised"), Q, intensity, lifetime, excitationEnergy, daughterExcitationEnergy);
-        p->AddDecayChannel(dc) ;
+
+	std::complex<double> CS = configOptions.couplingConstants.CS;
+        std::complex<double> CSP = configOptions.couplingConstants.CSP;
+        std::complex<double> CV = configOptions.couplingConstants.CV;
+        std::complex<double> CVP = configOptions.couplingConstants.CVP;
+        std::complex<double> CA = configOptions.couplingConstants.CA;
+        std::complex<double> CAP = configOptions.couplingConstants.CAP;
+        std::complex<double> CT = configOptions.couplingConstants.CT;
+        std::complex<double> CTP = configOptions.couplingConstants.CTP;
+
+	double mf = 0.;
+	double mgt = 0.;
+
+	int Z = p->GetCharge() ;
+        int A = p->GetCharge() + p->GetNeutrons(); 
+        int betaType = Z/std::abs(Z);
+  
+        if (mode == "BetaPlus") {
+          betaType = -betaType ;
+        }
+	
+	double j_in = utilities::GetJpi(A,Z,excitationEnergy);
+        j_in = std::abs(j_in); //polarity not needed, only absolute value of J
+        
+        int Z_d = Z + betaType;
+        double j_f = utilities::GetJpi(A,Z_d,daughterExcitationEnergy);
+        j_f = std::abs(j_f);
+
+        if (configOptions.betaDecay.Default == "Fermi") {
+	  mf = 1.;
+	} else if (configOptions.betaDecay.Default == "Gamow-Teller") {
+	  mgt = 1.;
+        } else if (configOptions.betaDecay.Default == "Mixed") {
+	  mf = 1. ;
+	  mgt = 1. ;
+	} else if (configOptions.betaDecay.Default == "Auto") {
+	  if (j_f == 0. && j_in == 0.) mf = 1 ;/// J check
+	  else if (j_f-j_in == 0. && A == (Z + Z_d)){
+	    mgt = 1; //To do: add mixing ratio data for mixed transitions in mirror nuclei 
+	    mf = 1;
+	  }
+	  else mgt = 1;
+	}
+
+	if (configOptions.general.Verbosity > 0){
+	  std::cout << "Z : " << Z << " A : " << A << " J_in : " << j_in << " Decay Type: " << betaType << " Q : " << Q << std::endl;
+	  std::cout << "Z : " << Z_d << " A : " << A << " J_f : " << j_f << " Level Energy: " << daughterExcitationEnergy << std::endl;
+	  std::cout << "M_GT: " <<  mgt << ", M_F: " << mf << std::endl;
+        }
+	
+	double xi = utilities::CalculateXiBetaDecay(CS,CSP,CT,CTP,CV,CVP,CA,CAP,mf,mgt);
+
+	if (xi != 0){
+	  DecayChannel* dc = new DecayChannel(mode+"Polarised", &GetDecayMode(mode+"Polarised"), Q, intensity, lifetime, excitationEnergy, daughterExcitationEnergy);
+	  p->AddDecayChannel(dc);
+	}
       } 
       else if (configOptions.betaDecay.RadiativeCorrection == true && ((mode.find("BetaPlus")!= std::string::npos)||(mode.find("BetaMinus")!= std::string::npos) )) {
         std::cout << "RC true" << "\n" ;
@@ -422,7 +476,7 @@ bool DecayManager::GenerateNucleus(string name, int Z, int A) {
         std::cout << "\n" ;
         
         DecayChannel* dcp = new DecayChannel("Proton", &GetDecayMode(mode), Q, intensity, lifetime, excitationEnergy, daughterExcitationEnergy);
-        p->AddDecayChannel(dcp) ;
+        p->AddDecayChannel(dcp);
       }
     } 
   }
