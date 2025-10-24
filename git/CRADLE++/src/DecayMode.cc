@@ -863,7 +863,7 @@ std::vector<Particle*> BetaMinusPolarised::Decay(Particle* initState, double Q, 
 
   double elEnergy = utilities::RandomFromDistribution(*dist)+utilities::EMASSC2;
   //for testing purposes
-  elEnergy = utilities::EMASSC2 + Q*0.5;
+  //elEnergy = utilities::EMASSC2 + Q*0.5;
   
   double elMomentum = std::sqrt(elEnergy*elEnergy-std::pow(utilities::EMASSC2, 2.));
   
@@ -877,12 +877,25 @@ std::vector<Particle*> BetaMinusPolarised::Decay(Particle* initState, double Q, 
   
   double j_i = utilities::GetJpi(initState->GetCharge()+initState->GetNeutrons(),initState->GetCharge(),initState->GetExcitationEnergy());
   double j_f = utilities::GetJpi(recoil->GetCharge()+recoil->GetNeutrons(),recoil->GetCharge(),recoil->GetExcitationEnergy());
+
+  j_i = std::abs(j_i);
+  j_f = std::abs(j_f);
   
-  double a = utilities::CalculateBetaNeutrinoAsymmetry(CS, CSP, CT, CTP, CV, CVP, CA, CAP, mf, mgt, a_conf, b_conf, elEnergy, recoil->GetCharge(), +1);
-  double A = polarisation::CalculateBetaAssymetry(CS, CSP, CT, CTP, CV, CVP, CA, CAP, mf, mgt, j_i, j_f, +1, recoil->GetCharge(), elEnergy);
-  double B = polarisation::CalculateNeutrinoAssymetry(CS, CSP, CT, CTP, CV, CVP, CA, CAP, mf, mgt, j_i, j_f, +1, recoil->GetCharge(), elEnergy);
-  double D = polarisation::CalculateDTripleCorrelation(CS, CSP, CT, CTP, CV, CVP, CA, CAP, mf, mgt, j_i, j_f, +1, recoil->GetCharge(), elEnergy);
-  double c = polarisation::CalculateAlignmentCorrelation(CS, CSP, CT, CTP, CV, CVP, CA, CAP, mf, mgt, j_i, j_f, +1, recoil->GetCharge(), elEnergy, align);
+  double a = utilities::CalculateBetaNeutrinoAsymmetry(CS, CSP, CT, CTP, CV, CVP, CA, CAP, mf, mgt, a_conf, b_conf, elEnergy, recoil->GetCharge(), +1);  
+  double c = 0;
+  double A = 0;
+  double B = 0;
+  double D = 0;
+
+  if (j_i > 0){
+    A = polarisation::CalculateBetaAssymetry(CS, CSP, CT, CTP, CV, CVP, CA, CAP, mf, mgt, j_i, j_f, +1, recoil->GetCharge(), elEnergy);
+    B = polarisation::CalculateNeutrinoAssymetry(CS, CSP, CT, CTP, CV, CVP, CA, CAP, mf, mgt, j_i, j_f, +1, recoil->GetCharge(), elEnergy);
+    D = polarisation::CalculateDTripleCorrelation(CS, CSP, CT, CTP, CV, CVP, CA, CAP, mf, mgt, j_i, j_f, +1, recoil->GetCharge(), elEnergy);
+    if (j_i > 0.5){
+      c = polarisation::CalculateAlignmentCorrelation(CS, CSP, CT, CTP, CV, CVP, CA, CAP, mf, mgt, j_i, j_f, +1, recoil->GetCharge(), elEnergy, align);
+    }
+  }
+  
   A *= polMag;
   B *= polMag;
   D *= polMag;

@@ -104,9 +104,10 @@ namespace utilities {
 
     int Z_init = initState->GetCharge();
     int Z_final = finalState->GetCharge();
+    int A = initState->GetNeutrons() + Z_init;
 
-    double Jpi_init = GetJpi(Z_init + initState->GetNeutrons(), Z_init, initState->GetExcitationEnergy());
-    double Jpi_final = GetJpi(Z_final + finalState->GetNeutrons(), Z_final, finalState->GetExcitationEnergy());
+    double Jpi_init = GetJpi(A, Z_init, initState->GetExcitationEnergy());
+    double Jpi_final = GetJpi(A, Z_final, finalState->GetExcitationEnergy()); //asuming nucleon number conservation
     
     //std::cout << "jpi ini : " << Jpi_init << "\n";
     //std::cout << "jpi final : " << Jpi_final << "\n";
@@ -118,13 +119,13 @@ namespace utilities {
       Type = "Fermi";
       //std::cout << "Fermi Transition" << "\n";
       return Type;
-    } else if (abs(Jpi_final)-abs(Jpi_init) == 0. || abs(Jpi_final)-abs(Jpi_init) == 1.) {
-       Type = "Gamow-Teller";
-       //std::cout << "GT Transition" << "\n";
-       return Type;
-     } else {
-       Type = "Mixed" ;
+    } else if (abs(Jpi_final)-abs(Jpi_init) == 0. && A == Z_init + Z_final ) {
+      Type = "Mixed"; 
        //std::cout << "Mixed Transition" << "\n";
+      return Type; //to do: add mixing ratio from a suitable database, could be stored in the string itself to avoid modifying too much
+     } else {
+       Type = "Gamow-Teller" ;
+       //std::cout << "Gamow-Teller Transition" << "\n";
        return Type ;
      }
 

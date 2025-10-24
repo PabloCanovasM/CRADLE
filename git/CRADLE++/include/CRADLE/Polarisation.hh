@@ -253,7 +253,7 @@ namespace polarisation {
     angCorrFactor += b*EMASSC2/E;
     angCorrFactor += a*beta_e*inner_prod(elDir,enuDir);
     angCorrFactor += A*beta_e*inner_prod(elDir,polDir);
-    angCorrFactor += B*inner_prod(elDir,polDir);
+    angCorrFactor += B*inner_prod(enuDir,polDir);
     angCorrFactor += D*beta_e*inner_prod(polDir,utilities::CrossProduct(elDir,enuDir));
     angCorrFactor += c*beta_e*(inner_prod(elDir,enuDir)/3-inner_prod(elDir,polDir)*inner_prod(enuDir,polDir));
 
