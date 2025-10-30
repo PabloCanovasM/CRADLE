@@ -411,6 +411,8 @@ bool DecayManager::GenerateNucleus(string name, int Z, int A) {
 	if (xi != 0){
 	  DecayChannel* dc = new DecayChannel(mode+"Polarised", &GetDecayMode(mode+"Polarised"), Q, intensity, lifetime, excitationEnergy, daughterExcitationEnergy);
 	  p->AddDecayChannel(dc);
+	} else {
+	  std::cout << "The current choice of coupling constants makes this decay impossible" << std::endl;
 	}
       } 
       else if (configOptions.betaDecay.RadiativeCorrection == true && ((mode.find("BetaPlus")!= std::string::npos)||(mode.find("BetaMinus")!= std::string::npos) )) {

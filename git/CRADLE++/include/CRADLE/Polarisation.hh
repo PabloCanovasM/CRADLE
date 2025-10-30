@@ -80,10 +80,6 @@ namespace polarisation {
     else
       return 0;
   }
-
-  inline double AlignmentFactor(double j, double align){
-    return (j*(j+1)-3*align)/j/(2*j-1);
-  }
   
   inline double CalculateBetaAssymetry(std::complex<double> cs, std::complex<double> csp, std::complex<double> ct, std::complex<double> ctp, 
   std::complex<double> cv, std::complex<double> cvp, std::complex<double> ca, std::complex<double> cap, double mf, double mgt, double j_i, double j_f, int betaType, int Z, double energy){
@@ -123,10 +119,10 @@ namespace polarisation {
       return 0;
   }
 
-  inline double CalculateAlignmentCorrelation(std::complex<double> cs, std::complex<double> csp, std::complex<double> ct, std::complex<double> ctp, std::complex<double> cv, std::complex<double> cvp, std::complex<double> ca, std::complex<double> cap, double mf, double mgt, double j_i, double j_f, int betaType, int Z, double energy, double align /*<(J*j)^2>*/){
+  inline double CalculateAlignmentCorrelation(std::complex<double> cs, std::complex<double> csp, std::complex<double> ct, std::complex<double> ctp, std::complex<double> cv, std::complex<double> cvp, std::complex<double> ca, std::complex<double> cap, double mf, double mgt, double j_i, double j_f, int betaType, int Z, double energy){
     double coulombCorr = FINESTRUCTURE*Z/std::sqrt(energy*energy/EMASSC2/EMASSC2-1);
     double c = mgt*mgt*BigLambdaJiJfFactor(j_i,j_f)*(norm(ct)+norm(ctp)-norm(ca)-norm(cap)+2*betaType*coulombCorr*(ct*conj(ca)+ctp*conj(cap)).imag());
-    return c*AlignmentFactor(j_i,align)/utilities::CalculateXiBetaDecay(cs, csp, ct, ctp, cv, cvp, ca, cap, mf, mgt);
+    return c/utilities::CalculateXiBetaDecay(cs, csp, ct, ctp, cv, cvp, ca, cap, mf, mgt);
   }
   
 
@@ -215,7 +211,7 @@ namespace polarisation {
   }
 
   inline double CalculateAngularCorrelationFactor(double a, double b, double c, double A, double B, double D, double E, double cosTheta_e, double cosTheta_enu, double phi){
-    /*Computation of the angular dependent factor (ie proportional to xi) in formula 1 from the Jackson 1957 paper referenced above. Includes b and c term, noting c already accounts for the J dependent factor. Assumes J/|J| is a unit vector in the z component. Used in tests*/
+    /*Computation of the angular dependent factor (ie proportional to xi) in formula 1 from the Jackson 1957 paper referenced above. Includes b and c term, and assumes perfect alignment. Assumes J/|J| is a unit vector in the z component. Used in tests*/
     vector<double> elDir (3);
     vector<double> enuDir (3);
     
@@ -238,7 +234,7 @@ namespace polarisation {
     angCorrFactor += A*beta_e*elDir(2);
     angCorrFactor += B*enuDir(2);
     angCorrFactor += D*beta_e*(elDir(0)*enuDir(1)-elDir(1)*enuDir(0));
-    angCorrFactor += c*beta_e*(elDir(0)*enuDir(0)+elDir(1)*enuDir(1)-2*elDir(2)*enuDir(2))/3;
+    angCorrFactor -= c*beta_e*(elDir(0)*enuDir(0)+elDir(1)*enuDir(1)-2*elDir(2)*enuDir(2))/3;
     
 
     return angCorrFactor;
@@ -280,13 +276,13 @@ namespace polarisation {
   }
 
   inline double MaximumF(double a, double A, double B, double K, double znu){
-    return std::sqrt((a*a-K*K)*znu*znu+K*K+A*A+2*a*A*znu)+B*znu;
+    return std::sqrt(std::pow(a*znu+A,2)+K*K*(1-znu*znu))+B*znu;
   }
 
   inline double AnalyticalMaximumAngCorrFactor(double a, double b, double c, double A, double B, double D, double E){                     
     /*Search of the maximum value analitically*/
     double beta = std::sqrt(1-EMASSC2*EMASSC2/E/E);
-    //scale a, c, A and D by beta; Note that c is meant to contain the alignment-dependent factor already and A, B and D are multiplied by J as well
+    //scale a, c, A and D by beta. Note that c is multiplied already by the alignment, and A, B and D are multiplied by J as well
     a *= beta;
     c *= beta;
     A *= beta;
@@ -294,8 +290,6 @@ namespace polarisation {
 
     double K = std::sqrt(D*D+(a+c/3)*(a+c/3));
     double a_st = a-2.*c/3;
-
-    //F_max = max(sqrt((a_st*u+A)**2+K**2*(1-u**2))+B*u)
 
     double A_m = (a_st*a_st-K*K)*(a_st*a_st-K*K-B*B);
     double B_m = 2*a_st*A*(a_st*a_st-K*K-B*B);
@@ -327,7 +321,7 @@ namespace polarisation {
 	}
       }
     }
-    
+    // std::cout << F_cand << std::endl;
     double F_max = *std::max_element(F_cand.begin(),F_cand.end());
     F_max += 1 + b*EMASSC2/E; //adding the constant terms
     return F_max;
@@ -336,7 +330,7 @@ namespace polarisation {
   inline vector<double> MaximumAngCorrFactorPos(double a, double b, double c, double A, double B, double D, double E){
     /*Search of the position of the maximum analitically*/
     double beta = std::sqrt(1-EMASSC2*EMASSC2/E/E);
-    //scale a, c, A and D by beta. Note that c is meant to contain the alignment-dependent factor already
+    //scale a, c, A and D by beta. Note that c is multiplied already by the alignment, and A, B and D are multiplied by J as well
     a *= beta;
     c *= beta;
     A *= beta;

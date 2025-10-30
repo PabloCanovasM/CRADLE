@@ -852,7 +852,6 @@ std::vector<Particle*> BetaMinusPolarised::Decay(Particle* initState, double Q, 
       advancedFermi = true;
     }
     dist = spectrumGen->GenerateSpectrum(initState, recoil, Q); //// changement de Q en E0 par SL 10/05/2023
-    int i=0;
     for ( int i = 0; i<dist->size(); i++) {                                  ////// changement de boucle et element par ((*dist)[i]) par SL 10/05/2023
       double E = ((*dist)[i])[0]+utilities::EMASSC2;
       double SH = ((*dist)[i])[1];
@@ -892,16 +891,17 @@ std::vector<Particle*> BetaMinusPolarised::Decay(Particle* initState, double Q, 
     B = polarisation::CalculateNeutrinoAssymetry(CS, CSP, CT, CTP, CV, CVP, CA, CAP, mf, mgt, j_i, j_f, +1, recoil->GetCharge(), elEnergy);
     D = polarisation::CalculateDTripleCorrelation(CS, CSP, CT, CTP, CV, CVP, CA, CAP, mf, mgt, j_i, j_f, +1, recoil->GetCharge(), elEnergy);
     if (j_i > 0.5){
-      c = polarisation::CalculateAlignmentCorrelation(CS, CSP, CT, CTP, CV, CVP, CA, CAP, mf, mgt, j_i, j_f, +1, recoil->GetCharge(), elEnergy, align);
+      c = polarisation::CalculateAlignmentCorrelation(CS, CSP, CT, CTP, CV, CVP, CA, CAP, mf, mgt, j_i, j_f, +1, recoil->GetCharge(), elEnergy);
     }
   }
-  
+  c *= align*(-1);
   A *= polMag;
   B *= polMag;
   D *= polMag;
   
   double F_max = polarisation::AnalyticalMaximumAngCorrFactor(a, fierz, c, A, B, D, elEnergy);
-
+  //std::cout << "a " << a <<  ", c " << c << ", A " << A << ", B " << B << ", D " << D << std::endl;
+  //std::cout << "F_max:" << F_max << std::endl;
   //sampling
   double F = F_max;
   double F_point = 0;
@@ -914,6 +914,7 @@ std::vector<Particle*> BetaMinusPolarised::Decay(Particle* initState, double Q, 
     ublas::vector<double> eDir = utilities::RandomDirection();
     ublas::vector<double> enuDir = utilities::RandomDirection();
     double F_point = polarisation::CalculateAngularCorrelationFactor(a, fierz, c, A, B, D, elEnergy, eDir, enuDir, polDir);
+    //std::cout << "F " << F << ", F_point " << F_point << std::endl;
     if (F < F_point){
       elFourMomentum(0) = elEnergy;
       elFourMomentum(1) = elMomentum*eDir[0];
@@ -1406,20 +1407,18 @@ std::vector<Particle*> BetaPlusPolarised::Decay(Particle* initState, double Q, d
   //mf = 1.;
   //mgt = 0.;
   ////////////////////////////////////////////////
-
-  double CS = dm.configOptions.couplingConstants.CS.real();
-  double CSP = dm.configOptions.couplingConstants.CSP.real();
-  double CV = dm.configOptions.couplingConstants.CV.real();
-  double CVP = dm.configOptions.couplingConstants.CVP.real();
-  double CA = dm.configOptions.couplingConstants.CA.real();
-  double CAP = dm.configOptions.couplingConstants.CAP.real();
-  double CT = dm.configOptions.couplingConstants.CT.real();
-  double CTP = dm.configOptions.couplingConstants.CTP.real();
+  std::complex<double> CS = dm.configOptions.couplingConstants.CS;
+  std::complex<double> CSP = dm.configOptions.couplingConstants.CSP;
+  std::complex<double> CV = dm.configOptions.couplingConstants.CV;
+  std::complex<double> CVP = dm.configOptions.couplingConstants.CVP;
+  std::complex<double> CA = dm.configOptions.couplingConstants.CA;
+  std::complex<double> CAP = dm.configOptions.couplingConstants.CAP;
+  std::complex<double> CT = dm.configOptions.couplingConstants.CT;
+  std::complex<double> CTP = dm.configOptions.couplingConstants.CTP;
   double a_conf = dm.configOptions.couplingConstants.a;
   double b_conf = dm.configOptions.couplingConstants.b;
 
-  double a = utilities::CalculateBetaNeutrinoAsymmetry(CS, CSP, CT, CTP, CV, CVP, CA, CAP, mf, mgt, a_conf, b_conf);
-  double fierz = utilities::CalculateFierz(CS, CSP, CT, CTP, CV, CVP, CA, CAP, mf, mgt, a_conf, b_conf);
+  double fierz = utilities::CalculateFierz(CS, CSP, CT, CTP, CV, CVP, CA, CAP, mf, mgt, a_conf, b_conf, recoil->GetCharge(), -1);
 
   //std::cout <<" b = " << fierz <<"\t a = " << a << std::endl;
   //std::cout << "a : " << a << "\n";
@@ -1433,39 +1432,80 @@ std::vector<Particle*> BetaPlusPolarised::Decay(Particle* initState, double Q, d
       advancedFermi = true;
     }
     dist = spectrumGen->GenerateSpectrum(initState, recoil, E0); //// changement de Q en E0 par SL 10/05/2023
-    double gamma = std::sqrt(1-std::pow(utilities::FINESTRUCTURE*recoil->GetCharge(), 2.));
-    int i=0;
     for ( int i = 0; i<dist->size(); i++) {                                  ////// changement de boucle et element par ((*dist)[i]) par SL 10/05/2023
       double E = ((*dist)[i])[0]+utilities::EMASSC2;
       double SH = ((*dist)[i])[1];
-      ((*dist)[i])[1] = SH*(1+gamma*fierz*utilities::EMASSC2/E);
+      // ((*dist)[i])[1] = SH*(1+gamma*fierz*utilities::EMASSC2/E);
     }
     DecayManager::GetInstance().RegisterDistribution(oss.str(), dist);
     }
-
-
-  // ublas::vector<std::vector<double> >* dist;
-  double posEnergy = utilities::RandomFromDistribution(*dist) + utilities::EMASSC2;
+  double posEnergy = utilities::RandomFromDistribution(*dist)+utilities::EMASSC2;
   double posMomentum = std::sqrt(posEnergy*posEnergy-std::pow(utilities::EMASSC2, 2.));
+  
+  double align = dm.configOptions.betaDecay.Alignment;
+  ublas::vector<double> polDir(3);
+  polDir(0) = dm.configOptions.betaDecay.PolarisationX;
+  polDir(1) = dm.configOptions.betaDecay.PolarisationY;
+  polDir(2) = dm.configOptions.betaDecay.PolarisationZ;
+  polDir = utilities::NormaliseVector(polDir);
+  double polMag = dm.configOptions.betaDecay.PolarisationMag;
 
-  std::vector<double> p;
-  p.push_back(1.);
-  p.push_back(a*posMomentum/posEnergy);
-  ublas::vector<double> posDir = utilities::GetParticleDirection(enubarDir, p);
-  posFourMomentum(0) = posEnergy;
-  posFourMomentum(1) = posMomentum*posDir[0];
-  posFourMomentum(2) = posMomentum*posDir[1];
-  posFourMomentum(3) = posMomentum*posDir[2];
+  double j_i = utilities::GetJpi(initState->GetCharge()+initState->GetNeutrons(),initState->GetCharge(),initState->GetExcitationEnergy());
+  double j_f = utilities::GetJpi(recoil->GetCharge()+recoil->GetNeutrons(),recoil->GetCharge(),recoil->GetExcitationEnergy());
 
-  pos->SetMomentum(posFourMomentum);
+  j_i = std::abs(j_i);
+  j_f = std::abs(j_f);
 
-  ublas::vector<double> velocity = -initState->GetVelocity();
-  ThreeBodyDecay(velocity, pos, enubar, recoil, enubarDir, E0);
+  double a = utilities::CalculateBetaNeutrinoAsymmetry(CS, CSP, CT, CTP, CV, CVP, CA, CAP, mf, mgt, a_conf, b_conf, posEnergy, recoil->GetCharge(), -1);
+  double c = 0;
+  double A = 0;
+  double B = 0;
+  double D = 0;
 
+  if (j_i > 0){
+    A = polarisation::CalculateBetaAssymetry(CS, CSP, CT, CTP, CV, CVP, CA, CAP, mf, mgt, j_i, j_f, -1, recoil->GetCharge(), posEnergy);
+    B = polarisation::CalculateNeutrinoAssymetry(CS, CSP, CT, CTP, CV, CVP, CA, CAP, mf, mgt, j_i, j_f, -1, recoil->GetCharge(), posEnergy);
+    D = polarisation::CalculateDTripleCorrelation(CS, CSP, CT, CTP, CV, CVP, CA, CAP, mf, mgt, j_i, j_f, -1, recoil->GetCharge(), posEnergy);
+    if (j_i > 0.5){
+      c = polarisation::CalculateAlignmentCorrelation(CS, CSP, CT, CTP, CV, CVP, CA, CAP, mf, mgt, j_i, j_f, -1, recoil->GetCharge(), posEnergy);
+    }
+  }
+  
+  c *= align*(-1);
+  A *= polMag;
+  B *= polMag;
+  D *= polMag;
+  double F_max = polarisation::AnalyticalMaximumAngCorrFactor(a, fierz, c, A, B, D, posEnergy);
 
-  finalStates.push_back(recoil);
-  finalStates.push_back(pos);
-  finalStates.push_back(enubar);
+  //sampling
+  double F = F_max;
+  double F_point = 0;
+
+  std::random_device rd;
+  std::mt19937 generator(rd());
+  std::uniform_real_distribution<double> distribution_F(0.0, F_max);
+  while (F > F_point){
+    double F = distribution_F(generator);
+    ublas::vector<double> posDir = utilities::RandomDirection();
+    ublas::vector<double> enubarDir = utilities::RandomDirection();
+    double F_point = polarisation::CalculateAngularCorrelationFactor(a, fierz, c, A, B, D, posEnergy, posDir, enubarDir, polDir);
+    if (F < F_point){
+      posFourMomentum(0) = posEnergy;
+      posFourMomentum(1) = posMomentum*posDir[0];
+      posFourMomentum(2) = posMomentum*posDir[1];
+      posFourMomentum(3) = posMomentum*posDir[2];
+
+      pos->SetMomentum(posFourMomentum);
+
+      ublas::vector<double> velocity = -initState->GetVelocity();
+      ThreeBodyDecay(velocity, pos, enubar, recoil, enubarDir, Q);
+
+      finalStates.push_back(recoil);
+      finalStates.push_back(pos);
+      finalStates.push_back(enubar);
+      break;
+    }
+  }
 
   return finalStates;
 }
