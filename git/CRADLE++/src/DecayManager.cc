@@ -377,8 +377,8 @@ bool DecayManager::GenerateNucleus(string name, int Z, int A) {
           betaType = -betaType ;
         }
 	
-	double j_in = utilities::GetJpi(A,Z,excitationEnergy);
-        j_in = std::abs(j_in); //polarity not needed, only absolute value of J
+	double j_i = utilities::GetJpi(A,Z,excitationEnergy);
+        j_i = std::abs(j_i); //polarity not needed, only absolute value of J
         
         int Z_d = Z + betaType;
         double j_f = utilities::GetJpi(A,Z_d,daughterExcitationEnergy);
@@ -392,16 +392,16 @@ bool DecayManager::GenerateNucleus(string name, int Z, int A) {
 	  mf = 1. ;
 	  mgt = 1. ;
 	} else if (configOptions.betaDecay.Default == "Auto") {
-	  if (j_f == 0. && j_in == 0.) mf = 1 ;/// J check
-	  else if (j_f-j_in == 0. && A == (Z + Z_d)){
-	    mgt = 1; //To do: add mixing ratio data for mixed transitions in mirror nuclei 
+	  if (j_f == 0. && j_i == 0.) mf = 1 ;/// J check
+	  else if (j_f-j_i == 0. && A == (Z + Z_d)){
+	    mgt = 1; //To do: add mixing ratio data for mixed transitions in mirror nuclei. Also this ignores the posibility of mixed decays in non-mirror nuclei
 	    mf = 1;
 	  }
 	  else mgt = 1;
 	}
 
 	if (configOptions.general.Verbosity > 0){
-	  std::cout << "Z : " << Z << " A : " << A << " J_in : " << j_in << " Decay Type: " << betaType << " Q : " << Q << std::endl;
+	  std::cout << "Z : " << Z << " A : " << A << " J_in : " << j_i << " Decay Type: " << betaType << " Q : " << Q << std::endl;
 	  std::cout << "Z : " << Z_d << " A : " << A << " J_f : " << j_f << " Level Energy: " << daughterExcitationEnergy << std::endl;
 	  std::cout << "M_GT: " <<  mgt << ", M_F: " << mf << std::endl;
         }
@@ -411,6 +411,27 @@ bool DecayManager::GenerateNucleus(string name, int Z, int A) {
 	if (xi != 0){
 	  DecayChannel* dc = new DecayChannel(mode+"Polarised", &GetDecayMode(mode+"Polarised"), Q, intensity, lifetime, excitationEnergy, daughterExcitationEnergy);
 	  p->AddDecayChannel(dc);
+	  if (configOptions.general.Verbosity > 0){
+	    //std::cout << CT << std::endl;
+	    double a_conf = configOptions.couplingConstants.a;
+	    double b_conf = configOptions.couplingConstants.b;
+	    double E = Q/3 + utilities::EMASSC2;
+	    double a = utilities::CalculateBetaNeutrinoAsymmetry(CS, CSP, CT, CTP, CV, CVP, CA, CAP, mf, mgt, a_conf, b_conf, E, Z_d, betaType);
+	    double b = utilities::CalculateFierz(CS, CSP, CT, CTP, CV, CVP, CA, CAP, mf, mgt, a_conf, b_conf, Z_d, betaType);
+	    double c = 0;
+	    double A = 0;
+	    double B = 0;
+	    double D = 0;
+	    if (j_i > 0){
+	      A = polarisation::CalculateBetaAssymetry(CS, CSP, CT, CTP, CV, CVP, CA, CAP, mf, mgt, j_i, j_f, betaType, Z_d, E);
+	      B = polarisation::CalculateNeutrinoAssymetry(CS, CSP, CT, CTP, CV, CVP, CA, CAP, mf, mgt, j_i, j_f, betaType, Z_d, E);
+	      D = polarisation::CalculateDTripleCorrelation(CS, CSP, CT, CTP, CV, CVP, CA, CAP, mf, mgt, j_i, j_f, betaType, Z_d, E);
+	      if (j_i > 0.5){
+		c = polarisation::CalculateAlignmentCorrelation(CS, CSP, CT, CTP, CV, CVP, CA, CAP, mf, mgt, j_i, j_f, betaType, Z_d, E);
+	      }
+	    }
+	    std::cout << "a: " << a << ", b: " << b << ", c: " << c << ", A: " << A << ", B: " << B << ", D: " << D << std::endl;
+	  }
 	} else {
 	  std::cout << "The current choice of coupling constants makes this decay impossible" << std::endl;
 	}
