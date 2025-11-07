@@ -257,7 +257,7 @@ namespace polarisation {
   }
 
   inline double MaximumAngCorrFactor(double a, double A, double B, double D, double E){
-    /*Search of the maximum using grid search (Obsolete, new function to be developed, kept for compatibility in tests)*/
+    /*Search of the maximum using grid search (Obsolete, use the Analytical method for performance, kept for compatibility in tests)*/
     double maxAngCorrFactor =  std::numeric_limits<double>::lowest(); //not sure if value is nonpositive
     for (int z_e = -200; z_e <= 200; z_e++){
       for (int z_enu = -200; z_enu <= 200; z_enu++){

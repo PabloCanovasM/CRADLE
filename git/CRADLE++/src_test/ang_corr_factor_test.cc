@@ -13,6 +13,79 @@
 
 namespace CRADLE{
   namespace test{
+    using namespace boost::numeric::ublas;
+    namespace minMax{
+      double Q;
+      double j_i;
+      double j_f;
+      int Z;
+      double m_f;
+      double m_gt;
+      std::complex<double> CS;
+      std::complex<double> CT;
+      std::complex<double> CV;
+      std::complex<double> CA;
+      std::complex<double> CSP;
+      std::complex<double> CTP;
+      std::complex<double> CVP;
+      std::complex<double> CAP;
+      std::string oFile = "output.txt";
+    }
+
+    inline double MinimumF(double a, double A, double B, double K, double znu){
+      return -std::sqrt(std::pow(a*znu+A,2)+K*K*(1-znu*znu))+B*znu;
+    }
+
+    inline double AnalyticalMinimumAngCorrFactor(double a, double b, double c, double A, double B, double D, double E){
+      /*Search of the minimum value analitically*/
+      double beta = std::sqrt(1-utilities::EMASSC2*utilities::EMASSC2/E/E);
+      //scale a, c, A and D by beta. Note that c is multiplied already by the alignment, and A, B and D are multiplied by J as well
+      a *= beta;
+      c *= beta;
+      A *= beta;
+      D *= beta;
+
+      double K = std::sqrt(D*D+(a+c/3)*(a+c/3));
+      double a_st = a-2.*c/3;
+
+      double A_m = (a_st*a_st-K*K)*(a_st*a_st-K*K-B*B);
+      double B_m = 2*a_st*A*(a_st*a_st-K*K-B*B);
+      double C_m = a_st*a_st*A*A-A*A*B*B-B*B*K*K;
+      double znu_m, znu_m2; //candidates for maximum
+      vector<double> F_cand(4);
+
+      //computing the values at the extrema of the interval
+      F_cand(0) = MinimumF(a_st, A, B, K, 1);
+      F_cand(1) = MinimumF(a_st, A, B, K, -1);
+      F_cand(2) = 100;
+      F_cand(3) = 100;
+
+      if (A_m == 0) {
+	znu_m = -C_m/B_m;
+	if ((znu_m > -1) && (znu_m < 1)) {
+	  F_cand(2) = MinimumF(a_st, A, B, K, znu_m);
+	}
+      } else if (B_m == 0 && C_m == 0){
+	F_cand(2) = MinimumF(a_st, A, B, K, 0); //cover some edge cases like only D non-zero that should never happen in reality
+      } else {
+	double det = B_m*B_m - 4*A_m*C_m;
+	if (det > 0){
+	  znu_m = (-B_m+std::sqrt(det))/2/A_m;
+	  if ((znu_m > -1) && (znu_m < 1)) {
+	    F_cand(2) = MinimumF(a_st, A, B, K, znu_m);
+	  }
+	  znu_m2 = (-B_m-std::sqrt(det))/2/A_m;
+	  if ((znu_m2 > -1) && (znu_m2 < 1)) {
+	    F_cand(3) = MinimumF(a_st, A, B, K, znu_m2);
+	  }
+	}
+      }
+      // std::cout << F_cand << std::endl;
+      double F_min = *std::min_element(F_cand.begin(),F_cand.end());
+
+      F_min += 1 + b*utilities::EMASSC2/E; //adding the constant terms
+      return F_min;
+    }
     
     inline std::string MaximumInspectionTest(double a, double c, double A, double B, double D, double E, int zeRes, int znuRes, int phiRes, int giveMaximum){
       std::stringstream file_content;
@@ -299,7 +372,58 @@ namespace CRADLE{
 	  varList[j] = 0; //reset
 	}
       }
-    } 
+    }
+
+    void MinimumMaximumFromCouplingCTest(){
+
+      int Z = std::abs(minMax::Z);
+      int betaType = (Z >= 0) -  (Z < 0); //n always decays beta-
+      Z += betaType; //Z to be used in computations is always the final nuclei
+
+      std::complex<double> CS = minMax::CS;
+      std::complex<double> CSP = minMax::CSP;
+      std::complex<double> CT = minMax::CT;
+      std::complex<double> CTP = minMax::CTP;
+      std::complex<double> CV = minMax::CV;
+      std::complex<double> CVP = minMax::CVP;
+      std::complex<double> CA = minMax::CA;
+      std::complex<double> CAP = minMax::CAP;
+
+      double m_f = minMax::m_f;
+      double m_gt = minMax::m_gt;
+      double j_i = minMax::j_i;
+      double j_f = minMax::j_f;
+
+      double xi = utilities::CalculateXiBetaDecay(CS, CSP, CT, CTP, CV, CVP, CA, CAP, m_f, m_gt);
+
+      if (xi == 0){
+	std::cout << "Impossible decay, terminating..." << std::endl;
+	return;
+      }
+
+      std::ofstream fileStream;
+      fileStream.open(minMax::oFile);
+
+      double b = utilities::CalculateFierz(CS, CSP, CT, CTP, CV, CVP, CA, CAP, m_f, m_gt, std::nan("1"), std::nan("1"), Z, betaType); //energy independent
+      for (double kinE = 1.0; kinE < minMax::Q; kinE += 0.5){
+	double E = kinE + utilities::EMASSC2;
+	double a = utilities::CalculateBetaNeutrinoAsymmetry(CS, CSP, CT, CTP, CV, CVP, CA, CAP, m_f, m_gt, std::nan("1"), std::nan("1"), E, Z, betaType);
+	double A = polarisation::CalculateBetaAssymetry(CS, CSP, CT, CTP, CV, CVP, CA, CAP, m_f, m_gt, j_i, j_f, betaType, Z, E);
+	double B = polarisation::CalculateNeutrinoAssymetry(CS, CSP, CT, CTP, CV, CVP, CA, CAP, m_f, m_gt, j_i, j_f, betaType, Z, E);
+	double D = polarisation::CalculateDTripleCorrelation(CS, CSP, CT, CTP, CV, CVP, CA, CAP, m_f, m_gt, j_i, j_f, betaType, Z, E);
+	double c = polarisation::CalculateAlignmentCorrelation(CS, CSP, CT, CTP, CV, CVP, CA, CAP, m_f, m_gt, j_i, j_f, betaType, Z, E);
+
+	c = -c; //maximum alignment
+
+	double max_F = polarisation::AnalyticalMaximumAngCorrFactor(a, b, c, A, B, D, E);
+	double min_F = AnalyticalMinimumAngCorrFactor(a, b, c, A, B, D, E);
+
+	fileStream << std::fixed << std::setprecision(4) << E << '\t' << max_F << '\t' << min_F << '\n';
+      }
+
+      fileStream.flush();
+      fileStream.close();
+    }
     
   }//end of test namespace
 }

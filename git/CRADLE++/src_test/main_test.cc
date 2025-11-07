@@ -26,6 +26,25 @@ namespace CRADLE{
     void RunDoubleVarAVNRSamplingTest();
     void RunDoubleVarDVNRSamplingTest();
     void RunDoubleVarcVNRSamplingTest();
+    void RunMinimumMaximumFromCouplingCTest();
+    
+    namespace minMax{
+      double Q;
+      double j_i;
+      double j_f;
+      int Z;
+      double m_f;
+      double m_gt;
+      std::complex<double> CS;
+      std::complex<double> CT;
+      std::complex<double> CV;
+      std::complex<double> CA;
+      std::complex<double> CSP;
+      std::complex<double> CTP;
+      std::complex<double> CVP;
+      std::complex<double> CAP;
+      std::string oFile = "output.txt";
+    }
   }
 }
 
@@ -33,9 +52,8 @@ int main(int argc, char **argv) {
   std::vector<std::string> args(argv + 1, argv + argc);
   std::string testName;
   std::string genParam = "";
-  // Von Neumann specific params
 
-  std::string ofile;
+  //von Neumann specific parameters
   double a = 0;
   double b = 0;
   double c = 0;
@@ -77,10 +95,14 @@ int main(int argc, char **argv) {
       std::cout << "-p 2 for 2 variable test, non-zero c and one of a, A or D;\n";
       std::cout << "-p 3 for 2 variable test, non-zero A and one of a or D;\n";
       std::cout << "-p 4 for 2 variable test, non-zero D and a" << std::endl;
+      std::cout << "--------------------------------------------------" << std::endl;
+      std::cout << "MinMax Angular Correlation -> minmax_f" << std::endl;
+      std::cout << "Syntax Test minmax_f -o <output-file> -Q <Q> -M <M_F> <M_GT> -J <j_i> <j_f> -Z <+-Z>\n";
+      std::cout << "-C <CS.Re> <CS.Im> <CSP.Re> <CSP.Im> <CT.Re> <CT.Im> <CTP.Re> <CTP.Im>\n";
+      std::cout << "<CV.Re> <CV.Im> <CVP.Re> <CVP.Im> <CA.Re> <CA.Im> <CAP.Re> <CAP.Im>\n";
       return 0;
     }
     if (testName == "sampling"){
-
        if (*i == "-a")
 	 a = std::stod(*(++i));
        else if (*i == "-b")
@@ -99,6 +121,36 @@ int main(int argc, char **argv) {
 	 nDecays = std::stod(*(++i));
        else if (*i == "-o")
 	 oFile = *(++i);
+    } else if (testName == "minmax_f"){
+      if (*i == "-Q")
+	CRADLE::test::minMax::Q = std::stod(*(++i));
+      else if (*i == "-M"){
+	CRADLE::test::minMax::m_f = std::stod(*(++i));
+	CRADLE::test::minMax::m_gt = std::stod(*(++i));
+      }else if (*i == "-J"){
+	CRADLE::test::minMax::j_i = std::stod(*(++i));
+	CRADLE::test::minMax::j_f = std::stod(*(++i));
+      }else if (*i == "-Z")
+	CRADLE::test::minMax::Z = std::stoi(*(++i));
+      else if (*i == "-C"){
+	CRADLE::test::minMax::CS.real(std::stod(*(++i)));
+	CRADLE::test::minMax::CS.imag(std::stod(*(++i)));
+	CRADLE::test::minMax::CSP.real(std::stod(*(++i)));
+	CRADLE::test::minMax::CSP.imag(std::stod(*(++i)));
+	CRADLE::test::minMax::CT.real(std::stod(*(++i)));
+	CRADLE::test::minMax::CT.imag(std::stod(*(++i)));
+	CRADLE::test::minMax::CTP.real(std::stod(*(++i)));
+	CRADLE::test::minMax::CTP.imag(std::stod(*(++i)));
+	CRADLE::test::minMax::CV.real(std::stod(*(++i)));
+	CRADLE::test::minMax::CV.imag(std::stod(*(++i)));
+	CRADLE::test::minMax::CVP.real(std::stod(*(++i)));
+	CRADLE::test::minMax::CVP.imag(std::stod(*(++i)));
+	CRADLE::test::minMax::CA.real(std::stod(*(++i)));
+	CRADLE::test::minMax::CA.imag(std::stod(*(++i)));
+	CRADLE::test::minMax::CAP.real(std::stod(*(++i)));
+	CRADLE::test::minMax::CAP.imag(std::stod(*(++i)));
+      } else if (*i == "-o")
+	CRADLE::test::minMax::oFile = *(++i);
     }
     if (*i == "-p")
       genParam = *(++i);
@@ -118,6 +170,7 @@ int main(int argc, char **argv) {
   bool maximum_ang_coor_factor_test = false;
   int show_maximum = 0;
   bool vonNeumann_reject_sampling_test = false;
+  bool minmax_ang_coor_factor_test = false;
 
   if (testName == "lambda") lambda_test = true;
   else if (testName == "max_f") maximum_ang_coor_factor_test = true;
@@ -195,6 +248,8 @@ int main(int argc, char **argv) {
   }
   else if (testName == "sampling"){
     vonNeumann_reject_sampling_test = true;
+  } else if (testName == "minmax_f"){
+    minmax_ang_coor_factor_test = true;
   }
   else{
     std::cout << "Input does not match keyword of any test" << std::endl;
@@ -249,9 +304,21 @@ int main(int argc, char **argv) {
     CRADLE::test::RunMaximumAngCorrTest();
   }
 
+  if (minmax_ang_coor_factor_test){
+    CRADLE::test::MinimumMaximumFromCouplingCTest();
+  }
+
   if (vonNeumann_reject_sampling_test){
     if (genParam.empty()){
-      std::cout << "a = " << a << "\nb = " << b << "\nc = " << c << "\nA = " << A << "\nB = " << B << "\nD = " << D << "\nE = " << E << "\nNumber of decays = " << nDecays << std::endl;
+      std::cout << "a = " << a << "\n";
+      std::cout << "b = " << b << "\n";
+      std::cout << "c = " << c << "\n";
+      std::cout << "A = " << A << "\n";
+      std::cout << "B = " << B << "\n";
+      std::cout << "D = " << D << "\n";
+      std::cout << "E = " << E << "\n";
+      std::cout << "Number of decays = " << nDecays << std::endl;
+
       CRADLE::test::RunDefaultVNRSamplingTest(a, b, c, A, B, D, E, nDecays, oFile);
       std::cout << "Results saved in " << oFile << std::endl; 
     } else {
