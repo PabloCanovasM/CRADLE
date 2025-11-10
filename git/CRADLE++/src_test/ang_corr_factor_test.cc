@@ -69,7 +69,8 @@ namespace CRADLE{
 	F_cand(2) = MinimumF(a_st, A, B, K, 0); //cover some edge cases like only D non-zero that should never happen in reality
       } else {
 	double det = B_m*B_m - 4*A_m*C_m;
-	if (det > 0){
+	if ((det < 0) && (det > -1e-16)) det = 0; //avoid spurious cases
+	if (det >= 0){
 	  znu_m = (-B_m+std::sqrt(det))/2/A_m;
 	  if ((znu_m > -1) && (znu_m < 1)) {
 	    F_cand(2) = MinimumF(a_st, A, B, K, znu_m);
@@ -80,7 +81,7 @@ namespace CRADLE{
 	  }
 	}
       }
-      // std::cout << F_cand << std::endl;
+      //std::cout << F_cand << std::endl;
       double F_min = *std::min_element(F_cand.begin(),F_cand.end());
 
       F_min += 1 + b*utilities::EMASSC2/E; //adding the constant terms
@@ -374,7 +375,7 @@ namespace CRADLE{
       }
     }
 
-    void MinimumMaximumFromCouplingCTest(){
+    void RunMinimumMaximumFromCouplingCTest(){
 
       int Z = std::abs(minMax::Z);
       int betaType = (Z >= 0) -  (Z < 0); //n always decays beta-

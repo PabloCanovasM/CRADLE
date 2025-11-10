@@ -305,7 +305,7 @@ int main(int argc, char **argv) {
   }
 
   if (minmax_ang_coor_factor_test){
-    CRADLE::test::MinimumMaximumFromCouplingCTest();
+    CRADLE::test::RunMinimumMaximumFromCouplingCTest();
   }
 
   if (vonNeumann_reject_sampling_test){

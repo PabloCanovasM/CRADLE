@@ -310,7 +310,8 @@ namespace polarisation {
       F_cand(2) = MaximumF(a_st, A, B, K, 0); //cover some edge cases like only D non-zero that should never happen in reality
     } else {
       double det = B_m*B_m - 4*A_m*C_m;
-      if (det > 0){
+      if ((det < 0) && (det > -1e-16)) det = 0; //avoid spurious cases
+      if (det >= 0){
 	znu_m = (-B_m+std::sqrt(det))/2/A_m;
 	if ((znu_m > -1) && (znu_m < 1)) {
 	  F_cand(2) = MaximumF(a_st, A, B, K, znu_m);
@@ -365,7 +366,8 @@ namespace polarisation {
       znu_m = 0;
     } else{
       double det = B_m*B_m - 4*A_m*C_m;
-      if (det > 0){
+      if ((det < 0) && (det > -1e-16)) det = 0; //avoid spurious cases
+      if (det >= 0){
 	znu_m = (-B_m+std::sqrt(det))/2/A_m;
 	if ((znu_m > -1) && (znu_m < 1)) {
 	  F_cand(2) = MaximumF(a_st, A, B, K, znu_m);
