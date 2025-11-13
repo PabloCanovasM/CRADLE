@@ -384,20 +384,29 @@ bool DecayManager::GenerateNucleus(string name, int Z, int A) {
         double j_f = utilities::GetJpi(A,Z_d,daughterExcitationEnergy);
         j_f = std::abs(j_f);
 
-        if (configOptions.betaDecay.Default == "Fermi") {
+
+	if (configOptions.betaDecay.Default == "Fermi") {
 	  mf = 1.;
-	} else if (configOptions.betaDecay.Default == "Gamow-Teller") {
+	}
+	else if (configOptions.betaDecay.Default == "Gamow-Teller") {
 	  mgt = 1.;
-        } else if (configOptions.betaDecay.Default == "Mixed") {
+	}
+	else if (configOptions.betaDecay.Default == "Mixed") {
 	  mf = 1. ;
 	  mgt = 1. ;
-	} else if (configOptions.betaDecay.Default == "Auto") {
-	  if (j_f == 0. && j_i == 0.) mf = 1 ;/// J check
-	  else if (j_f-j_i == 0. && A == (Z + Z_d)){
-	    mgt = 1; //To do: add mixing ratio data for mixed transitions in mirror nuclei. Also this ignores the posibility of mixed decays in non-mirror nuclei
-	    mf = 1;
+	}
+	else if (configOptions.betaDecay.Default == "Auto") {
+	  std::string Type = utilities::FindBetaType(A, Z, Z_d, excitationEnergy, daughterExcitationEnergy);
+	  if (Type == "Fermi") {
+	    mf = 1.;
+	  } else if (Type == "Gamow-Teller") {
+	    mgt = 1.;
+	  } else { //Mixed
+	    double mixing_ratio = std::stod(Type.substr(5));
+	    std::cout << mixing_ratio << std::endl;
+	    mgt = mixing_ratio/1.2754;
+	    mf = 1.;
 	  }
-	  else mgt = 1;
 	}
 
 	if (configOptions.general.Verbosity > 0){

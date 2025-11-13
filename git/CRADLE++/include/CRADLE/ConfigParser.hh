@@ -44,11 +44,11 @@ struct Cuts {
 struct BetaDecay {
   std::string Default = "Auto";
   std::string FermiFunction = "";
-  double PolarisationX=0;
-  double PolarisationY=0;
-  double PolarisationZ=0;
-  double PolarisationMag=0;
-  double Alignment=0;
+  double PolarisationX = 0;
+  double PolarisationY = 0;
+  double PolarisationZ = 0;
+  double PolarisationMag = 0;
+  double Alignment = 0;
   bool RadiativeCorrection = true ;
   double OmegaValue = 0.001 ;
   bool ElectronCapture = true ;
@@ -58,6 +58,7 @@ struct EnvOptions {
   std::string AMEdata="/home/canovasmontes/Documents/master_ref/CRADLE/Nuclear_Databases/AMEdata_.txt";
   std::string Gammadata="/home/canovasmontes/Documents/master_ref/CRADLE/GammaData/";
   std::string Radiationdata="/home/canovasmontes/Documents/master_ref/CRADLE/RadiationData/";
+  std::string MixingRatiodata="/home/canovasmontes/Documents/master_ref/CRADLE/Nuclear_Databases/MixingRatio_.txt";
 };
 
 struct ConfigOptions{

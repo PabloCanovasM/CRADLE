@@ -1,3 +1,4 @@
+
 #ifndef UTILITIES
 #define UTILITIES
 
@@ -102,13 +103,9 @@ namespace utilities {
     DecayManager& dm = DecayManager::GetInstance();
     std::string Type = "None";
 
-    int Z_init = initState->GetCharge();
-    int Z_final = finalState->GetCharge();
-    int A = initState->GetNeutrons() + Z_init;
+    double Jpi_init = GetJpi(initState->GetNeutrons() + initState->GetCharge(), initState->GetCharge(), initState->GetExcitationEnergy());
+    double Jpi_final = GetJpi(finalState->GetNeutrons() + finalState->GetCharge(), finalState->GetCharge(), finalState->GetExcitationEnergy());
 
-    double Jpi_init = GetJpi(A, Z_init, initState->GetExcitationEnergy());
-    double Jpi_final = GetJpi(A, Z_final, finalState->GetExcitationEnergy()); //asuming nucleon number conservation
-    
     //std::cout << "jpi ini : " << Jpi_init << "\n";
     //std::cout << "jpi final : " << Jpi_final << "\n";
     // std::cout<<"INITIAL :\t "<<"Jpi = "<<Jpi_init<<"  "<<"Energy = "<<parentExEn<<std::endl;
@@ -119,11 +116,105 @@ namespace utilities {
       Type = "Fermi";
       //std::cout << "Fermi Transition" << "\n";
       return Type;
-    } else if (abs(Jpi_final)-abs(Jpi_init) == 0. && A == Z_init + Z_final ) {
-      Type = "Mixed"; 
-       //std::cout << "Mixed Transition" << "\n";
-      return Type; //to do: add mixing ratio from a suitable database, could be stored in the string itself to avoid modifying too much
-     } else {
+    } else if (abs(Jpi_final)-abs(Jpi_init) == 0.) {
+      std::stringstream TypeSS;
+      bool isMixed = false;
+      TypeSS << "Mixed";
+      //std::cout << "Mixed Transition" << "\n";
+      std::ifstream mixingRatioDataFile(dm.configOptions.envOptions.MixingRatiodata);
+      if (mixingRatioDataFile.is_open()) {
+	int count = 0;
+	std::string line;
+	while (getline(mixingRatioDataFile, line)) {
+	  if (count++ == 0) continue; //ignore first line
+	  int A;
+	  int Z_i;
+	  int Z_f;
+	  double parentExEn;
+	  double daughterExEn;
+	  double mixingRatio;
+	  std::istringstream iss(line);
+	  iss >> A >> Z_i >> parentExEn >> Z_f >> daughterExEn >> mixingRatio;
+	  if (A == initState->GetNeutrons() + initState->GetCharge() && Z_i == initState->GetCharge() && Z_f == finalState->GetCharge()){
+	    if (parentExEn >= initState->GetExcitationEnergy() - 1 && parentExEn <= initState->GetExcitationEnergy() + 1){
+	      if (daughterExEn >= finalState->GetExcitationEnergy() - 1 && daughterExEn <= finalState->GetExcitationEnergy() + 1){
+		TypeSS << mixingRatio;
+		isMixed = true;
+		break;
+	      }
+	    }
+	  }
+	}
+      } else {
+	std::cerr << "Erreur lors de l'ouverture du fichier " << dm.configOptions.envOptions.MixingRatiodata << std::endl;
+      }
+      if (isMixed) Type = TypeSS.str();
+      else Type = "Gamow-Teller"; //no data found on mixing ratio, default to Gamow-Teller
+      return Type;
+    } else {
+       Type = "Gamow-Teller" ;
+       //std::cout << "Gamow-Teller Transition" << "\n";
+       return Type ;
+     }
+  }
+
+
+  inline std::string FindBetaType(int A, int Z_i, int Z_f, double parentExEn, double daughterExEn)
+  {
+    //overloaded to avoid having to generate a nucleus in DecayManager
+    DecayManager& dm = DecayManager::GetInstance();
+    std::string Type = "None";
+
+    double Jpi_init = GetJpi(A, Z_i, parentExEn);
+    double Jpi_final = GetJpi(A, Z_f, daughterExEn);
+
+    //std::cout << "jpi ini : " << Jpi_init << "\n";
+    //std::cout << "jpi final : " << Jpi_final << "\n";
+    // std::cout<<"INITIAL :\t "<<"Jpi = "<<Jpi_init<<"  "<<"Energy = "<<parentExEn<<std::endl;
+    // std::cout<<"FINAL :\t\t "<<"Jpi = "<<Jpi_final<<"  "<<"Energy = "<<daughterExEn<<std::endl;
+
+    if (Jpi_final == 0. && Jpi_init == 0.)/// J check
+    {
+      Type = "Fermi";
+      //std::cout << "Fermi Transition" << "\n";
+      return Type;
+    } else if (abs(Jpi_final)-abs(Jpi_init) == 0.) {
+      std::stringstream TypeSS;
+      bool isMixed = false;
+      TypeSS << "Mixed";
+      //std::cout << "Mixed Transition" << "\n";
+      std::ifstream mixingRatioDataFile(dm.configOptions.envOptions.MixingRatiodata);
+      if (mixingRatioDataFile.is_open()) {
+	int count = 0;
+	std::string line;
+	while (getline(mixingRatioDataFile, line)) {
+	  if (count++ == 0) continue; //ignore first line
+	  //values from file
+	  int A_f;
+	  int Z_i_f;
+	  int Z_f_f;
+	  double parentExEn_f;
+	  double daughterExEn_f;
+	  double mixingRatio;
+	  std::istringstream iss(line);
+	  iss >> A_f >> Z_i_f >> parentExEn_f >> Z_f_f >> daughterExEn_f >> mixingRatio;
+	  if (A_f == A && Z_i_f == Z_i && Z_f_f == Z_f){
+	    if (parentExEn_f >= parentExEn - 1 && parentExEn_f <= parentExEn + 1){
+	      if (daughterExEn_f >= daughterExEn - 1 && daughterExEn_f <= daughterExEn + 1){
+		TypeSS << mixingRatio;
+		isMixed = true;
+		break;
+	      }
+	    }
+	  }
+	}
+      } else {
+	std::cerr << "Erreur lors de l'ouverture du fichier " << dm.configOptions.envOptions.MixingRatiodata << std::endl;
+      }
+      if (isMixed) Type = TypeSS.str();
+      else Type = "Gamow-Teller"; //no data found on mixing ratio, default to Gamow-Teller
+      return Type;
+    } else {
        Type = "Gamow-Teller" ;
        //std::cout << "Gamow-Teller Transition" << "\n";
        return Type ;

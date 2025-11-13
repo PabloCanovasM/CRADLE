@@ -111,7 +111,7 @@ namespace polarisation {
     //Only mixed decay factors
     if (j_i == j_f){ 
     double coulombCorr = FINESTRUCTURE*Z/std::sqrt(energy*energy/EMASSC2/EMASSC2-1);
-    double D = mf*mgt*std::sqrt(j_i/(j_i+1))*(-2.*coulombCorr*(cs*conj(ca)+csp*conj(cap)-cv*conj(ct)-cvp*conj(ctp)).real()+
+    double D = mf*mgt*std::sqrt(j_i/(j_i+1))*(-2.*coulombCorr*betaType*(cs*conj(ca)+csp*conj(cap)-cv*conj(ct)-cvp*conj(ctp)).real()+
                                               2.*(cs*conj(ct)+csp*conj(ctp)-cv*conj(ca)-cvp*conj(cap)).imag());
     return D/utilities::CalculateXiBetaDecay(cs, csp, ct, ctp, cv, cvp, ca, cap, mf, mgt);
     }

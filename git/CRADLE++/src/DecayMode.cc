@@ -832,9 +832,10 @@ std::vector<Particle*> BetaMinusPolarised::Decay(Particle* initState, double Q, 
       mf = 1.;
     } else if (Type == "Gamow-Teller") {
       mgt = 1.;
-    } else {  
-      mgt = 1. ;
-      mf = 1. ;
+    } else {
+      double mixing_ratio = std::stod(Type.substr(5));;
+      mgt = mixing_ratio/1.2754;
+      mf = 1.;
     }
   } 
   //mgt = 0. ;
@@ -1398,8 +1399,9 @@ std::vector<Particle*> BetaPlusPolarised::Decay(Particle* initState, double Q, d
     } else if (Type == "Gamow-Teller") {
       mgt = 1.;
     } else {
-      mgt = 1. ;
-      mf = 1. ;
+      double mixing_ratio = std::stod(Type.substr(5));;
+      mgt = mixing_ratio/1.2754;
+      mf = 1.;
     }
   }
   //std::cout << "mf : " << mf << "\n";

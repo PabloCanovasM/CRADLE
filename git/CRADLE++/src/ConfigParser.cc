@@ -68,7 +68,7 @@ namespace CRADLE {
     comp->add_option("--PolarisationY", betaDecay.PolarisationY, "Y component of polarisation direction");
     comp->add_option("--PolarisationZ", betaDecay.PolarisationZ, "Z component of polarisation direction");
     comp->add_option("--PolarisationMag", betaDecay.PolarisationMag, "Magnitude of polarisation. Previous 3 options provide the direction");
-    comp->add_option("--Alignment",betaDecay.Alignment,"Value of <(J*j)^2>");
+    comp->add_option("--Alignment",betaDecay.Alignment,"Value of the alignment");
     comp->add_option("-r, --radiativecorrection", betaDecay.RadiativeCorrection, "Radiative Correction");
     comp->add_option("--Cs", betaDecay.OmegaValue, "Cs value");
     comp->add_option("-E, --electroncapture", betaDecay.ElectronCapture, "Electron Capture");
@@ -79,6 +79,7 @@ namespace CRADLE {
     app.add_option("--AMEdata", envOptions.AMEdata, "AME2020 file location")->envname("AMEdata");
     app.add_option("--Gammadata", envOptions.Gammadata, "")->envname("Gammadata");
     app.add_option("--Radiationdata", envOptions.Radiationdata, "")->envname("Radiationdata");
+    app.add_option("--MixingRatiodata",envOptions.MixingRatiodata,"")->envname("MixingRatiodata");
   }
 
   ConfigOptions ParseOptions(std::string filename, int argc, const char** argv) {
