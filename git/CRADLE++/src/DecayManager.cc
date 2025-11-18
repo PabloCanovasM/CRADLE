@@ -402,9 +402,7 @@ bool DecayManager::GenerateNucleus(string name, int Z, int A) {
 	  } else if (Type == "Gamow-Teller") {
 	    mgt = 1.;
 	  } else { //Mixed
-	    double mixing_ratio = std::stod(Type.substr(5));
-	    std::cout << mixing_ratio << std::endl;
-	    mgt = mixing_ratio/1.2754;
+	    mgt = std::stod(Type.substr(5));
 	    mf = 1.;
 	  }
 	}

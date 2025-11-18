@@ -10,10 +10,12 @@
 namespace CRADLE{
   namespace test{
     void RunLambdaTest();
+    void RunCConstFermiTest();
     void RunCConstGamovTellerTest();
     void RunCConstMixedTest();
     void RunCConst2FermiTest();
     void RunCConst2GamovTellerTest();
+    void RunCConst2MixedTest();
     void RunSingleVarAngCorrTest();
     void RunDoubleVarBAngCorrTest(int);
     void RunDoubleVarAAngCorrTest(int);
@@ -72,8 +74,9 @@ int main(int argc, char **argv) {
       std::cout << "Lambda Test -> lambda" << std::endl;
       std::cout << "--------------------------------------------------" << std::endl;
       std::cout << "Coupling Constant Test -> c_const" << std::endl;
-      std::cout << "-p gt for Gamov-Teller ABD, -p  m for Mixed ABD" << std::endl;
-      std::cout << "-p gt2 for Gamov-Teller abc, -p f2 for Fermi abc" << std::endl;
+      std::cout << "-p f for Fermi  ABD, -p  f2 for Fermi abc" << std::endl;
+      std::cout << "-p gt for Gamov-Teller ABD, -p  gt2 for Gamow-Teller abc" << std::endl;
+      std::cout << "-p m for Mixed ABD, -p m2 for Mixed abc" << std::endl;
       std::cout << "--------------------------------------------------" << std::endl;
       std::cout << "Angular Correlation Factor Test -> ang_corr_factor" << std::endl;
       std::cout << "Parameters:\n";
@@ -157,10 +160,12 @@ int main(int argc, char **argv) {
   }
   
   bool lambda_test = false;
+  bool double_cte_f_test = false;
   bool double_cte_gt_test = false;
   bool double_cte_mixed_test = false;
   bool double_cte2_gt_test = false;
   bool double_cte2_f_test = false;
+  bool double_cte2_mixed_test = false;
   bool single_var_ang_corr_test = false;
   bool double_var_B_ang_corr_test = false;
   bool double_var_A_ang_corr_test = false;
@@ -176,9 +181,11 @@ int main(int argc, char **argv) {
   else if (testName == "max_f") maximum_ang_coor_factor_test = true;
   else if (testName == "c_const"){
     if (genParam == "gt") double_cte_gt_test = true;
+    else if (genParam == "f") double_cte_f_test = true;
     else if (genParam == "m") double_cte_mixed_test = true;
     else if (genParam == "f2") double_cte2_f_test = true;
     else if (genParam == "gt2") double_cte2_gt_test = true;
+    else if (genParam == "m2") double_cte2_mixed_test = true;
     else{
       std::cout << "Parameter does not match keyword of any test" << std::endl;
       return 0;
@@ -259,6 +266,10 @@ int main(int argc, char **argv) {
   if (lambda_test){
     CRADLE::test::RunLambdaTest();
   }
+
+  if (double_cte_f_test){
+    CRADLE::test::RunCConstFermiTest();
+  }
   
   if (double_cte_gt_test){
     CRADLE::test::RunCConstGamovTellerTest();
@@ -274,6 +285,10 @@ int main(int argc, char **argv) {
 
   if (double_cte2_f_test){
     CRADLE::test::RunCConst2FermiTest();
+  }
+
+  if (double_cte2_mixed_test){
+    CRADLE::test::RunCConst2MixedTest();
   }
 
   if (single_var_ang_corr_test){

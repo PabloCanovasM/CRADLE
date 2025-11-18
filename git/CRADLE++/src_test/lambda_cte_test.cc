@@ -119,6 +119,8 @@ namespace CRADLE{
       double a_prev = 0;
       double c_prev = 0;
 
+      double b = utilities::CalculateFierz(cConst[0], cConst[1], cConst[2], cConst[3], cConst[4], cConst[5], cConst[6], cConst[7], mf, mgt, std::nan(""), std::nan(""), Z, betaType);
+
       for (int kin_en = 0; kin_en < Q; kin_en++){
 	double en = polarisation::EMASSC2 + kin_en + 0.1; //last is to avoid 1/0 errors
 	file_content << std::setprecision(5) << en << '\t';
@@ -128,7 +130,9 @@ namespace CRADLE{
 	}
 	file_content << std::setprecision(5) << a << '\t';
 	a_prev = a;
-	double c = -polarisation::CalculateAlignmentCorrelation(cConst[0], cConst[1], cConst[2], cConst[3], cConst[4], cConst[5], cConst[6], cConst[7], mf, mgt, j_in, j_f, betaType, Z, en);
+	file_content << std::setprecision(5) << b << '\t';
+	
+	double c = polarisation::CalculateAlignmentCorrelation(cConst[0], cConst[1], cConst[2], cConst[3], cConst[4], cConst[5], cConst[6], cConst[7], mf, mgt, j_in, j_f, betaType, Z, en);
 	if ((kin_en != 0) && (not changec)){
 	  if ((c_prev != c)) changec = true;
 	}
@@ -136,7 +140,6 @@ namespace CRADLE{
 	c_prev = c;
       }
 
-      double b = utilities::CalculateFierz(cConst[0], cConst[1], cConst[2], cConst[3], cConst[4], cConst[5], cConst[6], cConst[7], mf, mgt, std::nan(""), std::nan(""), Z, betaType);
       double xi_test = utilities::CalculateXiBetaDecay(cConst[0], cConst[1], cConst[2], cConst[3], cConst[4], cConst[5], cConst[6], cConst[7], mf, mgt);
       //To deal with single variable terms, set 1 term to 1, the rest 0.
 
@@ -147,7 +150,7 @@ namespace CRADLE{
       double E = utilities::EMASSC2 + 0.1; /*not relevant, term prop to coulomb corr = 0*/
       double a_singlei = utilities::CalculateBetaNeutrinoAsymmetry(cConst[0], cConst[1], cConst[2], cConst[3], cConst[4], cConst[5], cConst[6], cConst[7], mf, mgt, std::nan(""), std::nan(""), E, Z, betaType)/xi_test;
       if (std::isnan(a_singlei)) a_singlei = 0;
-      double c_singlei = -polarisation::CalculateAlignmentCorrelation(cConst[0], cConst[1], cConst[2], cConst[3], cConst[4], cConst[5], cConst[6], cConst[7], mf, mgt, j_in, j_f, betaType, Z, E)/xi_test;
+      double c_singlei = polarisation::CalculateAlignmentCorrelation(cConst[0], cConst[1], cConst[2], cConst[3], cConst[4], cConst[5], cConst[6], cConst[7], mf, mgt, j_in, j_f, betaType, Z, E)/xi_test;
       if (std::isnan(c_singlei)) c_singlei = 0;
       for (int i = 0; i < 8; i++){
 	(cConst + i)->imag(0);
@@ -155,7 +158,7 @@ namespace CRADLE{
       }
       double a_singlej = utilities::CalculateBetaNeutrinoAsymmetry(cConst[0], cConst[1], cConst[2], cConst[3], cConst[4], cConst[5], cConst[6], cConst[7], mf, mgt, std::nan(""), std::nan(""), E, Z, betaType)/xi_test;
       if (std::isnan(a_singlej)) a_singlej = 0;
-      double c_singlej = -polarisation::CalculateAlignmentCorrelation(cConst[0], cConst[1], cConst[2], cConst[3], cConst[4], cConst[5], cConst[6], cConst[7], mf, mgt, j_in, j_f, betaType, Z, E)/xi_test;
+      double c_singlej = polarisation::CalculateAlignmentCorrelation(cConst[0], cConst[1], cConst[2], cConst[3], cConst[4], cConst[5], cConst[6], cConst[7], mf, mgt, j_in, j_f, betaType, Z, E)/xi_test;
       if (std::isnan(c_singlej)) c_singlej = 0;
       
       std::cout << "\tConstant a: " << (changea ? "No" : "Yes") << std::endl;
@@ -189,8 +192,8 @@ namespace CRADLE{
     }
 
     std::string cteNames[8] = {"cs","csp","ct","ctp","cv","cvp","ca","cap"};
-    
-    void RunCConstGamovTellerTest(){
+
+    void RunCConstFermiTest(){
       std::ofstream fileStream;
       std::cout << "\t--------------------" << std::endl;
       std::cout << "\t  Real Coefficients " << std::endl;
@@ -199,9 +202,9 @@ namespace CRADLE{
 	for (int j = i+1; j < 8; j++){
 	  std::stringstream fileNameSS;
 	  std::cout << "Non-zero variables: " << cteNames[i] << ", " << cteNames[j] << std::endl;  
-	  fileNameSS << cteNames[i] << cteNames[j] << "_real_gt_12.txt";
+	  fileNameSS << cteNames[i] << cteNames[j] << "_real_f_00.txt";
 	  fileStream.open(fileNameSS.str());
-	  fileStream << DoubleVarTest(i, j, false, 0., 1., 1., 2.);
+	  fileStream << DoubleVarTest(i, j, false, 1., 0., 0., 0.);
 	  fileStream.flush();
 	  fileStream.close();
 	  fileNameSS.str("");
@@ -214,9 +217,44 @@ namespace CRADLE{
 	for (int j = i+1; j < 8; j++){
 	  std::stringstream fileNameSS;
 	  std::cout << "Non-zero variables: " << cteNames[i] << ", " << cteNames[j] << std::endl;  
-	  fileNameSS << cteNames[i] << cteNames[j] << "_comp_gt_12.txt";
+	  fileNameSS << cteNames[i] << cteNames[j] << "_comp_f_00.txt";
 	  fileStream.open(fileNameSS.str());
-	  fileStream << DoubleVarTest(i, j, true, 0., 1., 1., 2.);
+	  fileStream << DoubleVarTest(i, j, true, 1., 0., 0., 0.);
+	  fileStream.flush();
+	  fileStream.close();
+	  fileStream.close();
+	  fileNameSS.str("");
+	}
+      }
+    }
+    
+    void RunCConstGamovTellerTest(){
+      std::ofstream fileStream;
+      std::cout << "\t--------------------" << std::endl;
+      std::cout << "\t  Real Coefficients " << std::endl;
+      std::cout << "\t--------------------" << std::endl;
+      for (int i = 0; i < 8; i++){
+	for (int j = i+1; j < 8; j++){
+	  std::stringstream fileNameSS;
+	  std::cout << "Non-zero variables: " << cteNames[i] << ", " << cteNames[j] << std::endl;  
+	  fileNameSS << cteNames[i] << cteNames[j] << "_real_gt_21.txt";
+	  fileStream.open(fileNameSS.str());
+	  fileStream << DoubleVarTest(i, j, false, 0., 1., 2., 1.);
+	  fileStream.flush();
+	  fileStream.close();
+	  fileNameSS.str("");
+	}
+      }
+      std::cout << "\t--------------------" << std::endl;
+      std::cout << "\tComplex Coefficients" << std::endl;
+      std::cout << "\t--------------------" << std::endl;
+      for (int i = 0; i < 8; i++){
+	for (int j = i+1; j < 8; j++){
+	  std::stringstream fileNameSS;
+	  std::cout << "Non-zero variables: " << cteNames[i] << ", " << cteNames[j] << std::endl;  
+	  fileNameSS << cteNames[i] << cteNames[j] << "_comp_gt_21.txt";
+	  fileStream.open(fileNameSS.str());
+	  fileStream << DoubleVarTest(i, j, true, 0., 1., 2., 1.);
 	  fileStream.flush();
 	  fileStream.close();
 	  fileStream.close();
@@ -233,9 +271,9 @@ namespace CRADLE{
 	for (int j = i+1; j < 8; j++){
 	  std::stringstream fileNameSS;
 	  std::cout << "Non-zero variables: " << cteNames[i] << ", " << cteNames[j] << std::endl;  
-	  fileNameSS << cteNames[i] << cteNames[j] << "_real_mixed_11.txt";
+	  fileNameSS << cteNames[i] << cteNames[j] << "_real_mixed_22.txt";
 	  fileStream.open(fileNameSS.str());
-	  fileStream << DoubleVarTest(i, j, false, 1., 1., 1., 1.);
+	  fileStream << DoubleVarTest(i, j, false, 1., 1., 2., 2.);
 	  fileStream.flush();
 	  fileStream.close();
 	  fileNameSS.str("");
@@ -248,9 +286,9 @@ namespace CRADLE{
 	for (int j = i+1; j < 8; j++){
 	  std::stringstream fileNameSS;
 	  std::cout << "Non-zero variables: " << cteNames[i] << ", " << cteNames[j] << std::endl;  
-	  fileNameSS << cteNames[i] << cteNames[j] << "_comp_mixed_11.txt";
+	  fileNameSS << cteNames[i] << cteNames[j] << "_comp_mixed_22.txt";
 	  fileStream.open(fileNameSS.str());
-	  fileStream << DoubleVarTest(i, j, true, 1., 1., 1., 1.);
+	  fileStream << DoubleVarTest(i, j, true, 1., 1., 2., 2.);
 	  fileStream.flush();
 	  fileStream.close();
 	  fileNameSS.str("");
@@ -319,6 +357,40 @@ namespace CRADLE{
 	  fileNameSS << cteNames[i] << cteNames[j] << "_comp_gt_21.txt";
 	  fileStream.open(fileNameSS.str());
 	  fileStream << DoubleVarTest2(i, j, true, 0., 1., 2., 1.);
+	  fileStream.flush();
+	  fileStream.close();
+	  fileNameSS.str("");
+	}
+      }
+    }
+
+    void RunCConst2MixedTest(){
+      std::ofstream fileStream;
+      std::cout << "\t--------------------" << std::endl;
+      std::cout << "\t  Real Coefficients " << std::endl;
+      std::cout << "\t--------------------" << std::endl;
+      for (int i = 0; i < 8; i++){
+	for (int j = i+1; j < 8; j++){
+	  std::stringstream fileNameSS;
+	  std::cout << "Non-zero variables: " << cteNames[i] << ", " << cteNames[j] << std::endl;  
+	  fileNameSS << cteNames[i] << cteNames[j] << "_real_mixed_22.txt";
+	  fileStream.open(fileNameSS.str());
+	  fileStream << DoubleVarTest2(i, j, false, 1., 1., 2., 2.);
+	  fileStream.flush();
+	  fileStream.close();
+	  fileNameSS.str("");
+	}
+      }
+      std::cout << "\t--------------------" << std::endl;
+      std::cout << "\tComplex Coefficients" << std::endl;
+      std::cout << "\t--------------------" << std::endl;
+      for (int i = 0; i < 8; i++){
+	for (int j = i+1; j < 8; j++){
+	  std::stringstream fileNameSS;
+	  std::cout << "Non-zero variables: " << cteNames[i] << ", " << cteNames[j] << std::endl;  
+	  fileNameSS << cteNames[i] << cteNames[j] << "_comp_mixed_22.txt";
+	  fileStream.open(fileNameSS.str());
+	  fileStream << DoubleVarTest2(i, j, true, 1., 1., 2., 2.);
 	  fileStream.flush();
 	  fileStream.close();
 	  fileNameSS.str("");

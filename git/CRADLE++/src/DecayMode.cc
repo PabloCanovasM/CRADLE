@@ -833,8 +833,7 @@ std::vector<Particle*> BetaMinusPolarised::Decay(Particle* initState, double Q, 
     } else if (Type == "Gamow-Teller") {
       mgt = 1.;
     } else {
-      double mixing_ratio = std::stod(Type.substr(5));;
-      mgt = mixing_ratio/1.2754;
+      mgt = std::stod(Type.substr(5)); //data is experimental mixing ratio
       mf = 1.;
     }
   } 
@@ -856,14 +855,12 @@ std::vector<Particle*> BetaMinusPolarised::Decay(Particle* initState, double Q, 
     for ( int i = 0; i<dist->size(); i++) {                                  ////// changement de boucle et element par ((*dist)[i]) par SL 10/05/2023
       double E = ((*dist)[i])[0]+utilities::EMASSC2;
       double SH = ((*dist)[i])[1];
-      //((*dist)[i])[1] = SH*(fierz*utilities::EMASSC2/E);
+      ((*dist)[i])[1] = SH*(1+fierz*utilities::EMASSC2/E);
     }
     DecayManager::GetInstance().RegisterDistribution(oss.str(), dist);
     }
 
   double elEnergy = utilities::RandomFromDistribution(*dist)+utilities::EMASSC2;
-  //for testing purposes
-  //elEnergy = utilities::EMASSC2 + Q*0.5;
   
   double elMomentum = std::sqrt(elEnergy*elEnergy-std::pow(utilities::EMASSC2, 2.));
   
@@ -1399,8 +1396,7 @@ std::vector<Particle*> BetaPlusPolarised::Decay(Particle* initState, double Q, d
     } else if (Type == "Gamow-Teller") {
       mgt = 1.;
     } else {
-      double mixing_ratio = std::stod(Type.substr(5));;
-      mgt = mixing_ratio/1.2754;
+      mgt = std::stod(Type.substr(5));
       mf = 1.;
     }
   }
@@ -1437,7 +1433,7 @@ std::vector<Particle*> BetaPlusPolarised::Decay(Particle* initState, double Q, d
     for ( int i = 0; i<dist->size(); i++) {                                  ////// changement de boucle et element par ((*dist)[i]) par SL 10/05/2023
       double E = ((*dist)[i])[0]+utilities::EMASSC2;
       double SH = ((*dist)[i])[1];
-      // ((*dist)[i])[1] = SH*(1+gamma*fierz*utilities::EMASSC2/E);
+      ((*dist)[i])[1] = SH*(1+fierz*utilities::EMASSC2/E);
     }
     DecayManager::GetInstance().RegisterDistribution(oss.str(), dist);
     }
