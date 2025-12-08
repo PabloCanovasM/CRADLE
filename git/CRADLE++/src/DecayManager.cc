@@ -402,7 +402,7 @@ bool DecayManager::GenerateNucleus(string name, int Z, int A) {
 	  } else if (Type == "Gamow-Teller") {
 	    mgt = 1.;
 	  } else { //Mixed
-	    mgt = std::stod(Type.substr(5));
+	    mgt = std::stod(Type.substr(5))/1.2754;
 	    mf = 1.;
 	  }
 	}
@@ -412,7 +412,7 @@ bool DecayManager::GenerateNucleus(string name, int Z, int A) {
 	  std::cout << "Z : " << Z_d << " A : " << A << " J_f : " << j_f << " Level Energy: " << daughterExcitationEnergy << std::endl;
 	  std::cout << "M_GT: " <<  mgt << ", M_F: " << mf << std::endl;
         }
-	
+
 	double xi = utilities::CalculateXiBetaDecay(CS,CSP,CT,CTP,CV,CVP,CA,CAP,mf,mgt);
 
 	if (xi != 0){
@@ -576,6 +576,8 @@ bool DecayManager::GenerateNucleus(string name, int Z, int A) {
     initExcitationEn = configOptions.nuclearOptions.Energy;
     outputName = configOptions.general.Output;
     NRTHREADS = configOptions.general.Threads;
+    generator.seed(configOptions.general.Seed);
+    
     if (initStateName != "" && configOptions.nuclearOptions.Nucleons > 0) {
       struct stat infoRD;
       struct stat infoG;

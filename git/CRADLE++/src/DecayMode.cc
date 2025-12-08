@@ -833,7 +833,7 @@ std::vector<Particle*> BetaMinusPolarised::Decay(Particle* initState, double Q, 
     } else if (Type == "Gamow-Teller") {
       mgt = 1.;
     } else {
-      mgt = std::stod(Type.substr(5)); //data is experimental mixing ratio
+      mgt = std::stod(Type.substr(5))/1.2754; //data is experimental mixing ratio
       mf = 1.;
     }
   } 
@@ -871,12 +871,21 @@ std::vector<Particle*> BetaMinusPolarised::Decay(Particle* initState, double Q, 
   polDir(2) = dm.configOptions.betaDecay.PolarisationZ;
   polDir = utilities::NormaliseVector(polDir);
   double polMag = dm.configOptions.betaDecay.PolarisationMag;
-  
-  double j_i = utilities::GetJpi(initState->GetCharge()+initState->GetNeutrons(),initState->GetCharge(),initState->GetExcitationEnergy());
-  double j_f = utilities::GetJpi(recoil->GetCharge()+recoil->GetNeutrons(),recoil->GetCharge(),recoil->GetExcitationEnergy());
 
-  j_i = std::abs(j_i);
-  j_f = std::abs(j_f);
+  std::vector<double> angular_mom;
+  double j_i, j_f;
+  try {
+    angular_mom = DecayManager::GetInstance().GetParameterMC(oss.str());
+    j_i = std::abs(angular_mom[0]);
+    j_f = std::abs(angular_mom[1]);
+  } catch (const std::invalid_argument& e){
+    double j_i = utilities::GetJpi(initState->GetCharge()+initState->GetNeutrons(),initState->GetCharge(),initState->GetExcitationEnergy());
+    double j_f = utilities::GetJpi(recoil->GetCharge()+recoil->GetNeutrons(),recoil->GetCharge(),recoil->GetExcitationEnergy());
+    angular_mom = {j_i,j_f};
+    DecayManager::GetInstance().RegisterParameterMC(oss.str(),angular_mom);
+    j_i = std::abs(j_i);
+    j_f = std::abs(j_f);
+  }
   
   double a = utilities::CalculateBetaNeutrinoAsymmetry(CS, CSP, CT, CTP, CV, CVP, CA, CAP, mf, mgt, a_conf, b_conf, elEnergy, recoil->GetCharge(), +1);  
   double c = 0;
@@ -903,12 +912,11 @@ std::vector<Particle*> BetaMinusPolarised::Decay(Particle* initState, double Q, 
   //sampling
   double F = F_max;
   double F_point = 0;
-
-  std::random_device rd;
-  std::mt19937 generator(rd()); 
+  
+ 
   std::uniform_real_distribution<double> distribution_F(0.0, F_max);
   while (F > F_point){
-    double F = distribution_F(generator);
+    double F = distribution_F(dm.generator);
     ublas::vector<double> eDir = utilities::RandomDirection();
     ublas::vector<double> enuDir = utilities::RandomDirection();
     double F_point = polarisation::CalculateAngularCorrelationFactor(a, fierz, c, A, B, D, elEnergy, eDir, enuDir, polDir);
@@ -1396,7 +1404,7 @@ std::vector<Particle*> BetaPlusPolarised::Decay(Particle* initState, double Q, d
     } else if (Type == "Gamow-Teller") {
       mgt = 1.;
     } else {
-      mgt = std::stod(Type.substr(5));
+      mgt = std::stod(Type.substr(5))/1.2754;
       mf = 1.;
     }
   }
@@ -1448,11 +1456,20 @@ std::vector<Particle*> BetaPlusPolarised::Decay(Particle* initState, double Q, d
   polDir = utilities::NormaliseVector(polDir);
   double polMag = dm.configOptions.betaDecay.PolarisationMag;
 
-  double j_i = utilities::GetJpi(initState->GetCharge()+initState->GetNeutrons(),initState->GetCharge(),initState->GetExcitationEnergy());
-  double j_f = utilities::GetJpi(recoil->GetCharge()+recoil->GetNeutrons(),recoil->GetCharge(),recoil->GetExcitationEnergy());
-
-  j_i = std::abs(j_i);
-  j_f = std::abs(j_f);
+  std::vector<double> angular_mom;
+  double j_i, j_f;
+  try {
+    angular_mom = DecayManager::GetInstance().GetParameterMC(oss.str());
+    j_i = std::abs(angular_mom[0]);
+    j_f = std::abs(angular_mom[1]);
+  } catch (const std::invalid_argument& e){
+    double j_i = utilities::GetJpi(initState->GetCharge()+initState->GetNeutrons(),initState->GetCharge(),initState->GetExcitationEnergy());
+    double j_f = utilities::GetJpi(recoil->GetCharge()+recoil->GetNeutrons(),recoil->GetCharge(),recoil->GetExcitationEnergy());
+    angular_mom = {j_i,j_f};
+    DecayManager::GetInstance().RegisterParameterMC(oss.str(),angular_mom);
+    j_i = std::abs(j_i);
+    j_f = std::abs(j_f);
+  }
 
   double a = utilities::CalculateBetaNeutrinoAsymmetry(CS, CSP, CT, CTP, CV, CVP, CA, CAP, mf, mgt, a_conf, b_conf, posEnergy, recoil->GetCharge(), -1);
   double c = 0;
@@ -1479,11 +1496,10 @@ std::vector<Particle*> BetaPlusPolarised::Decay(Particle* initState, double Q, d
   double F = F_max;
   double F_point = 0;
 
-  std::random_device rd;
-  std::mt19937 generator(rd());
+
   std::uniform_real_distribution<double> distribution_F(0.0, F_max);
   while (F > F_point){
-    double F = distribution_F(generator);
+    double F = distribution_F(dm.generator);
     ublas::vector<double> posDir = utilities::RandomDirection();
     ublas::vector<double> enubarDir = utilities::RandomDirection();
     double F_point = polarisation::CalculateAngularCorrelationFactor(a, fierz, c, A, B, D, posEnergy, posDir, enubarDir, polDir);

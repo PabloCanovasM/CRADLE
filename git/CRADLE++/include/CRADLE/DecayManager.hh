@@ -4,16 +4,17 @@
 #include <vector>
 #include <map>
 #include <string>
+#include <random>
 
 #include "CRADLE/ConfigParser.hh"
 
 namespace CRADLE {
 
-class Particle;
-class DecayMode;
-class SpectrumGenerator;
+  class Particle;
+  class DecayMode;
+  class SpectrumGenerator;
 
-class DecayManager {
+  class DecayManager {
   public:
     static DecayManager& GetInstance() {
       static DecayManager instance;
@@ -47,6 +48,7 @@ class DecayManager {
     std::vector<double> GetParameterMC(const std::string) ;
 
     ConfigOptions configOptions;
+    std::mt19937 generator;
 
   private:
     DecayManager() {};

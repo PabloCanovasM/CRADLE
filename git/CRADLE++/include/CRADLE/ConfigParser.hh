@@ -20,6 +20,7 @@ struct General {
   int Loop = 0;
   int Threads = 5;
   std::string Output = "output.txt";
+  int Seed = 0;
 };
 
 struct CouplingConstants {

@@ -37,6 +37,7 @@ namespace CRADLE {
     comp->add_option("-l,--loop", general.Loop, "Number of events to generate.");
     comp->add_option("-t,--threads", general.Threads, "Number of threads (2 x #CPU).");
     comp->add_option("-o,--output", general.Output, "Name of the output file.");
+    comp->add_option("-s,--seed", general.Seed, "Seed for the random number generators");
   }
 
   void SetCouplingConstants (CLI::App& app, CouplingConstants& couplingConstants) {
@@ -79,7 +80,7 @@ namespace CRADLE {
     app.add_option("--AMEdata", envOptions.AMEdata, "AME2020 file location")->envname("AMEdata");
     app.add_option("--Gammadata", envOptions.Gammadata, "")->envname("Gammadata");
     app.add_option("--Radiationdata", envOptions.Radiationdata, "")->envname("Radiationdata");
-    app.add_option("--MixingRatiodata",envOptions.MixingRatiodata,"")->envname("MixingRatiodata");
+    app.add_option("--MixingRatiodata",envOptions.MixingRatiodata,"Mixing ratio file location")->envname("MixingRatiodata");
   }
 
   ConfigOptions ParseOptions(std::string filename, int argc, const char** argv) {
