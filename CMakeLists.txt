@@ -10,7 +10,7 @@ if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
     message(FATAL_ERROR "in-source build detected")
 endif()
 
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.5)
 
 project(CRADLE++ VERSION 1.0 LANGUAGES CXX)
 
@@ -52,12 +52,11 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" OR "${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
-    add_compile_options("-Wall")
-    add_compile_options("-Wextra")
     #add_compile_options("-Wconversion")
     add_compile_options("-pedantic")
     add_compile_options("-Wfatal-errors")
     add_compile_options("-pthread")
+    add_compile_options("-Wno-reorder")
 endif()
 
 # Offer the user the choice of overriding the installation directories
@@ -66,27 +65,15 @@ endif()
 # set(INSTALL_INCLUDE_DIR ${PROJECT_BINARY_DIR}/include CACHE PATH
 #   "Installation directory for header files")
 
-add_library(Cradle SHARED src/ConfigParser.cc src/Cradle.cc src/ReactionEngine.cc src/ReactionMode.cc src/SpectrumGenerator.cc src/Event.cc)
+add_library(Cradle SHARED src/ConfigParser.cc src/DecayChannel.cc src/DecayManager.cc src/DecayMode.cc src/Particle.cc src/SpectrumGenerator.cc)
 add_executable(CRADLE++ src/CRADLE++.cc)
 
-find_package(Boost)
+find_package(Boost REQUIRED)
 find_package(GSL REQUIRED)
-find_package(spdlog REQUIRED)
 find_package(Threads)
 
-option(USE_BSG "Use the external BSG library for the calculation of beta spectrum shapes" ON)
-option(CRADLE_BUILD_TESTS "Build tests" ON)
-
-set(NHL_INCLUDE_DIRS "/Users/leenderthayen/git/NHL/include")
-set(PDS_INCLUDE_DIRS "/Users/leenderthayen/git/PDS/include")
-set(BSG_INCLUDE_DIRS "/Users/leenderthayen/git/BSG/include")
-
-target_include_directories(Cradle PUBLIC ${NHL_INCLUDE_DIRS})
-target_include_directories(Cradle PUBLIC ${PDS_INCLUDE_DIRS})
 target_include_directories(Cradle PUBLIC ${Boost_INCLUDE_DIRS})
 target_include_directories(Cradle PUBLIC ${GSL_INCLUDE_DIRS})
-target_include_directories(Cradle PUBLIC ${spdlog_INCLUDE_DIRS})
-
 
 target_include_directories(
     Cradle
@@ -96,28 +83,22 @@ target_include_directories(
 )
 set(HEADER_BASE "${CMAKE_CURRENT_SOURCE_DIR}/include")
 
-message(${GSL_LIBRARIES})
 
-set(BSG_LIBRARIES "-L/Users/leenderthayen/git/BSG/build -lBSG")
-
-#if (USE_BSG)
-  message("Using BSG")
-# find_package(BSG REQUIRED)
-target_include_directories(Cradle PUBLIC ${BSG_INCLUDE_DIRS})
-set(EXTRA_LIBS ${EXTRA_LIBS} ${BSG_LIBRARIES})
-#endif()
-
-if(CRADLE_BUILD_TESTS)
-    include(CTest)
-    add_subdirectory(tests)
-endif()
-
+target_link_libraries(Cradle PUBLIC ${GSL_LIBRARIES} ${GSL_CBLAS_LIBRARIES})
 target_link_libraries(Cradle PUBLIC ${Boost_LIBRARIES})
-target_link_libraries(Cradle PUBLIC ${GSL_LIBRARIES})
-target_link_libraries(Cradle PUBLIC ${EXTRA_LIBS})
 target_link_libraries(Cradle PUBLIC ${CMAKE_THREAD_LIBS_INIT})
+			     
+target_link_libraries(CRADLE++ PRIVATE Cradle)	
 
-target_link_libraries(CRADLE++ PRIVATE Cradle)
+#Test executable. TO DO: add config to toggle
+add_library(BetaNuclearPolTest SHARED 
+    src_tests/beta_nuclear_polarisation/lambda_cte_test.cc 
+    src_tests/beta_nuclear_polarisation/ang_corr_factor_test.cc 
+    src_tests/beta_nuclear_polarisation/sampling_test.cc)
+add_executable(BetaNuclearPolTests src_tests/beta_nuclear_polarisation/main_test.cc)
+
+target_link_libraries(BetaNuclearPolTest PUBLIC Cradle)
+target_link_libraries(BetaNuclearPolTests PRIVATE BetaNuclearPolTest)
 
 
 # add_custom_command(TARGET CRADLE++

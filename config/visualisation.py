@@ -33,6 +33,7 @@ def histParam(name):
     plt.hist(data1, bins=100)
     plt.xlabel('Kinetic Energy (keV)')
     plt.ylabel('Counts')
+    #plt.yscale('log')
     plt.title(name)
     plt.savefig(name + '_energy.pdf')
     plt.figure()
@@ -59,10 +60,11 @@ def hist2DParam(name1, name2):
 plt.close('all')
 plt.ion()
 
+name = 'output'
 fileName = sys.argv[1]
 
 data = np.genfromtxt(fileName, dtype=None)
-names = [str(i[2], 'utf-8') for i in data]
+names = [str(i[2]) for i in data]
 data = np.array([list(i)[:2] + list(i)[3:] for i in data])
 data[np.isnan(data)]=0.
 
@@ -104,4 +106,4 @@ plt.ylabel('Counts')
 plt.title('Comparison of emitted proton spectrum')
 plt.legend()'''
 
-plt.show()
+plt.show(block=True)

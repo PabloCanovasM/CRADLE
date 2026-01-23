@@ -158,9 +158,9 @@ namespace polarisation {
         //std::cout << "New maximum at " << en << "keV. Previous B: " << max_B << " ; new B: " << B << std::endl;
         max_B_point[0] = en;
         max_B_point[1] = std::abs(B);
-        }
-      kin_en += 1;
       }
+      kin_en += 1;
+    }
     return max_B_point;
   }
 
@@ -176,9 +176,9 @@ namespace polarisation {
         //std::cout << "New maximum at " << en << "keV. Previous D: " << max_D << " ; new D: " << D << std::endl;
         max_D_point[0] = en;
         max_D_point[1] = std::abs(D);
-        }
-      kin_en += 1;
       }
+      kin_en += 1;
+    }
     return max_D_point;
   }
   
@@ -238,7 +238,7 @@ namespace polarisation {
     
 
     return angCorrFactor;
-}
+  }
 
   inline double CalculateAngularCorrelationFactor(double a, double b, double c, double A, double B, double D, double E, vector<double> elDir, vector<double> enuDir, vector<double> polDir){
     /*Computation of the angular dependent factor (ie proportional to xi) in formula 1 from the Jackson 1957 paper referenced above. Includes b and c term, noting that c, A, B and D already account for the polarisation and alignment dependent factors. Here starting from vectors themselves, so j isn't bound to z axis. polDir is unit vector*/
@@ -261,15 +261,15 @@ namespace polarisation {
     double maxAngCorrFactor =  std::numeric_limits<double>::lowest(); //not sure if value is nonpositive
     for (int z_e = -200; z_e <= 200; z_e++){
       for (int z_enu = -200; z_enu <= 200; z_enu++){
-	for (int phi = 0; phi < 720; phi++){
-	  double cosTheta_e = ((double) z_e)/200;
-	  double cosTheta_enu = ((double) z_enu)/200;
-	  double radPhi = phi*PI/360;
-	  double angCorrFactor = CalculateAngularCorrelationFactor(a, A, B, D, E, cosTheta_e, cosTheta_enu, radPhi);
-	  if (angCorrFactor > maxAngCorrFactor)
-	    maxAngCorrFactor = angCorrFactor;
-	  }
-	}
+        for (int phi = 0; phi < 720; phi++){
+          double cosTheta_e = ((double) z_e)/200;
+          double cosTheta_enu = ((double) z_enu)/200;
+          double radPhi = phi*PI/360;
+          double angCorrFactor = CalculateAngularCorrelationFactor(a, A, B, D, E, cosTheta_e, cosTheta_enu, radPhi);
+          if (angCorrFactor > maxAngCorrFactor)
+	          maxAngCorrFactor = angCorrFactor;
+        }
+      }
       if (z_e%10 == 0) std::cout << "cos(theta_e) = "<< ((double) z_e)/200 << std::endl;
     }
     return maxAngCorrFactor;
@@ -304,22 +304,22 @@ namespace polarisation {
     if (A_m == 0) {
       znu_m = -C_m/B_m;
       if ((znu_m > -1) && (znu_m < 1)) {
-	F_cand(2) = MaximumF(a_st, A, B, K, znu_m);
-      }
-    } else if (B_m == 0 && C_m == 0){
-      F_cand(2) = MaximumF(a_st, A, B, K, 0); //cover some edge cases like only D non-zero that should never happen in reality
-    } else {
-      double det = B_m*B_m - 4*A_m*C_m;
-      if ((det < 0) && (det > -1e-16)) det = 0; //avoid spurious cases
-      if (det >= 0){
-	znu_m = (-B_m+std::sqrt(det))/2/A_m;
-	if ((znu_m > -1) && (znu_m < 1)) {
-	  F_cand(2) = MaximumF(a_st, A, B, K, znu_m);
-	} 
-	znu_m2 = (-B_m-std::sqrt(det))/2/A_m;
-	if ((znu_m2 > -1) && (znu_m2 < 1)) {
-	  F_cand(3) = MaximumF(a_st, A, B, K, znu_m2);
-	}
+        F_cand(2) = MaximumF(a_st, A, B, K, znu_m);
+            }
+          } else if (B_m == 0 && C_m == 0){
+            F_cand(2) = MaximumF(a_st, A, B, K, 0); //cover some edge cases like only D non-zero that should never happen in reality
+          } else {
+            double det = B_m*B_m - 4*A_m*C_m;
+            if ((det < 0) && (det > -1e-16)) det = 0; //avoid spurious cases
+            if (det >= 0){
+        znu_m = (-B_m+std::sqrt(det))/2/A_m;
+        if ((znu_m > -1) && (znu_m < 1)) {
+          F_cand(2) = MaximumF(a_st, A, B, K, znu_m);
+        } 
+        znu_m2 = (-B_m-std::sqrt(det))/2/A_m;
+        if ((znu_m2 > -1) && (znu_m2 < 1)) {
+          F_cand(3) = MaximumF(a_st, A, B, K, znu_m2);
+        }
       }
     }
     // std::cout << F_cand << std::endl;
@@ -359,23 +359,23 @@ namespace polarisation {
     if (A_m == 0 && B_m != 0) {
       znu_m = -C_m/B_m;
       if ((znu_m > -1) && (znu_m < 1)) {
-	F_cand(2) = MaximumF(a_st, A, B, K, znu_m);
-      }
-    } else if (B_m == 0 && C_m == 0){
-      F_cand(2) = MaximumF(a_st, A, B, K, 0); //cover some edge cases like only D non-zero that should never happen in reality
-      znu_m = 0;
-    } else{
-      double det = B_m*B_m - 4*A_m*C_m;
-      if ((det < 0) && (det > -1e-16)) det = 0; //avoid spurious cases
-      if (det >= 0){
-	znu_m = (-B_m+std::sqrt(det))/2/A_m;
-	if ((znu_m > -1) && (znu_m < 1)) {
-	  F_cand(2) = MaximumF(a_st, A, B, K, znu_m);
-	} 
-	znu_m2 = (-B_m-std::sqrt(det))/2/A_m;
-	if ((znu_m2 > -1) && (znu_m2 < 1)) {
-	  F_cand(3) = MaximumF(a_st, A, B, K, znu_m2);
-	}
+        F_cand(2) = MaximumF(a_st, A, B, K, znu_m);
+            }
+          } else if (B_m == 0 && C_m == 0){
+            F_cand(2) = MaximumF(a_st, A, B, K, 0); //cover some edge cases like only D non-zero that should never happen in reality
+            znu_m = 0;
+          } else{
+            double det = B_m*B_m - 4*A_m*C_m;
+            if ((det < 0) && (det > -1e-16)) det = 0; //avoid spurious cases
+            if (det >= 0){
+        znu_m = (-B_m+std::sqrt(det))/2/A_m;
+        if ((znu_m > -1) && (znu_m < 1)) {
+          F_cand(2) = MaximumF(a_st, A, B, K, znu_m);
+        } 
+        znu_m2 = (-B_m-std::sqrt(det))/2/A_m;
+        if ((znu_m2 > -1) && (znu_m2 < 1)) {
+          F_cand(3) = MaximumF(a_st, A, B, K, znu_m2);
+        }
       }
     }
 

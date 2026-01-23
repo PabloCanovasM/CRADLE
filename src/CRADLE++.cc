@@ -1,7 +1,8 @@
-#include "CRADLE/Cradle.h"
-
 #include <string>
 #include <iostream>
+
+#include "CLI11.hpp"
+#include "CRADLE/DecayManager.hh"
 
 int main (int argc, const char* argv[]) {
   std::string iniFilename;
@@ -12,6 +13,7 @@ int main (int argc, const char* argv[]) {
   app.add_option("-i,--input", iniFilename, "INI input file for transition information");
   app.add_option("-c,--config", configFilename, "INI config file for calculation information");
   app.add_option("-o,--output", outputName, "Name for file output. No extensions.");
+  app.allow_extras(true);
 
   try {
     app.parse(argc, argv);
@@ -19,33 +21,14 @@ int main (int argc, const char* argv[]) {
     app.exit(e);
   }
 
-  CRADLE::Cradle cradle(outputName);
+  CRADLE::DecayManager& dm = CRADLE::DecayManager::GetInstance();
+  bool success = dm.Initialise(configFilename, argc, argv);
 
-  cradle.Initialise(configFilename, argc, argv);
-
-  /*OptionContainer::GetInstance(argc, argv);
-
-  if (!(OptExists("config") && OptExists("name") && OptExists("charge") && OptExists("nucleons"))) {
-    cout << "Specify configuration file, isotope name, charge and number of nucleons. Use the --help option for more documentation." << endl;
+  if (success) {
+    dm.MainLoop();
   } else {
-    DecayManager& dm = DecayManager::GetInstance();
-    dm.RegisterBasicParticles();
-    dm.RegisterBasicDecayModes();
-    dm.RegisterBasicSpectrumGenerators();
-#ifdef USE_BSG
-    if (OptExists("usebsg")) {
-      dm.RegisterSpectrumGenerator("BetaMinus", BSG::GetInstance());
-      dm.RegisterSpectrumGenerator("BetaPlus", BSG::GetInstance());
-    }
-#endif
-    bool success = dm.Initialise(GetOpt(std::string, "name"), GetOpt(int, "charge"),
-    GetOpt(int, "nucleons"), GetOpt(double, "energy"), GetOpt(std::string, "file"),
-    GetOpt(int, "threads"));
-    if(success) {
-      dm.MainLoop(GetOpt(int, "loop"));
-      if (GetOpt(int, "General.Verbosity") > 0)
-        dm.ListRegisteredParticles();
-    }
-  }*/
+    std::cout << "Specify configuration file, isotope name, charge and number of nucleons. Use the --help option for more documentation." << std::endl;
+  }
+
   return 0;
 }

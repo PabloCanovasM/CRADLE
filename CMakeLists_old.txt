@@ -1,42 +1,47 @@
-set(CRADLE_VERSION "0.1")
-set(CRADLE_VERSION_MAJOR "1")
-set(CRADLE_VERSION_MINOR "0")
-set(CRADLE_LAST_UPDATE "April 29, 2019")
-
-FIND_PACKAGE(Boost)
-include_directories(${Boost_INCLUDE_DIRS})
-
-FIND_PACKAGE(GSL REQUIRED)
-include_directories(${GSL_INCLUDE_DIRS})
-
-find_package(spdlog REQUIRED)
-include_directories(${spdlog_INCLUDE_DIRS})
-
-set(NHL_INCLUDE_DIRS "/mnt/ksf9/H2/user/u0111340/linux/Code/LeendertProject/NHL/include")
-set(PDS_INCLUDE_DIRS "/mnt/ksf9/H2/user/u0111340/linux/Code/LeendertProject/ParticleDataStructure/include")
-
-
-include_directories(${PROJECT_SOURCE_DIR}/source/include)
-include_directories(${NHL_INCLUDE_DIRS})
-include_directories(${PDS_INCLUDE_DIRS})
-
-configure_file("${PROJECT_SOURCE_DIR}/cmake/Templates/CRADLEConfig.h.in" "${PROJECT_BINARY_DIR}/CRADLEConfig.h")
-include_directories("${PROJECT_BINARY_DIR}")
-
-if (USE_BSG)
-find_package(BSG REQUIRED)
-include_directories(${BSG_INCLUDE_DIRS})
-set(EXTRA_LIBS ${EXTRA_LIBS} bsg nme)
+#-----------------------------------------------------------------------
+# - Enforce an out-of-source builds before anything else
+#
+if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
+    message(STATUS "BSG requires an out-of-source build.")
+    message(STATUS "Please remove these files from ${CMAKE_BINARY_DIR} first:")
+    message(STATUS "CMakeFiles")
+    message(STATUS "Once these files are removed, create a separate directory")
+    message(STATUS "and run CMake from there")
+    message(FATAL_ERROR "in-source build detected")
 endif()
 
-add_executable(CRADLE++ CRADLE++.cc ${sources} ${headers})
+cmake_minimum_required(VERSION 2.8)
 
-target_link_libraries(CRADLE++ ${Boost_LIBRARIES})
-target_link_libraries(CRADLE++ ${GSL_LIBRARIES})
-target_link_libraries(CRADLE++ ${EXTRA_LIBS})
+project(CRADLE++)
 
-add_custom_command(TARGET CRADLE++
-                   POST_BUILD
-		   COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:CRADLE++> ${PROJECT_BINARY_DIR}/bin/$<TARGET_FILE_NAME:CRADLE++>)
+# - Prepend our own CMake Modules to the search path
+# NB: if our custom modules include others that we don't supply, those in
+# the base path will be used, so watch for incompatibilities!!
+#
+set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/Modules ${CMAKE_MODULE_PATH})
 
-install(TARGETS CRADLE++ DESTINATION bin)
+include(CMakeUninstallTarget)
+
+# Offer the user the choice of overriding the installation directories
+set(INSTALL_LIB_DIR ${PROJECT_BINARY_DIR}/lib CACHE PATH "Installation directory for libraries")
+set(INSTALL_BIN_DIR ${PROJECT_BINARY_DIR}/bin CACHE PATH "Installation directory for executables")
+set(INSTALL_INCLUDE_DIR ${PROJECT_BINARY_DIR}/include CACHE PATH
+  "Installation directory for header files")
+
+option(USE_BSG "Use the external BSG library for the calculation of beta spectrum shapes" OFF)
+
+add_subdirectory(source)
+
+set(CRADLE++_SCRIPTS
+  config/filter.py
+  config/config.txt
+  config/visualisation.py
+)
+
+foreach (_script ${CRADLE++_SCRIPTS})
+  configure_file(
+    ${PROJECT_SOURCE_DIR}/${_script}
+    ${PROJECT_BINARY_DIR}/${_script}
+    COPYONLY
+    )
+endforeach()

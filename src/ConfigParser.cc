@@ -1,4 +1,4 @@
-#include "CRADLE/ConfigParser.h"
+#include "CRADLE/ConfigParser.hh"
 
 #include "CLI11.hpp"
 
@@ -19,22 +19,25 @@ namespace CRADLE {
 
   void SetCmdOptions (CLI::App& app, NuclearOptions& cmdOptions) {
 
-    CLI::App* cmd = app.add_subcommand("NuclearOptions","This is the nuclear options command.")->ignore_case();
-    cmd->add_option("-n,--name", cmdOptions.Name, "Name of initial particle.");
+    CLI::App* cmd = app.add_subcommand("Nucleus","This is the initial nucleus options command.")->ignore_case()->required();
+    cmd->add_option("-n,--name", cmdOptions.Name, "Name of initial particle.")->required();
     cmd->add_option("-Z,--charge", cmdOptions.Charge, "Charge as multiple of proton charge.");
-    cmd->add_option("-N,--nucleons", cmdOptions.Nucleons, "Number of nucleons.");
+    cmd->add_option("-A,--mass", cmdOptions.Nucleons, "Mass number.");
     cmd->add_option("-e,--energy", cmdOptions.Energy, "Excitation energy of initial state.");
+
+    cmd->callback([&]() {
+      std::cout << "Parsing initial nucleus " << cmdOptions.Name << std::endl;
+    });
 
   }
 
   void SetGeneralOptions (CLI::App& app, General& general) {
     CLI::App* comp = app.add_subcommand("General", "This is the general subcommand")->ignore_case();
-    comp->add_option("-v,--Verbosity", general.Verbosity, "Verbosity settings");
+    comp->add_option("-v,--verbosity", general.Verbosity, "Verbosity settings");
     comp->add_option("-l,--loop", general.Loop, "Number of events to generate.");
     comp->add_option("-t,--threads", general.Threads, "Number of threads (2 x #CPU).");
     comp->add_option("-o,--output", general.Output, "Name of the output file.");
-    comp->add_option("-u,--usebsg", general.Usebsg, "Choose whether or not to use BSG.");
-
+    comp->add_option("-s,--seed", general.Seed, "Seed for the random number generators");
   }
 
   void SetCouplingConstants (CLI::App& app, CouplingConstants& couplingConstants) {
@@ -43,31 +46,41 @@ namespace CRADLE {
     coupling->add_option("--CT", couplingConstants.CT, "Tensor coupling constant.");
     coupling->add_option("--CS", couplingConstants.CS, "Scalar coupling constant.");
     coupling->add_option("--CA", couplingConstants.CA, "Axial coupling constant.");
-
+    coupling->add_option("--CVP", couplingConstants.CVP, "Vector prime coupling constant.");
+    coupling->add_option("--CTP", couplingConstants.CTP, "Tensor prime coupling constant.");
+    coupling->add_option("--CSP", couplingConstants.CSP, "Scalar prime coupling constant.");
+    coupling->add_option("--CAP", couplingConstants.CAP, "Axial prime coupling constant.");
+    coupling->add_option("--a", couplingConstants.a, "Angular correlation coefficient.");
+    coupling->add_option("--b", couplingConstants.b, "Fierz term.");
   }
 
   void SetCuts (CLI::App& app, Cuts& cuts) {
     CLI::App* comp = app.add_subcommand("Cuts", "This is the cuts subcommand")->ignore_case();
-    comp->add_option("--Distance", cuts.Distance, "");
-    comp->add_option("--Lifetime", cuts.Lifetime, "");
-    comp->add_option("--Energy", cuts.Energy, "");
+    comp->add_option("--distance", cuts.Distance, "")->ignore_case();
+    comp->add_option("--lifetime", cuts.Lifetime, "")->ignore_case();
+    comp->add_option("--energy", cuts.Energy, "")->ignore_case();
 
   }
 
   void SetBetaDecayOptions (CLI::App& app, BetaDecay& betaDecay) {
     CLI::App* comp = app.add_subcommand("BetaDecay", "This is the beta decay subcommand")->ignore_case();
-    comp->add_option("--Default", betaDecay.Default, "");
     comp->add_option("--FermiFunction", betaDecay.FermiFunction, "");
-    comp->add_option("--PolarisationX", betaDecay.PolarisationX, "");
-    comp->add_option("--PolarisationY", betaDecay.PolarisationY, "");
-    comp->add_option("--PolarisationZ", betaDecay.PolarisationZ, "");
+    comp->add_option("--PolarisationX", betaDecay.PolarisationX, "X component of polarisation direction"); 
+    comp->add_option("--PolarisationY", betaDecay.PolarisationY, "Y component of polarisation direction");
+    comp->add_option("--PolarisationZ", betaDecay.PolarisationZ, "Z component of polarisation direction");
+    comp->add_option("--PolarisationMag", betaDecay.PolarisationMag, "Magnitude of polarisation. Previous 3 options provide the direction");
+    comp->add_option("--Alignment",betaDecay.Alignment,"Value of the alignment");
+    comp->add_option("-r, --radiativecorrection", betaDecay.RadiativeCorrection, "Radiative Correction");
+    comp->add_option("--Cs", betaDecay.OmegaValue, "Cs value");
+    comp->add_option("-E, --electroncapture", betaDecay.ElectronCapture, "Electron Capture");
 
   }
 
   void SetEnvironmentOptions (CLI::App& app, EnvOptions& envOptions) {
+    app.add_option("--AMEdata", envOptions.AMEdata, "AME2020 file location")->envname("AMEdata");
     app.add_option("--Gammadata", envOptions.Gammadata, "")->envname("Gammadata");
     app.add_option("--Radiationdata", envOptions.Radiationdata, "")->envname("Radiationdata");
-
+    app.add_option("--MixingRatiodata",envOptions.MixingRatiodata,"Mixing ratio file location")->envname("MixingRatiodata");
   }
 
   ConfigOptions ParseOptions(std::string filename, int argc, const char** argv) {

@@ -271,7 +271,7 @@ std::vector<Particle*> BetaMinus::Decay(Particle* initState, double Q, double da
       ((*dist)[i])[1] = SH*(1+gamma*fierz*utilities::EMASSC2/E);
     }
     DecayManager::GetInstance().RegisterDistribution(oss.str(), dist);
-    }
+  }
 
   //std::cout << "Found distribution" << std::endl;
 

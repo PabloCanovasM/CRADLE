@@ -1,108 +1,49 @@
-#include "CRADLE/SpectrumGenerator.h"
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/ini_parser.hpp>
+#include <string>
 
-#include "PDS/Core/Nucleus.h"
-#include "NHL/SpectralFunctions.h"
-#include "BSG/Generator.h"
+#include "CRADLE/SpectrumGenerator.hh"
+#include "CRADLE/Particle.hh"
+#include "CRADLE/Utilities.hh"
 
 #include "spdlog/spdlog.h"
 
-#include <string>
-#include <memory>
-
 namespace CRADLE {
 
-  //-----------------------------------------------------------------------------
-  //SpectrumGenerator general methods
+namespace pt = boost::property_tree;
 
-  SpectrumGenerator::SpectrumGenerator() {
-  }
+std::vector<std::vector<double> >* DeltaSpectrumGenerator::GenerateSpectrum(Particle* initState, Particle* finalState, double Q) {
+  std::vector<std::vector<double> >* deltaDist = new std::vector<std::vector<double> >();
+  std::vector<double> pair = {Q, 1.0};
+  deltaDist->push_back(pair);
 
-  SpectrumGenerator::~SpectrumGenerator() {
-    for (const auto & x : registeredDistributions) {
-      delete x.second;
-    }
-    registeredDistributions.clear();
-  }
+  return deltaDist;
+}
 
-  void SpectrumGenerator::RegisterDistribution(const std::string name, std::vector<std::vector<double> >* dist) {
-    registeredDistributions.insert(
-      std::pair<std::string, std::vector<std::vector<double> >*>(name, dist));
-      // cout << "Registered distribution " << name << endl;
-  }
+std::vector<std::vector<double> >* SimpleBetaDecay::GenerateSpectrum(Particle* initState, Particle* finalState, double Q) {
+  std::vector<std::vector<double> >* spectrum = utilities::GenerateBetaSpectrum(
+  (finalState->GetCharge() - initState->GetCharge())*finalState->GetCharge(),
+  finalState->GetCharge()+finalState->GetNeutrons(), Q, false);
 
-  std::vector<std::vector<double> >* SpectrumGenerator::GetDistribution(const std::string name) {
-    if (!DistributionExists(name)) {
-      throw std::invalid_argument("Distribution not registered.");
-    }
-    return registeredDistributions.at(name);
-  }
+  return spectrum;
+}
 
-  bool SpectrumGenerator::DistributionExists(const std::string name) {
-    return registeredDistributions.count(name);
-  }
+std::vector<std::vector<double> >* AdvancedBetaDecay::GenerateSpectrum(Particle* initState, Particle* finalState, double Q) {
+  std::vector<std::vector<double> >* spectrum = utilities::GenerateBetaSpectrum(
+  (finalState->GetCharge() - initState->GetCharge())*finalState->GetCharge(),
+  finalState->GetCharge()+finalState->GetNeutrons(), Q, true);
 
-  const std::vector<std::vector<double> >* SpectrumGenerator::GetSpectrum(const PDS::core::Particle& initState, const PDS::core::Particle& finalState, double Q) {
-    std::ostringstream oss;
-    oss << "ID" << initState.GetID() << "_to_ID" << finalState.GetID() << "_Q" << Q / keV;
-    std::string name = oss.str();
-    if (!DistributionExists(name)) {
-      RegisterDistribution(name, GenerateSpectrum(initState, finalState, Q));
-    }
-    return GetDistribution(name);
-  }
+  return spectrum;
+}
 
-  //-----------------------------------------------------------------------------
-  //DeltaSpectrumGenerator
+SpectrumGenerator::SpectrumGenerator() { }
 
-  std::vector<std::vector<double> >* DeltaSpectrumGenerator::GenerateSpectrum(const PDS::core::Particle& initState, const PDS::core::Particle& finalState, double Q) {
-    std::vector<std::vector<double> >* deltaDist = new std::vector<std::vector<double> >();
-    std::vector<double> pair = {Q, 1.0};
-    deltaDist->push_back(pair);
+SpectrumGenerator::~SpectrumGenerator() { }
 
-    return deltaDist;
-  }
+DeltaSpectrumGenerator::DeltaSpectrumGenerator() { }
 
-  //-----------------------------------------------------------------------------
-  //BasicBetaSpectrumGenerator
+SimpleBetaDecay::SimpleBetaDecay() {}
 
-  BasicBetaSpectrumGenerator::BasicBetaSpectrumGenerator(bool aff, double ss) {
-    advancedFermiFunction = aff;
-    stepSize = ss;
-  }
+AdvancedBetaDecay::AdvancedBetaDecay() {}
 
-  std::vector<std::vector<double> >* BasicBetaSpectrumGenerator::GenerateSpectrum(const PDS::core::Particle& initState, const PDS::core::Particle& finalState, double Q) {
-    const PDS::core::Nucleus* initNucleusDef = static_cast<const PDS::core::Nucleus*>(initState.GetParticleDefinition());
-    const PDS::core::Nucleus* finalNucleusDef = static_cast<const PDS::core::Nucleus*>(finalState.GetParticleDefinition());
-    std::vector<std::vector<double> >* spectrum = NHL::beta::GenerateBetaSpectrum(
-      (finalNucleusDef->GetZ() - initNucleusDef->GetZ())*finalNucleusDef->GetZ(),
-      finalNucleusDef->GetZ()+finalNucleusDef->GetA(), Q, advancedFermiFunction);
-
-      return spectrum;
-  }
-
-  //-----------------------------------------------------------------------------
-  //ExternalBSG
-
-  ExternalBSG::ExternalBSG(std::string configFilename) {
-    generator = std::make_shared<BSG::Generator>();
-
-    generator->InitialiseOptionsFromConfigFile(configFilename);
-  }
-
-  ExternalBSG::~ExternalBSG() {
-  }
-
-  const BSG::Generator* ExternalBSG::GetGenerator() const {
-    return generator.get();
-  }
-
-  std::vector<std::vector<double> >* ExternalBSG::GenerateSpectrum(const PDS::core::Particle& initState, const PDS::core::Particle& finalState, double Q) {
-    generator->SetInitialState(initState);
-    generator->SetFinalState(finalState);
-    generator->SetQValue(Q);
-
-    std::vector<std::vector<double> >* spectrum = generator->CalculateSpectrum();
-
-    return spectrum;
-  }
-}//end of CRADLE namespace
+}//End of CRADLE namespace
