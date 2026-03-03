@@ -56,9 +56,9 @@ struct BetaDecay {
 };
 
 struct EnvOptions {
-  std::string AMEdata="/home/canovasmontes/Documents/master_ref/CRADLE/Nuclear_Databases/AMEdata_.txt";
-  std::string Gammadata="/home/canovasmontes/Documents/master_ref/CRADLE/GammaData/";
-  std::string Radiationdata="/home/canovasmontes/Documents/master_ref/CRADLE/RadiationData/";
+  std::string AMEdata="../Nuclear_Databases/AMEdata_.txt"; //"/Users/victor/Documents/git/Utilities/Mass/mass_1.mas20.txt" ;
+  std::string Gammadata="../GammaData"; //"/Users/victor/Documents/git/Utilities/PhotonEvaporation5.7/";
+  std::string Radiationdata="../RadiationData"; // "/Users/victor/Documents/git/Utilities/RadioactiveDecay5.6/" ;
   std::string MixingRatiodata="/home/canovasmontes/Documents/master_ref/CRADLE/Nuclear_Databases/MixingRatio_.txt";
 };
 

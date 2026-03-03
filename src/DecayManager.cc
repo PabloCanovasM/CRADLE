@@ -479,7 +479,7 @@ bool DecayManager::GenerateNucleus(string name, int Z, int A) {
           betaType = -betaType ;
         }
 
-        double ph = radiativecorrections::PH(Cs, a, mass_i, mass_f, std::abs(Z), R, betaType, mode) ;
+        double ph = radiativecorrections::PH(Cs, mf, mgt, a, mass_i, mass_f, std::abs(Z), R, betaType, mode) ;
 
         if (std::isnan(ph)) {
           std::cout << "Intensity : " << intensity << "\n";
