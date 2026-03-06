@@ -473,7 +473,7 @@ bool DecayManager::GenerateNucleus(string name, int Z, int A) {
         int Z = p->GetCharge() ;
         int A = p->GetCharge() + p->GetNeutrons() ; 
         double R = utilities::ApproximateRadius(A) ;
-        int betaType = Z;
+        int betaType = Z/std::abs(Z);
         
         if (mode == "BetaPlus") {
           betaType = -betaType ;
