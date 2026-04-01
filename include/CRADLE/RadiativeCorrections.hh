@@ -111,16 +111,16 @@ inline double H1(double E2, double K, double COS_GAMMA, double N1_K, double N1_N
     return p1_p2 * ( -P_2 + 1/p2_k ) + p1_k * ( (E2 + K)/(K * p2_k) - 1/std::pow(p2_k, 2) ) ;
 }
 
-inline double MBR(double E2, double K, double COS_GAMMA, double N1_K, double N1_N2, double MF, double MGT, double a, double MIMASSC2, double MFMASSC2, int Z, double R, int betaType, std::string mode) {
+inline double MBR(double E2, double K, double COS_GAMMA, double N1_K, double N1_N2, double MF, double MGT, double a, double MIMASSC2, double MFMASSC2, int Z, int A, double R, double Q, bool advanced, int betaType, std::string mode) {
     /*double EPS = (MF_2) + (std::pow(LAMBDA, 2)) * (MGT_2) ;
     double EPSa = (MF_2) - (std::pow(LAMBDA, 2)) * (MGT_2)/3. ;
     double a = EPSa/EPS ;*/
     //double a = xhi_a(MF, MGT) ;
     
-    return 16 * std::pow(FERMICONSTANT, 2) * std::pow( (MIMASSC2/EMASSC2) , 2 ) * std::pow(e, 2) * (1 * H0(E2, K, COS_GAMMA, MIMASSC2, MFMASSC2, mode) + a * H1(E2, K, COS_GAMMA, N1_K, N1_N2, MIMASSC2, MFMASSC2, mode)) * utilities::FermiFunction(Z, E2, R, betaType);
+    return 16 * std::pow(FERMICONSTANT, 2) * std::pow( (MIMASSC2/EMASSC2) , 2 ) * std::pow(e, 2) * (1 * H0(E2, K, COS_GAMMA, MIMASSC2, MFMASSC2, mode) + a * H1(E2, K, COS_GAMMA, N1_K, N1_N2, MIMASSC2, MFMASSC2, mode)) * utilities::GetBetaCorrections(Z, A, Q, E2, betaType, advanced);
 }
 
-inline double M0(double E2, double COS, double MF, double MGT, double a, double MIMASSC2, double MFMASSC2, int Z, double R, int betaType, std::string mode) {
+inline double M0(double E2, double COS, double MF, double MGT, double a, double MIMASSC2, double MFMASSC2, int Z, int A, double R, double Q, bool advanced, int betaType, std::string mode) {
     double E10 = delta(MIMASSC2, MFMASSC2, mode) - E2 ;
     double BETA = std::sqrt( (1. - 1./std::pow(E2, 2)) ) ;
     /*double EPS = (MF_2) + (std::pow(LAMBDA, 2)) * (MGT_2) ;
@@ -130,26 +130,26 @@ inline double M0(double E2, double COS, double MF, double MGT, double a, double 
     //double a = xhi_a(MF, MGT) ;
     double xi = 1;
 
-    return 16. * std::pow(FERMICONSTANT, 2) * xi * std::pow( MIMASSC2/EMASSC2 , 2) * E10 * E2 * (1 + a * BETA * COS) * utilities::FermiFunction(Z, E2, R, betaType);
+    return 16. * std::pow(FERMICONSTANT, 2) * xi * std::pow( MIMASSC2/EMASSC2 , 2) * E10 * E2 * (1 + a * BETA * COS) * utilities::GetBetaCorrections(Z, A, Q, E2, betaType, advanced);
 }
 
-inline double Mtilde(double E2, double MF, double MGT, double MIMASSC2, double MFMASSC2, int Z, double R, int betaType, std::string mode) {
+inline double Mtilde(double E2, double MF, double MGT, double MIMASSC2, double MFMASSC2, int Z, int A, double R, double Q, bool advanced, int betaType, std::string mode) {
     double E10 = delta(MIMASSC2, MFMASSC2, mode) - E2 ;
     double BETA = std::sqrt( (1. - 1./std::pow(E2, 2)) ) ;
     double N = 0.5 * log( (1. + BETA)/(1. - BETA) ) ;
     //double EPS = (MF_2) + (std::pow(LAMBDA, 2)) * (MGT_2) ;
     //double xi = xhi(MF, MGT) ;
     double xi = 1;
-    return - (FINESTRUCTURE/PI) * (16. * std::pow(FERMICONSTANT, 2) * ((1 - std::pow(BETA, 2))/BETA) * (N*std::pow( (MIMASSC2/EMASSC2) , 2 )*E10*E2*xi )) * utilities::FermiFunction(Z, E2, R, betaType);
+    return - (FINESTRUCTURE/PI) * (16. * std::pow(FERMICONSTANT, 2) * ((1 - std::pow(BETA, 2))/BETA) * (N*std::pow( (MIMASSC2/EMASSC2) , 2 )*E10*E2*xi )) * utilities::GetBetaCorrections(Z, A, Q, E2, betaType, advanced);
 }
 
-inline double MVS(double E2, double COS, double Cs,double MF, double MGT, double a, double MIMASSC2, double MFMASSC2, int Z, double R, int betaType, std::string mode) {
+inline double MVS(double E2, double COS, double Cs,double MF, double MGT, double a, double MIMASSC2, double MFMASSC2, int Z, int A, double R, double Q, bool advanced, int betaType, std::string mode) {
     double E10 = delta(MIMASSC2, MFMASSC2, mode) - E2 ;
     double BETA = std::sqrt( (1. - 1./std::pow(E2, 2)) ) ;
     double N = 0.5 * log( (1. + BETA)/(1. - BETA) ) ;
     double omega = E10 * Cs ;
     double zVS = (FINESTRUCTURE/PI) * (1.5 * log(PMASSC2/EMASSC2) + 2.*( (N/BETA) - 1. ) * log( (2.*omega)) + 2 * (N/BETA) * (1. - N) + (2./BETA) * (Spence_function(2. * BETA/(1. + BETA))) - (3./8.)) ;
-    return zVS * M0(E2, COS, MF, MGT, a, MIMASSC2, MFMASSC2, Z, R, betaType, mode) + Mtilde(E2, MF, MGT, MIMASSC2, MFMASSC2, Z, R, betaType, mode) ;
+    return zVS * M0(E2, COS, MF, MGT, a, MIMASSC2, MFMASSC2, Z, A, R, Q, advanced, betaType, mode) + Mtilde(E2, MF, MGT, MIMASSC2, MFMASSC2, Z, A, R, Q, advanced, betaType, mode) ;
 }
 
 inline double g_weight(double E2, double K, double COS_GAMMA) {
@@ -159,13 +159,13 @@ inline double g_weight(double E2, double K, double COS_GAMMA) {
     return (BETA * E2)/(2 * N * p2_k) ; 
 }
 
-inline double WH(double E2, double K, double COS_GAMMA, double N1_K, double N1_N2, double MF, double MGT, double a, double MIMASSC2, double MFMASSC2, int Z, double R, int betaType, std::string mode) {
+inline double WH(double E2, double K, double COS_GAMMA, double N1_K, double N1_N2, double MF, double MGT, double a, double MIMASSC2, double MFMASSC2, int Z, int A, double R, double Q, bool advanced, int betaType, std::string mode) {
     double E1 = delta(MIMASSC2, MFMASSC2, mode) - E2 - K ; 
     double BETA = std::sqrt( (1. - 1./std::pow(E2, 2)) ) ;
-    return ( K * BETA * E1 * E2 * MBR(E2, K, COS_GAMMA, N1_K, N1_N2, MF, MGT, a, MIMASSC2, MFMASSC2, Z, R, betaType, mode) ) ;
+    return ( K * BETA * E1 * E2 * MBR(E2, K, COS_GAMMA, N1_K, N1_N2, MF, MGT, a, MIMASSC2, MFMASSC2, Z, A, R, Q, advanced, betaType, mode) ) ;
 }
 
-inline double rho_H(int n, double Cs, double MF, double MGT, double a, double MIMASSC2, double MFMASSC2, int Z, double R, int betaType, std::string mode) {
+inline double rho_H(int n, double Cs, double MF, double MGT, double a, double MIMASSC2, double MFMASSC2, int Z, int A, double R, double Q, bool advanced, int betaType, std::string mode) {
     double somme_rhoH = 0. ;
     double Vg = -32. * std::pow(PI, 3) * (delta(MIMASSC2, MFMASSC2, mode) - 1) * log(Cs) ;
     std::random_device rd;
@@ -223,7 +223,7 @@ inline double rho_H(int n, double Cs, double MF, double MGT, double a, double MI
 
         double N1_N2 = n_NEUTRINO[0]*n_ELECTRON[0] + n_NEUTRINO[1]*n_ELECTRON[1] + n_NEUTRINO[2]*n_ELECTRON[2] ;
         double N1_K = n_NEUTRINO[0]*n_GAMMA[0] + n_NEUTRINO[1]*n_GAMMA[1] + n_NEUTRINO[2]*n_GAMMA[2] ;
-        double wh = WH(E2, K, COS_GAMMA, N1_K, N1_N2, MF, MGT, a, MIMASSC2, MFMASSC2, Z, R, betaType, mode)/(g_weight(E2, K, COS_GAMMA) * std::pow(2, 13) * std::pow(PI, 8) * std::pow( (MIMASSC2/EMASSC2) , 2 )) ;
+        double wh = WH(E2, K, COS_GAMMA, N1_K, N1_N2, MF, MGT, a, MIMASSC2, MFMASSC2, Z, A, R, Q, advanced, betaType, mode)/(g_weight(E2, K, COS_GAMMA) * std::pow(2, 13) * std::pow(PI, 8) * std::pow( (MIMASSC2/EMASSC2) , 2 )) ;
 
         if (std::isnan(wh) || std::isinf(wh)) {
             /*double p2_k = E2 * K - BETA * E2 * K * COS_GAMMA ;
@@ -273,7 +273,7 @@ inline double rho_H(int n, double Cs, double MF, double MGT, double a, double MI
     return RHOH ;
 }
 
-inline double WH_max(int n, double Cs, double MF, double MGT, double a, double MIMASSC2, double MFMASSC2, int Z, double R, int betaType, std::string mode) {
+inline double WH_max(int n, double Cs, double MF, double MGT, double a, double MIMASSC2, double MFMASSC2, int Z, int A, double R, double Q, bool advanced, int betaType, std::string mode) {
     double max = 0. ;
 
     std::random_device rd;
@@ -328,12 +328,12 @@ inline double WH_max(int n, double Cs, double MF, double MGT, double a, double M
         double N1_N2 = n_NEUTRINO[0]*n_ELECTRON[0] + n_NEUTRINO[1]*n_ELECTRON[1] + n_NEUTRINO[2]*n_ELECTRON[2] ;
         double N1_K = n_NEUTRINO[0]*n_GAMMA[0] + n_NEUTRINO[1]*n_GAMMA[1] + n_NEUTRINO[2]*n_GAMMA[2] ;
 
-        double wh = WH(E2, K, COS_GAMMA, N1_K, N1_N2, MF, MGT, a, MIMASSC2, MFMASSC2, Z, R, betaType, mode) ;
+        double wh = WH(E2, K, COS_GAMMA, N1_K, N1_N2, MF, MGT, a, MIMASSC2, MFMASSC2, Z, A, R, Q, advanced, betaType, mode) ;
         if (wh > max ) {
             if (std::isnan(wh) || std::isinf(wh)) {
 
             } else {
-                max = WH(E2, K, COS_GAMMA, N1_K, N1_N2, MF, MGT, a, MIMASSC2, MFMASSC2, Z, R, betaType, mode) ;
+                max = WH(E2, K, COS_GAMMA, N1_K, N1_N2, MF, MGT, a, MIMASSC2, MFMASSC2, Z, A, R, Q, advanced, betaType, mode) ;
             }
         }
     }
@@ -341,7 +341,7 @@ inline double WH_max(int n, double Cs, double MF, double MGT, double a, double M
 }
 
 // Equation 5.18
-inline double w0(double E2, double MF, double MGT, double MIMASSC2, double MFMASSC2, int Z, double R, int betaType, std::string mode) {
+inline double w0(double E2, double MF, double MGT, double MIMASSC2, double MFMASSC2, int Z, int A, double R, double Q, bool advanced, int betaType, std::string mode) {
     double E10 = delta(MIMASSC2, MFMASSC2, mode) - E2 ;
     double BETA = std::sqrt( (1. - 1./std::pow(E2, 2)) ) ;
     //double xi = xhi(MF, MGT) ;
@@ -349,11 +349,11 @@ inline double w0(double E2, double MF, double MGT, double MIMASSC2, double MFMAS
     //double EPS = (MF_2) + (std::pow(LAMBDA, 2)) * (MGT_2) ;
     double weight0 = ( std::pow(FERMICONSTANT, 2) * xi * BETA * std::pow(E10, 2) * std::pow(E2, 2)  )/(2 * std::pow(PI, 3)) ;
 
-    return weight0 * utilities::FermiFunction(Z, E2, R, betaType);
+    return weight0 * utilities::GetBetaCorrections(Z, A, Q, E2, betaType, advanced);
 }
 
 // Calcul du max de w0 pour Neumann Rejection
-inline double w0_max(double MF, double MGT, double MIMASSC2, double MFMASSC2, int Z, double R, int betaType, std::string mode) {
+inline double w0_max(double MF, double MGT, double MIMASSC2, double MFMASSC2, int Z, int A, double R, double Q, bool advanced, int betaType, std::string mode) {
     double w0max = 0 ;
     double n = 5000 ;
 
@@ -362,8 +362,8 @@ inline double w0_max(double MF, double MGT, double MIMASSC2, double MFMASSC2, in
     for (int i=0 ; i<n ; i++) {
         tableau_E2[i] = 1 + i * intervalle_E2 ;
 
-        if (w0max < w0(tableau_E2[i], MF, MGT, MIMASSC2, MFMASSC2, Z, R, betaType, mode)) {
-            w0max = w0(tableau_E2[i], MF, MGT, MIMASSC2, MFMASSC2, Z, R, betaType, mode) ;
+        if (w0max < w0(tableau_E2[i], MF, MGT, MIMASSC2, MFMASSC2, Z, A, R, Q, advanced, betaType, mode)) {
+            w0max = w0(tableau_E2[i], MF, MGT, MIMASSC2, MFMASSC2, Z, A, R, Q, advanced, betaType, mode) ;
         }
     }
     std::cout << "w0max : " << w0max << "\n";
@@ -399,19 +399,19 @@ inline double rho0 (int n, double MF_2, double MGT_2, double MIMASSC2, double MF
     return result ; 
 }
 */
-inline double rho0(int n, double MF, double MGT, double MIMASSC2, double MFMASSC2, int Z, double R, int betaType, std::string mode) {
+inline double rho0(int n, double MF, double MGT, double MIMASSC2, double MFMASSC2, int Z, int A, double R, double Q, bool advanced, int betaType, std::string mode) {
     double b = delta(MIMASSC2, MFMASSC2, mode)-1 ;
 
     double h = b/(n+1) ; 
     double result = 0 ;
     for (int i=0 ; i<n ; i++) {
-        if (!std::isnan(w0(1+h*i, MF, MGT, MIMASSC2, MFMASSC2, Z, R, betaType, mode))) {
+        if (!std::isnan(w0(1+h*i, MF, MGT, MIMASSC2, MFMASSC2, Z, A, R, Q, advanced, betaType, mode))) {
         //if(w0(1+h*i, a, MIMASSC2, MFMASSC2, Z, R, betaType, mode)<=0 or w0(1+h*i, a, MIMASSC2, MFMASSC2, Z, R, betaType, mode)>=0 ) {
             
             double dx1 = 1+i*h ;
             double dx2 = dx1 + h ;
 
-            result += (h)*w0(0.5*(dx1+dx2), MF, MGT, MIMASSC2, MFMASSC2, Z, R, betaType, mode);
+            result += (h)*w0(0.5*(dx1+dx2), MF, MGT, MIMASSC2, MFMASSC2, Z, A, R, Q, advanced, betaType, mode);
         }
     }
     //std::cout << "res : " << w0(1+0.01, a, MIMASSC2, MFMASSC2, Z, R, betaType, mode) << "\n";
@@ -419,19 +419,19 @@ inline double rho0(int n, double MF, double MGT, double MIMASSC2, double MFMASSC
 }
 
 // Equation 5.20
-inline double wVS(double E2, double Cs, double MF, double MGT, double MIMASSC2, double MFMASSC2, int Z, double R, int betaType, std::string mode) {
+inline double wVS(double E2, double Cs, double MF, double MGT, double MIMASSC2, double MFMASSC2, int Z, int A, double R, double Q, bool advanced, int betaType, std::string mode) {
     double E10 = delta(MIMASSC2, MFMASSC2, mode) - E2 ;
     double BETA = std::sqrt( (1. - 1./std::pow(E2, 2)) ) ;
     double N = 0.5 * log( (1. + BETA)/(1. - BETA) ) ; 
     double omega = E10 * Cs ;
     double zVS = (FINESTRUCTURE/PI) * (1.5 * log(PMASSC2/EMASSC2) + 2. *( (N/BETA) - 1. ) * log(2.*omega) + 2 * (N/BETA) * (1. - N) + (2./BETA) * (Spence_function(2. * BETA/(1. + BETA))) - (3./8.)) ;
-    double weightVS = w0(E2, MF, MGT, MIMASSC2, MFMASSC2, Z, R, betaType, mode) * (zVS - (FINESTRUCTURE * N/PI) * ( 1. - std::pow(BETA, 2))/BETA) ;
+    double weightVS = w0(E2, MF, MGT, MIMASSC2, MFMASSC2, Z, A, R, Q, advanced, betaType, mode) * (zVS - (FINESTRUCTURE * N/PI) * ( 1. - std::pow(BETA, 2))/BETA) ;
     
     return weightVS ;
 }
 
 // Calcul du max de wVS pour Neumann Rejection
-inline double wVS_max(double Cs, double MF, double MGT, double MIMASSC2, double MFMASSC2, int Z, double R, int betaType, std::string mode) {
+inline double wVS_max(double Cs, double MF, double MGT, double MIMASSC2, double MFMASSC2, int Z, int A, double R, double Q, bool advanced, int betaType, std::string mode) {
     double wVSmax = 0 ;
     double n = 5000 ;
 
@@ -440,23 +440,23 @@ inline double wVS_max(double Cs, double MF, double MGT, double MIMASSC2, double 
     for (int i=0 ; i<n ; i++) {
         tableau_E2[i] = 1 + i * intervalle_E2 ;
 
-        if (wVSmax < wVS(tableau_E2[i], Cs, MF, MGT, MIMASSC2, MFMASSC2, Z, R, betaType, mode)) {
-            wVSmax = wVS(tableau_E2[i], Cs, MF, MGT, MIMASSC2, MFMASSC2, Z, R, betaType, mode) ;
+        if (wVSmax < wVS(tableau_E2[i], Cs, MF, MGT, MIMASSC2, MFMASSC2, Z, A, R, Q, advanced, betaType, mode)) {
+            wVSmax = wVS(tableau_E2[i], Cs, MF, MGT, MIMASSC2, MFMASSC2, Z, A, R, Q, advanced, betaType, mode) ;
         }
     }
     return wVSmax ; 
 }
 
-inline double rhoVS(int n, double Cs, double MF, double MGT, double MIMASSC2, double MFMASSC2, int Z, double R, int betaType, std::string mode) {
+inline double rhoVS(int n, double Cs, double MF, double MGT, double MIMASSC2, double MFMASSC2, int Z, int A, double R, double Q, bool advanced, int betaType, std::string mode) {
     double b = delta(MIMASSC2, MFMASSC2, mode)-1 ;
     double h = b/(n) ; 
     double result = 0 ;
     for (int i=0 ; i<n ; i++) {
-        if(!std::isnan(wVS(1+h*i, Cs, MF, MGT, MIMASSC2, MFMASSC2, Z, R, betaType, mode)) ) {
+        if(!std::isnan(wVS(1+h*i, Cs, MF, MGT, MIMASSC2, MFMASSC2, Z, A, R, Q, advanced, betaType, mode)) ) {
 
             double dx1 = 1 + i*h ;
             double dx2 = dx1 + h ;
-            result += (h)*wVS(0.5*(dx1+dx2), Cs, MF, MGT, MIMASSC2, MFMASSC2, Z, R, betaType, mode);
+            result += (h)*wVS(0.5*(dx1+dx2), Cs, MF, MGT, MIMASSC2, MFMASSC2, Z, A, R, Q, advanced, betaType, mode);
 
         }
     }
@@ -466,12 +466,12 @@ inline double rhoVS(int n, double Cs, double MF, double MGT, double MIMASSC2, do
 }
 
 // Equation 5.18 + 5.20
-inline double w0VS(double E2, double Cs, double MF, double MGT, double MIMASSC2, double MFMASSC2, int Z, double R, int betaType, std::string mode) {
-    return w0(E2, MF, MGT, MIMASSC2, MFMASSC2, Z, R, betaType, mode) + wVS(E2, Cs, MF, MGT, MIMASSC2, MFMASSC2, Z, R, betaType, mode);
+inline double w0VS(double E2, double Cs, double MF, double MGT, double MIMASSC2, double MFMASSC2, int Z, int A, double R, double Q, bool advanced, int betaType, std::string mode) {
+    return w0(E2, MF, MGT, MIMASSC2, MFMASSC2, Z, A, R, Q, advanced, betaType, mode) + wVS(E2, Cs, MF, MGT, MIMASSC2, MFMASSC2, Z, A, R, Q, advanced, betaType, mode);
 }
 
 // Calcul du max de w0VS pour Neumann Rejection (spectre)
-inline double w0VS_max(double Cs, double MF, double MGT, double MIMASSC2, double MFMASSC2, int Z, double R, int betaType, std::string mode) {
+inline double w0VS_max(double Cs, double MF, double MGT, double MIMASSC2, double MFMASSC2, int Z, int A, double R, double Q, bool advanced, int betaType, std::string mode) {
     double w0VSmax = 0 ;
     double n = 5000 ;
 
@@ -480,20 +480,20 @@ inline double w0VS_max(double Cs, double MF, double MGT, double MIMASSC2, double
     for (int i=0 ; i<n ; i++) {
         tableau_E2[i] = 1 + i * intervalle_E2 ;
 
-        if (w0VSmax < w0VS(tableau_E2[i], Cs, MF, MGT, MIMASSC2, MFMASSC2, Z, R, betaType, mode)) {
-            w0VSmax = w0VS(tableau_E2[i], Cs, MF, MGT, MIMASSC2, MFMASSC2, Z, R, betaType, mode) ;
+        if (w0VSmax < w0VS(tableau_E2[i], Cs, MF, MGT, MIMASSC2, MFMASSC2, Z, A, R, Q, advanced, betaType, mode)) {
+            w0VSmax = w0VS(tableau_E2[i], Cs, MF, MGT, MIMASSC2, MFMASSC2, Z, A, R, Q, advanced, betaType, mode) ;
         }
     }
     return w0VSmax ;
 }
 
-inline double W0(double E2, double COS, double MF, double MGT, double a, double MIMASSC2, double MFMASSC2, int Z, double R, int betaType, std::string mode) {
+inline double W0(double E2, double COS, double MF, double MGT, double a, double MIMASSC2, double MFMASSC2, int Z, int A, double R, double Q, bool advanced, int betaType, std::string mode) {
     double E10 = delta(MIMASSC2, MFMASSC2, mode) - E2 ;
     double BETA = std::sqrt( (1. - 1./std::pow(E2, 2)) ) ;
-    return BETA * E10 * E2 * M0(E2, COS, MF, MGT, a, MIMASSC2, MFMASSC2, Z, R, betaType, mode);
+    return BETA * E10 * E2 * M0(E2, COS, MF, MGT, a, MIMASSC2, MFMASSC2, Z, A, R, Q, advanced, betaType, mode);
 }
 
-inline double W0_max(double MF, double MGT, double a, double MIMASSC2, double MFMASSC2, int Z, double R, int betaType, std::string mode) {
+inline double W0_max(double MF, double MGT, double a, double MIMASSC2, double MFMASSC2, int Z, int A, double R, double Q, bool advanced, int betaType, std::string mode) {
     double W0max = 0 ;
     double n = 5000 ;
 
@@ -508,21 +508,21 @@ inline double W0_max(double MF, double MGT, double a, double MIMASSC2, double MF
     }
     for (int i=0 ; i<=n ; i++) {
         for (int j=0 ; j<=n ; j++) {
-            if (W0max < W0(tableau_E2[i], tableau_cos[j], MF, MGT, a, MIMASSC2, MFMASSC2, Z, R, betaType, mode)) {
-                W0max = W0(tableau_E2[i], tableau_cos[j], MF, MGT, a, MIMASSC2, MFMASSC2, Z, R, betaType, mode) ;
+            if (W0max < W0(tableau_E2[i], tableau_cos[j], MF, MGT, a, MIMASSC2, MFMASSC2, Z, A, R, Q, advanced, betaType, mode)) {
+                W0max = W0(tableau_E2[i], tableau_cos[j], MF, MGT, a, MIMASSC2, MFMASSC2, Z, A, R, Q, advanced, betaType, mode) ;
             }
         }
     }
     return W0max ;
 }
 
-inline double W0VS(double E2, double C, double Cs, double MF, double MGT, double a, double MIMASSC2, double MFMASSC2, int Z, double R, int betaType, std::string mode) {
+inline double W0VS(double E2, double C, double Cs, double MF, double MGT, double a, double MIMASSC2, double MFMASSC2, int Z, int A, double R, double Q, bool advanced, int betaType, std::string mode) {
     double E10 = delta(MIMASSC2, MFMASSC2, mode) - E2 ;
     double BETA = std::sqrt( (1. - 1./std::pow(E2, 2)) ) ;
-    return BETA * E10 * E2 * ( M0(E2, C, MF, MGT, a, MIMASSC2, MFMASSC2, Z, R, betaType, mode) + MVS(E2, C, Cs, MF, MGT, a, MIMASSC2, MFMASSC2, Z, R, betaType, mode) ); 
+    return BETA * E10 * E2 * ( M0(E2, C, MF, MGT, a, MIMASSC2, MFMASSC2, Z, A, R, Q, advanced, betaType, mode) + MVS(E2, C, Cs, MF, MGT, a, MIMASSC2, MFMASSC2, Z, A, R, Q, advanced, betaType, mode) ); 
 }
 
-inline double W0VS_max(double Cs, double MF, double MGT, double a, double MIMASSC2, double MFMASSC2, int Z, double R, int betaType, std::string mode) {
+inline double W0VS_max(double Cs, double MF, double MGT, double a, double MIMASSC2, double MFMASSC2, int Z, int A, double R, double Q, bool advanced, int betaType, std::string mode) {
     double W0VSmax = 0 ;
     double n = 1000 ;
 
@@ -536,8 +536,8 @@ inline double W0VS_max(double Cs, double MF, double MGT, double a, double MIMASS
     }
     for (int i=0 ; i<=n ; i++) {
         for (int j=0 ; j<=n ; j++) {
-            if (W0VSmax < W0VS(tableau_E2[i], tableau_cos[j], Cs, MF, MGT, a, MIMASSC2, MFMASSC2, Z, R, betaType, mode)) {
-                W0VSmax = W0VS(tableau_E2[i], tableau_cos[j], Cs, MF, MGT, a, MIMASSC2, MFMASSC2, Z, R, betaType, mode) ;
+            if (W0VSmax < W0VS(tableau_E2[i], tableau_cos[j], Cs, MF, MGT, a, MIMASSC2, MFMASSC2, Z, A, R, Q, advanced, betaType, mode)) {
+                W0VSmax = W0VS(tableau_E2[i], tableau_cos[j], Cs, MF, MGT, a, MIMASSC2, MFMASSC2, Z, A, R, Q, advanced, betaType, mode) ;
             }
         }
     }
@@ -549,12 +549,12 @@ inline double W0VS_max(double Cs, double MF, double MGT, double a, double MIMASS
     return W0VSmax ;
 }
 
-inline double PH(double Cs, double MF, double MGT, double a, double MIMASSC2, double MFMASSC2, int Z, double R, int betaType, std::string mode) {
+inline double PH(double Cs, double MF, double MGT, double a, double MIMASSC2, double MFMASSC2, int Z, int A, double R, double Q, bool advanced, int betaType, std::string mode) {
     //MF = 0;
     //MGT = 6;
-    double RHOH = rho_H(1000000, Cs, MF, MGT, a, MIMASSC2, MFMASSC2, Z, R, betaType, mode) ;
-    double RHO0 = rho0(5000, MF, MGT, MIMASSC2, MFMASSC2, Z, R, betaType, mode) ;
-    double RHOVS = rhoVS(5000, Cs, MF, MGT, MIMASSC2, MFMASSC2, Z, R, betaType, mode) ;
+    double RHOH = rho_H(1000000, Cs, MF, MGT, a, MIMASSC2, MFMASSC2, Z, A, R, Q, advanced, betaType, mode) ;
+    double RHO0 = rho0(5000, MF, MGT, MIMASSC2, MFMASSC2, Z, A, R, Q, advanced, betaType, mode) ;
+    double RHOVS = rhoVS(5000, Cs, MF, MGT, MIMASSC2, MFMASSC2, Z, A, R, Q, advanced, betaType, mode) ;
     double RHO0VS = RHO0 + RHOVS ;
     
     //std::cout << "rhoh : " << RHOH << "\n";

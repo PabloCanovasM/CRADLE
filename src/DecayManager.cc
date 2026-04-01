@@ -151,7 +151,7 @@ void DecayManager::RegisterBasicParticles() {
   RegisterParticle(new Particle("e+RC", utilities::EMASSC2, 1, 0, 0.5, 0.));
   RegisterParticle(new Particle("enuRC", 0., 0, 0, 0.5, 0.));
   RegisterParticle(new Particle("enubarRC", 0., 0, 0, 0.5, 0.));
-  RegisterParticle(new Particle("gammaRC", 0., 0, 0, 0., 0.));
+  RegisterParticle(new Particle("gammaBR", 0., 0, 0, 0., 0.));
 
   RegisterParticle(new Particle("enuEC", 0., 0, 0, 0.5, 0.));
 }
@@ -474,12 +474,13 @@ bool DecayManager::GenerateNucleus(string name, int Z, int A) {
         int A = p->GetCharge() + p->GetNeutrons() ; 
         double R = utilities::ApproximateRadius(A) ;
         int betaType = Z/std::abs(Z);
+        bool advanced = true;
         
         if (mode == "BetaPlus") {
-          betaType = -betaType ;
+          betaType = -1 ;
         }
 
-        double ph = radiativecorrections::PH(Cs, mf, mgt, a, mass_i, mass_f, std::abs(Z), R, betaType, mode) ;
+        double ph = radiativecorrections::PH(Cs, mf, mgt, a, mass_i, mass_f, std::abs(Z), A, R, Q, advanced, betaType, mode) ;
 
         if (std::isnan(ph)) {
           std::cout << "Intensity : " << intensity << "\n";

@@ -849,6 +849,74 @@ namespace utilities {
     return dist;
   }
 
+
+inline double GetBetaCorrections(int Z, int A, double Q, double E, int betaType, bool advanced) { 
+    // Return the beta corection for the 4-body radiative corrections ONLY
+    // coorections = FermiFunction 
+    //               * AtomicExchangeCorrection
+    //               * L0Correction
+    //               * CCorrectionComponents
+    //               * UCorrection
+    //               * AtomicScreeningCorrection
+    //               * RadiativeCorrection / RC_O1corr (only O2 & O3 RC)
+    //               * RecoilCorrection
+    //               * AtomicMismatchCorrection
+    //               * QCorrection
+    
+    double W = E/EMASSC2+1.;
+    W = E;
+    double W0 = Q/EMASSC2+1.;
+    int decayType = FERMI ;
+    double R = std::sqrt(5./3.)*ApproximateRadius(A)/NATURALLENGTH;
+    //int betaType = (int)((Z > 0) - (Z < 0));
+    Z = std::abs(Z);
+    //advanced = false;
+
+    if (advanced) {
+      Z = std::abs(Z);
+      //int betaType = (int)((Z > 0) - (Z < 0));
+      double cShape, cNS, g;
+      DecayManager& dm = DecayManager::GetInstance();
+
+      if (dm.configOptions.betaDecay.Default == "Fermi") {
+        decayType = FERMI;
+        //std::cout << "fermi" << "\n";
+      }
+      if (dm.configOptions.betaDecay.Default == "Gamow-Teller") {
+        decayType = GAMOW_TELLER;
+        //std::cout << "GT" << "\n";
+      }
+      else{
+        decayType = FERMI;
+        //std::cout << "here" << "\n";
+      }
+      
+      // Radiative correction at order 1, based on the 5th Wilkinson article
+      double beta = std::sqrt(1.0 - 1.0 / W / W);
+
+      g = 3. * std::log(PMASSC2 / EMASSC2) - 0.75 
+          + 4. * (std::atanh(beta) / beta - 1.) 
+          * ((W0 - W) / 3. / W - 1.5 + std::log(2 * (W0 - W)))
+          + 4.0 / beta * Spence(2. * beta / (1. + beta))
+          + std::atanh(beta) / beta 
+          * (2. * (1. + beta * beta) + (W0 - W) * (W0 - W) / 6. / W / W - 4. * std::atanh(beta));
+
+      double RC_O1corr = 1 + FINESTRUCTURE / 2. / M_PI * g;
+
+      // Shape Factor
+      std::tie(cShape, cNS) = CCorrectionComponents(W, W0, Z, A, R, betaType, decayType, 1.27, -229, 1, 4.*A, 1*A, 0);
+      double CCorr = cShape + cNS;
+      //My correction SL 10/05/2023
+      return FermiFunction(Z, W, R, betaType) * AtomicExchangeCorrection(W, Z) * L0Correction(W, Z, R, betaType)
+             * CCorr * UCorrection(W, Z, betaType) * AtomicScreeningCorrection(W, Z, betaType)
+             * RadiativeCorrection(W, W0, Z, R, 1.27, 4.7) / RC_O1corr * RecoilCorrection(W, W0, A, 0, 0)
+             * AtomicMismatchCorrection(W, W0, Z, A, betaType) * QCorrection(W, W0, Z, A, betaType);
+    } else {
+      return FermiFunction(Z, W, R, betaType)  ;
+    }
+}
+
+
   inline vector<double> CrossProduct(vector<double> first, vector<double> second) {
     vector<double> v (3);
 
