@@ -437,14 +437,14 @@ std::vector<Particle*> BetaMinusRadiative::Decay(Particle* initState, double Q, 
   std::ostringstream oss;
   oss << initState->GetCharge()+initState->GetNeutrons() << utilities::atoms[initState->GetCharge()];
   //std::cout << oss.str() << std::endl;
-  Particle* recoil = DecayManager::GetInstance().GetNewParticle(oss.str()+"RC", initState->GetCharge()+1, initState->GetCharge()+initState->GetNeutrons());
+  Particle* recoil = DecayManager::GetInstance().GetNewParticle(oss.str()+"", initState->GetCharge()+1, initState->GetCharge()+initState->GetNeutrons());
   recoil->SetExcitationEnergy(daughterExEn);
   
-  //std::string parentName = oss.str();
+  std::string parentName = oss.str();
   
-  Particle* e = DecayManager::GetInstance().GetNewParticle("e-RC");
-  Particle* enubar = DecayManager::GetInstance().GetNewParticle("enubarRC");
-  Particle* gamma = DecayManager::GetInstance().GetNewParticle("gammaBR");
+  Particle* e = DecayManager::GetInstance().GetNewParticle("e-"+parentName);
+  Particle* enubar = DecayManager::GetInstance().GetNewParticle("enubar"+parentName);
+  Particle* gamma = DecayManager::GetInstance().GetNewParticle("gammaBR"+parentName);
 
 
   // std::cout << "Recoil " << recoil->GetCharge() << " " << recoil->GetNeutrons() << " " << recoil << std::endl;
@@ -524,7 +524,7 @@ std::vector<Particle*> BetaMinusRadiative::Decay(Particle* initState, double Q, 
   try {
     W = DecayManager::GetInstance().GetParameterMC(oss.str()) ;
   } catch (const std::invalid_argument& e) {
-    double WHmax = radiativecorrections::WH_max(1000000, Cs, mf, mgt, a, mass_i, mass_f, Z, A, R, Q, advanced,betaType, "BetaMinus");
+    double WHmax = radiativecorrections::WH_max(10000, Cs, mf, mgt, a, mass_i, mass_f, Z, A, R, Q, advanced,betaType, "BetaMinus");
     W = {WHmax, 0} ;
     DecayManager::GetInstance().RegisterParameterMC(oss.str(), W) ;
   }
@@ -626,10 +626,12 @@ std::vector<Particle*> BetaMinusVirtualSoft::Decay(Particle* initState, double Q
   Particle* recoil = DecayManager::GetInstance().GetNewParticle(oss.str(), initState->GetCharge()+1, initState->GetCharge()+initState->GetNeutrons());
   recoil->SetExcitationEnergy(daughterExEn);
   
-  //std::string parentName = oss.str();
+  std::string parentName = oss.str();
+  //std::cout << "Parent name : " << parentName << std::endl;
+  //std::cout << "e-"+parentName << std::endl;
   
-  Particle* e = DecayManager::GetInstance().GetNewParticle("e-");
-  Particle* enubar = DecayManager::GetInstance().GetNewParticle("enubar");
+  Particle* e = DecayManager::GetInstance().GetNewParticle("e-"+parentName);
+  Particle* enubar = DecayManager::GetInstance().GetNewParticle("enubar"+parentName);
 
   // std::cout << "Recoil " << recoil->GetCharge() << " " << recoil->GetNeutrons() << " " << recoil << std::endl;
     
@@ -959,10 +961,10 @@ std::vector<Particle*> BetaPlusRadiative::Decay(Particle* initState, double Q, d
   //std::cout << "Address: " << initState << std::endl;
   std::ostringstream oss;
   oss << initState->GetCharge()+initState->GetNeutrons() << utilities::atoms[initState->GetCharge()-2];
-  Particle* recoil = DecayManager::GetInstance().GetNewParticle(oss.str()+"RC", initState->GetCharge()-1, initState->GetCharge()+initState->GetNeutrons());
+  Particle* recoil = DecayManager::GetInstance().GetNewParticle(oss.str()+"", initState->GetCharge()-1, initState->GetCharge()+initState->GetNeutrons());
   recoil->SetExcitationEnergy(daughterExEn);
-  Particle* pos = DecayManager::GetInstance().GetNewParticle("e+RC");
-  Particle* enu = DecayManager::GetInstance().GetNewParticle("enuRC");
+  Particle* pos = DecayManager::GetInstance().GetNewParticle("e+");
+  Particle* enu = DecayManager::GetInstance().GetNewParticle("enu");
   Particle* gamma = DecayManager::GetInstance().GetNewParticle("gammaBR");
 
   oss.str("");
@@ -1051,7 +1053,7 @@ std::vector<Particle*> BetaPlusRadiative::Decay(Particle* initState, double Q, d
   try {
     W = DecayManager::GetInstance().GetParameterMC(oss.str()) ;
   } catch (const std::invalid_argument& e) {
-    double WHmax = radiativecorrections::WH_max(1000000, Cs, mf, mgt, a, mass_i, mass_f, Z, A, R, Q, advanced, betaType, "BetaPlus");
+    double WHmax = radiativecorrections::WH_max(10000, Cs, mf, mgt, a, mass_i, mass_f, Z, A, R, Q, advanced, betaType, "BetaPlus");
     W = {WHmax, 0} ;
     DecayManager::GetInstance().RegisterParameterMC(oss.str(), W) ;
   }
@@ -1188,10 +1190,10 @@ std::vector<Particle*> BetaPlusVirtualSoft::Decay(Particle* initState, double Q,
   //std::cout << "Address: " << initState << std::endl;
   std::ostringstream oss;
   oss << initState->GetCharge()+initState->GetNeutrons() << utilities::atoms[initState->GetCharge()-2];
-  Particle* recoil = DecayManager::GetInstance().GetNewParticle(oss.str()+"RC", initState->GetCharge()-1, initState->GetCharge()+initState->GetNeutrons());
+  Particle* recoil = DecayManager::GetInstance().GetNewParticle(oss.str()+"", initState->GetCharge()-1, initState->GetCharge()+initState->GetNeutrons());
   recoil->SetExcitationEnergy(daughterExEn);
-  Particle* pos = DecayManager::GetInstance().GetNewParticle("e+RC");
-  Particle* enu = DecayManager::GetInstance().GetNewParticle("enuRC");
+  Particle* pos = DecayManager::GetInstance().GetNewParticle("e+");
+  Particle* enu = DecayManager::GetInstance().GetNewParticle("enu");
 
   oss.str("");
   oss.clear();

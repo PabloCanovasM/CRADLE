@@ -154,6 +154,14 @@ void DecayManager::RegisterBasicParticles() {
   RegisterParticle(new Particle("gammaBR", 0., 0, 0, 0., 0.));
 
   RegisterParticle(new Particle("enuEC", 0., 0, 0, 0.5, 0.));
+
+  RegisterParticle(new Particle("e-90Y", utilities::EMASSC2, -1, 0, 0.5, 0.));
+  RegisterParticle(new Particle("enubar90Y", 0., 0, 0, 0.5, 0.));
+  RegisterParticle(new Particle("gammaBR90Y", 0., 0, 0, 0., 0.));
+
+  RegisterParticle(new Particle("e-90Zr", utilities::EMASSC2, -1, 0, 0.5, 0.));
+  RegisterParticle(new Particle("enubar90Zr", 0., 0, 0, 0.5, 0.));
+  RegisterParticle(new Particle("gammaBR90Zr", 0., 0, 0, 0., 0.));
 }
 
 void DecayManager::RegisterBasicDecayModes() {
