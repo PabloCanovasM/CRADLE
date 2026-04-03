@@ -519,12 +519,16 @@ std::vector<Particle*> BetaMinusRadiative::Decay(Particle* initState, double Q, 
   int betaType = (int)((Z > 0) - (Z < 0));
   Z = std::abs(Z) ;
   bool advanced = true ;
+  double Jpi_init = utilities::GetJpi(initState->GetNeutrons() + initState->GetCharge(), initState->GetCharge(), initState->GetExcitationEnergy());
+  double Jpi_final = utilities::GetJpi(recoil->GetNeutrons() + recoil->GetCharge(), recoil->GetCharge(), recoil->GetExcitationEnergy());
+  int Labs = std::abs(std::abs(Jpi_final) - std::abs(Jpi_init));
+  //std::cout << "Jpi init : " << Jpi_init << "\t Jpi final : " << Jpi_final << "\t Labs : " << Labs << std::endl;
 
   std::vector<double> W;
   try {
     W = DecayManager::GetInstance().GetParameterMC(oss.str()) ;
   } catch (const std::invalid_argument& e) {
-    double WHmax = radiativecorrections::WH_max(10000, Cs, mf, mgt, a, mass_i, mass_f, Z, A, R, Q, advanced,betaType, "BetaMinus");
+    double WHmax = radiativecorrections::WH_max(10000, Cs, mf, mgt, a, mass_i, mass_f, Z, A, R, Q, Labs, advanced,betaType, "BetaMinus");
     W = {WHmax, 0} ;
     DecayManager::GetInstance().RegisterParameterMC(oss.str(), W) ;
   }
@@ -578,7 +582,7 @@ std::vector<Particle*> BetaMinusRadiative::Decay(Particle* initState, double Q, 
     double N1_N2 = n_NEUTRINO[0]*n_ELECTRON[0] + n_NEUTRINO[1]*n_ELECTRON[1] + n_NEUTRINO[2]*n_ELECTRON[2] ;
     double N1_K = n_NEUTRINO[0]*n_GAMMA[0] + n_NEUTRINO[1]*n_GAMMA[1] + n_NEUTRINO[2]*n_GAMMA[2] ;
 
-    if (wH_NR < radiativecorrections::WH(E2, K, COS_GAMMA, N1_K, N1_N2, mf, mgt, a, mass_i, mass_f, Z, A, R, Q, advanced, betaType, "BetaMinus")) {
+    if (wH_NR < radiativecorrections::WH(E2, K, COS_GAMMA, N1_K, N1_N2, mf, mgt, a, mass_i, mass_f, Z, A, R, Q, Labs, advanced, betaType, "BetaMinus")) {
       nH += 1 ;
 
       ublas::vector<double> velocity = -initState->GetVelocity();
@@ -705,12 +709,16 @@ std::vector<Particle*> BetaMinusVirtualSoft::Decay(Particle* initState, double Q
   int betaType = (int)((Z > 0) - (Z < 0));
   Z = std::abs(Z) ;
   bool advanced = true ;
+  double Jpi_init = utilities::GetJpi(initState->GetNeutrons() + initState->GetCharge(), initState->GetCharge(), initState->GetExcitationEnergy());
+  double Jpi_final = utilities::GetJpi(recoil->GetNeutrons() + recoil->GetCharge(), recoil->GetCharge(), recoil->GetExcitationEnergy());
+  int Labs = std::abs(std::abs(Jpi_final) - std::abs(Jpi_init));
+  //std::cout << "Jpi init : " << Jpi_init << "\t Jpi final : " << Jpi_final << "\t Labs : " << Labs << std::endl;
 
   std::vector<double> W;
   try {
     W = DecayManager::GetInstance().GetParameterMC(oss.str()) ;
   } catch (const std::invalid_argument& e) {
-    double W0VSmax = radiativecorrections::W0VS_max(Cs, mf, mgt, a, mass_i, mass_f, Z, A, R, Q, advanced, betaType, "BetaMinus");
+    double W0VSmax = radiativecorrections::W0VS_max(Cs, mf, mgt, a, mass_i, mass_f, Z, A, R, Q, Labs,advanced, betaType, "BetaMinus");
     W = {W0VSmax, 0} ;
     DecayManager::GetInstance().RegisterParameterMC(oss.str(), W) ;
   }
@@ -728,7 +736,7 @@ std::vector<Particle*> BetaMinusVirtualSoft::Decay(Particle* initState, double Q
     double E2 = 1. + (radiativecorrections::delta(mass_i, mass_f, "BetaMinus") - 1.) * U[0] ;
     double COS_NEUTRINO = 2. * U[1] - 1. ;
     
-    if (w0VS_NR < radiativecorrections::W0VS(E2, COS_NEUTRINO, Cs, mf, mgt, a, mass_i, mass_f, Z, A, R, Q, advanced, betaType, "BetaMinus")) {
+    if (w0VS_NR < radiativecorrections::W0VS(E2, COS_NEUTRINO, Cs, mf, mgt, a, mass_i, mass_f, Z, A, R, Q, Labs, advanced, betaType, "BetaMinus")) {
       n0VS += 1 ;
       double E10 = radiativecorrections::delta(mass_i, mass_f, "BetaMinus") - E2 ;
       double BETA = std::sqrt(1. - 1./std::pow(E2, 2) ) ;
@@ -1048,12 +1056,15 @@ std::vector<Particle*> BetaPlusRadiative::Decay(Particle* initState, double Q, d
   int betaType = (int)((Z > 0) - (Z < 0));
   Z = std::abs(Z) ;
   bool advanced = true ;
+  double Jpi_init = utilities::GetJpi(initState->GetNeutrons() + initState->GetCharge(), initState->GetCharge(), initState->GetExcitationEnergy());
+  double Jpi_final = utilities::GetJpi(recoil->GetNeutrons() + recoil->GetCharge(), recoil->GetCharge(), recoil->GetExcitationEnergy());
+  int Labs = std::abs(std::abs(Jpi_final) - std::abs(Jpi_init));
 
   std::vector<double> W;
   try {
     W = DecayManager::GetInstance().GetParameterMC(oss.str()) ;
   } catch (const std::invalid_argument& e) {
-    double WHmax = radiativecorrections::WH_max(10000, Cs, mf, mgt, a, mass_i, mass_f, Z, A, R, Q, advanced, betaType, "BetaPlus");
+    double WHmax = radiativecorrections::WH_max(10000, Cs, mf, mgt, a, mass_i, mass_f, Z, A, R, Q, Labs, advanced, betaType, "BetaPlus");
     W = {WHmax, 0} ;
     DecayManager::GetInstance().RegisterParameterMC(oss.str(), W) ;
   }
@@ -1105,7 +1116,7 @@ std::vector<Particle*> BetaPlusRadiative::Decay(Particle* initState, double Q, d
 
     double N1_N2 = n_NEUTRINO[0]*n_ELECTRON[0] + n_NEUTRINO[1]*n_ELECTRON[1] + n_NEUTRINO[2]*n_ELECTRON[2] ;
     double N1_K = n_NEUTRINO[0]*n_GAMMA[0] + n_NEUTRINO[1]*n_GAMMA[1] + n_NEUTRINO[2]*n_GAMMA[2] ;
-    if (wH_NR <= radiativecorrections::WH(E2, K, COS_GAMMA, N1_K, N1_N2, mf, mgt, a, mass_i, mass_f, Z, A, R, Q, advanced, betaType, "BetaPlus")) {
+    if (wH_NR <= radiativecorrections::WH(E2, K, COS_GAMMA, N1_K, N1_N2, mf, mgt, a, mass_i, mass_f, Z, A, R, Q, Labs, advanced, betaType, "BetaPlus")) {
       nH += 1 ;
 
       /*double p2_k = E2 * K - BETA * E2 * K * COS_GAMMA ;
@@ -1276,12 +1287,15 @@ std::vector<Particle*> BetaPlusVirtualSoft::Decay(Particle* initState, double Q,
   int betaType = (int)((Z > 0) - (Z < 0));
   Z = std::abs(Z) ;
   bool advanced = true ;
+  double Jpi_init = utilities::GetJpi(initState->GetNeutrons() + initState->GetCharge(), initState->GetCharge(), initState->GetExcitationEnergy());
+  double Jpi_final = utilities::GetJpi(recoil->GetNeutrons() + recoil->GetCharge(), recoil->GetCharge(), recoil->GetExcitationEnergy());
+  int Labs = std::abs(std::abs(Jpi_final) - std::abs(Jpi_init));
   
   std::vector<double> W;
   try {
     W = DecayManager::GetInstance().GetParameterMC(oss.str()) ;
   } catch (const std::invalid_argument& e) {
-    double W0VSmax = radiativecorrections::W0VS_max(Cs, mf, mgt, a, mass_i, mass_f, Z, A, R, Q, advanced, betaType, "BetaPlus");
+    double W0VSmax = radiativecorrections::W0VS_max(Cs, mf, mgt, a, mass_i, mass_f, Z, A, R, Q, Labs, advanced, betaType, "BetaPlus");
     W = {W0VSmax, 0} ;
     DecayManager::GetInstance().RegisterParameterMC(oss.str(), W) ;
   }
@@ -1305,7 +1319,7 @@ std::vector<Particle*> BetaPlusVirtualSoft::Decay(Particle* initState, double Q,
     std::cout << "delta : " << radiativecorrections::delta(mass_i, mass_f, "BetaPlus") << "\n";*/
     
 
-    if (w0VS_NR < radiativecorrections::W0VS(E2, COS_NEUTRINO, Cs, mf, mgt, a, mass_i, mass_f, Z, A, R, Q, advanced, betaType, "BetaPlus")) {
+    if (w0VS_NR < radiativecorrections::W0VS(E2, COS_NEUTRINO, Cs, mf, mgt, a, mass_i, mass_f, Z, A, R, Q, Labs, advanced, betaType, "BetaPlus")) {
       n0VS += 1 ;
       double E10 = radiativecorrections::delta(mass_i, mass_f, "BetaPlus") - E2 ;
       double BETA = std::sqrt(1. - 1./std::pow(E2, 2) ) ;

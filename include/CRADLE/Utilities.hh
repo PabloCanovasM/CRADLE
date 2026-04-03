@@ -396,6 +396,12 @@ namespace utilities {
   }
 
 
+  inline int factorial(int n) {
+    double r = 1.0;
+    for (int i = 2; i <= n; ++i) r *= i;
+    return r;
+  };
+
   // Double factoriel (2k-1)!!
   inline double double_factorial(int n) {
     if (n <= 0) return 1.0;
@@ -407,34 +413,7 @@ namespace utilities {
   }
 
   inline double GeneralFermiFunction(int k, int Z, double W, double R, int betaType) {
-    /*double gamma_k = std::sqrt(std::pow(k, 2) - std::pow(FINESTRUCTURE * Z, 2.));
-    double p = std::sqrt(W * W - 1.);
-    double y = betaType * FINESTRUCTURE * Z * W / p;
-    
-    double first = std::pow(k * double_factorial(2 * k - 1), 2) ;
-    double second = std::pow(4, k) * std::pow(2*p*R, 2 * (gamma_k - 1.)) * std::exp(M_PI * y);
-    
-    // --- Gamma complexe ---
-    gsl_sf_result lnr, arg;
-
-    // ln Γ(gk - i y)
-    gsl_sf_lngamma_complex_e(gamma_k, -y, &lnr, &arg);
-    double log_gamma_num = lnr.val;
-
-    // ln Γ(1 + 2 gk)
-    gsl_sf_result lnr_den;
-    gsl_sf_lngamma_e(1.0 + 2.0 * gamma_k, &lnr_den);
-    double log_gamma_den = lnr_den.val;
-
-    // |Γ(gk - i y) / Γ(1 + 2 gk)|^2
-    double gamma_term = std::exp(2.0 * (log_gamma_num - log_gamma_den));
-    
-    double result = first * second * gamma_term;
-    
-    std::cout << "k = " << k << ", F_k = " << result << "\n";
-    return result;*/
     double p = std::sqrt(W * W - 1.0);
-
     double gk = std::sqrt(k * k - std::pow(FINESTRUCTURE * Z, 2));
     double y  = betaType * FINESTRUCTURE * Z * W / p;
 
@@ -565,16 +544,10 @@ namespace utilities {
   }
 
 
-  inline int factorial(int n) {
-    double r = 1.0;
-    for (int i = 2; i <= n; ++i) r *= i;
-    return r;
-  };
-
   inline std::tuple<double, double> CCorrectionComponents(            ////////Shape Factor ----- C (OK)
       double W, double W0, int Z, int A, double R, int betaType, int decayType,
       double gA, double gP, double fc1, double fb, double fd,
-      double ratioM121) {
+      double ratioM121, int Labs) {
     double AC0, AC1, ACm1, AC2;
     double VC0, VC1, VCm1, VC2;
 
@@ -607,6 +580,10 @@ namespace utilities {
     AC2 = -4. / 9. * R * R;
 
     double cShape = 0.;
+    
+    if (Labs == 2) {
+      decayType = FU;
+    }
 
     if (decayType == FERMI) {
       cShape = 1. + VC0 + VC1 * W + VCm1 / W + VC2 * W * W;
@@ -657,7 +634,6 @@ namespace utilities {
       //std::cout << "W0 = " << W0 << ", W = " << W << ", pe = " << pe << ", pnu = " << pnu << std::endl; 
       if (pnu <= 0.0) return std::make_tuple(0.0, 0.0);
 
-      int Labs = 2; 
       double C = 0.0;
       for (int k = 1; k <= Labs; ++k) {
         //std::cout << "lambda_" << k << " = " << lambda_k(k, Z, W, R, betaType) << "W = " << W << std::endl;
@@ -939,7 +915,7 @@ namespace utilities {
         std::cout << "here" << "\n";
       }
 
-      std::tie(cShape, cNS) = CCorrectionComponents(W, W0, Z, A, R, betaType, decayType, 1.27, -229, 1, 4.*A, 1*A, 0);
+      std::tie(cShape, cNS) = CCorrectionComponents(W, W0, Z, A, R, betaType, decayType, 1.27, -229, 1, 4.*A, 1*A, 0, 0);
       double CCorr = cShape + cNS;
       //My correction SL 10/05/2023
       return PhaseSpace(W, W0)*FermiFunction(Z, W, R, betaType)*AtomicExchangeCorrection(W, Z)*L0Correction(W, Z, R, betaType)*CCorr*UCorrection(W, Z, betaType)*AtomicScreeningCorrection(W, Z, betaType)*RadiativeCorrection(W, W0, Z, R, 1.27, 4.7)*RecoilCorrection(W, W0, A, 0, 0)*AtomicMismatchCorrection(W, W0, Z, A, betaType)*QCorrection(W, W0, Z, A, betaType);
@@ -973,7 +949,7 @@ namespace utilities {
   }
 
 
-inline double GetBetaCorrections(int Z, int A, double Q, double E, int betaType, bool advanced) { 
+inline double GetBetaCorrections(int Z, int A, double Q, double E, int betaType, int Labs, bool advanced) { 
     // Return the beta corection for the 4-body radiative corrections ONLY
     // coorections = FermiFunction 
     //               * AtomicExchangeCorrection
@@ -994,31 +970,11 @@ inline double GetBetaCorrections(int Z, int A, double Q, double E, int betaType,
     if (!advanced) {
         return FermiFunction(Z, W, R, betaType);
     }
-
-    // --- Cache pour CCorr (ne dépend pas de W) ---
-    /*static std::map<std::tuple<int,int,int,double>, double> cCorrCache;
-    auto key = std::make_tuple(Z, A, betaType, Q);
-    double CCorr;
-    auto it = cCorrCache.find(key);
-    if (it != cCorrCache.end()) {
-        CCorr = it->second;
-        //std::cout << "CCorr cache hit for Z=" << Z << ", A=" << A << ", betaType=" << betaType << ", Q=" << Q << "\n";
-    } else {
-        int decayType = FU;
-        double cShape, cNS;
-        DecayManager& dm = DecayManager::GetInstance();
-        if (dm.configOptions.betaDecay.Default == "Gamow-Teller")
-            decayType = GAMOW_TELLER;
-        std::tie(cShape, cNS) = CCorrectionComponents(W, W0, Z, A, R, betaType, decayType, 1.27, -229, 1, 4.*A, 1*A, 0);
-        CCorr = cShape + cNS;
-        cCorrCache[key] = CCorr;
-        //std::cout << "CCorr cache miss for Z=" << Z << ", A=" << A << ", betaType=" << betaType << ", Q=" << Q << ". Calculated CCorr: " << CCorr << "\n";
-    }*/
     
     W = std::max(W, 1.001); // Avoid W=1 which causes divergences in some corrections
     int decayType = FU;
     double cShape, cNS;
-    std::tie(cShape, cNS) = CCorrectionComponents(W, W0, Z, A, R, betaType, decayType, 1.27, -229, 1, 4.*A, 1*A, 0);
+    std::tie(cShape, cNS) = CCorrectionComponents(W, W0, Z, A, R, betaType, decayType, 1.27, -229, 1, 4.*A, 1*A, 0, Labs);
     double CCorr = cShape + cNS;
 
     // Calcul des corrections dépendant de W

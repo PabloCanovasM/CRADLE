@@ -483,12 +483,16 @@ bool DecayManager::GenerateNucleus(string name, int Z, int A) {
         double R = utilities::ApproximateRadius(A) ;
         int betaType = Z/std::abs(Z);
         bool advanced = true;
+        double Jpi_init = utilities::GetJpi(A, Z, 0);
+        double Jpi_final = utilities::GetJpi(A, Z + betaType, daughterExcitationEnergy);
+        int Labs = std::abs(std::abs(Jpi_final) - std::abs(Jpi_init));
+        //std::cout << "Jpi init : " << Jpi_init << "\t Jpi final : " << Jpi_final << "\t Labs : " << Labs << std::endl;
         
         if (mode == "BetaPlus") {
           betaType = -1 ;
         }
 
-        double ph = radiativecorrections::PH(Cs, mf, mgt, a, mass_i, mass_f, std::abs(Z), A, R, Q, advanced, betaType, mode) ;
+        double ph = radiativecorrections::PH(Cs, mf, mgt, a, mass_i, mass_f, std::abs(Z), A, R, Q, Labs, advanced, betaType, mode) ;
 
         if (std::isnan(ph)) {
           std::cout << "Intensity : " << intensity << "\n";
