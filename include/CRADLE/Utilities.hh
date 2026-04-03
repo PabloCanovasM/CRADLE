@@ -555,8 +555,10 @@ namespace utilities {
     }
 
     if (decayType == FU) {
+      //std::cout << "Calculating shape factor for first-forbidden unique transition, using Behrens and Bühring formalism" << std::endl;
       double pe  = std::sqrt(W * W - 1.0);
       double pnu = W0 - W;
+      //std::cout << "W0 = " << W0 << ", W = " << W << ", pe = " << pe << ", pnu = " << pnu << std::endl; 
       //if (pnu <= 0.0) return std::make_tuple(0.0, 0.0);
 
       int Labs = 2; 
@@ -568,7 +570,7 @@ namespace utilities {
             / factorial(2 * k - 1)
             / factorial(2 * (Labs - k) + 1);
       }
-      double cShape = factorial(2 * Labs - 1) * C;
+      cShape = factorial(2 * Labs - 1) * C;
     }
 
     return std::make_tuple(cShape, cNS);
@@ -910,7 +912,7 @@ inline double GetBetaCorrections(int Z, int A, double Q, double E, int betaType,
         DecayManager& dm = DecayManager::GetInstance();
         if (dm.configOptions.betaDecay.Default == "Gamow-Teller")
             decayType = GAMOW_TELLER;
-        std::tie(cShape, cNS) = CCorrectionComponents(W0, W0, Z, A, R, betaType, decayType, 1.27, -229, 1, 4.*A, 1*A, 0);
+        std::tie(cShape, cNS) = CCorrectionComponents(W, W0, Z, A, R, betaType, decayType, 1.27, -229, 1, 4.*A, 1*A, 0);
         CCorr = cShape + cNS;
         cCorrCache[key] = CCorr;
         //std::cout << "CCorr cache miss for Z=" << Z << ", A=" << A << ", betaType=" << betaType << ", Q=" << Q << ". Calculated CCorr: " << CCorr << "\n";
