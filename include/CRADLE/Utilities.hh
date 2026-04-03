@@ -395,6 +395,39 @@ namespace utilities {
     return result;
   }
 
+
+  inline double GeneralFermiFunction(int k, int Z, double W, double R, int betaType) {
+    double gamma_k = std::sqrt(k - std::pow(FINESTRUCTURE * Z, 2.));
+    double p = std::sqrt(W * W - 1.);
+    double first = 2. * (gamma_k + 1.);
+    // the second term will be incorporated in the fifth
+    // double second = 1/std::pow(gsl_sf_gamma(2*gamma+1),2);
+    double third = std::pow(2. * p * R, 2. * (gamma_k - 1.));
+    double fourth = std::exp(betaType * M_PI * FINESTRUCTURE * Z * W / p);
+
+    // the fifth is a bit tricky
+    // we use the complex gamma function from GSL
+    gsl_sf_result magn;
+    gsl_sf_result phase;
+    gsl_sf_lngamma_complex_e(gamma_k, betaType * FINESTRUCTURE * Z * W / p, &magn, &phase);
+    // now we have what we wAt in magn.val
+
+    // but we incorporate the second term here as well
+    double fifth = std::exp(2. * (magn.val - gsl_sf_lngamma(2. * gamma_k + 1.)));
+
+    double result = first * third * fourth * fifth;
+    return result;
+  }
+
+
+  // λ_k(W,Z,R) = F_k / F_0
+  inline double lambda_k(int k, int Z, double W, double R, int betaType) {
+    double F0 = GeneralFermiFunction(1, Z, W, R, betaType);   // k=1 correspond à γ_1 = gamma de FermiFunction
+    if (F0 == 0.0) return 0.0;
+    return GeneralFermiFunction(k, Z, W, R, betaType) / F0;
+  };
+
+
   inline double L0Correction(double W, int Z, double r, int betaType) {     /////////// L0 Correction ---- L0 (voir specific, ajouter le sum)
                                        //double aPos[], double aNeg[]) {
     double gamma = std::sqrt(1. - std::pow(FINESTRUCTURE * Z, 2.));
@@ -564,7 +597,7 @@ namespace utilities {
       int Labs = 2; 
       double C = 0.0;
       for (int k = 1; k <= Labs; ++k) {
-        C += 1 //lambda_k(k)
+        C += lambda_k(k, Z, W, R, betaType)
             * std::pow(pe,  2.0 * (k - 1))
             * std::pow(pnu, 2.0 * (Labs - k))
             / factorial(2 * k - 1)
