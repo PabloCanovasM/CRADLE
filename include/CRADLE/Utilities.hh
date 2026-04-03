@@ -480,7 +480,13 @@ namespace utilities {
   inline double lambda_k(int k, int Z, double W, double R, int betaType) {
     double F0 = GeneralFermiFunction(1, Z, W, R, betaType);   // k=1 correspond à γ_1 = gamma de FermiFunction
     //if (F0 == 0.0) return 0.0;
-    return GeneralFermiFunction(k, Z, W, R, betaType) / F0;
+    if (k==1) return 1.0; // by definition
+
+    double result = GeneralFermiFunction(k, Z, W, R, betaType) / F0;
+    if (isnan(result)) {
+      std::cout << "F0 : " << F0 << ", F" << k << " : " << GeneralFermiFunction(k, Z, W, R, betaType) << "\n";
+    };
+    return result;
   };
 
 
@@ -649,7 +655,7 @@ namespace utilities {
       double pe  = std::sqrt(W * W - 1.0);
       double pnu = W0 - W;
       //std::cout << "W0 = " << W0 << ", W = " << W << ", pe = " << pe << ", pnu = " << pnu << std::endl; 
-      //if (pnu <= 0.0) return std::make_tuple(0.0, 0.0);
+      if (pnu <= 0.0) return std::make_tuple(0.0, 0.0);
 
       int Labs = 2; 
       double C = 0.0;
@@ -990,7 +996,7 @@ inline double GetBetaCorrections(int Z, int A, double Q, double E, int betaType,
     }
 
     // --- Cache pour CCorr (ne dépend pas de W) ---
-    static std::map<std::tuple<int,int,int,double>, double> cCorrCache;
+    /*static std::map<std::tuple<int,int,int,double>, double> cCorrCache;
     auto key = std::make_tuple(Z, A, betaType, Q);
     double CCorr;
     auto it = cCorrCache.find(key);
@@ -1007,7 +1013,13 @@ inline double GetBetaCorrections(int Z, int A, double Q, double E, int betaType,
         CCorr = cShape + cNS;
         cCorrCache[key] = CCorr;
         //std::cout << "CCorr cache miss for Z=" << Z << ", A=" << A << ", betaType=" << betaType << ", Q=" << Q << ". Calculated CCorr: " << CCorr << "\n";
-    }
+    }*/
+    
+    W = std::max(W, 1.001); // Avoid W=1 which causes divergences in some corrections
+    int decayType = FU;
+    double cShape, cNS;
+    std::tie(cShape, cNS) = CCorrectionComponents(W, W0, Z, A, R, betaType, decayType, 1.27, -229, 1, 4.*A, 1*A, 0);
+    double CCorr = cShape + cNS;
 
     // Calcul des corrections dépendant de W
     double beta = std::sqrt(1.0 - 1.0 / W / W);
