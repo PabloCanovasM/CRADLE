@@ -50,7 +50,7 @@ namespace utilities {
   const double EULER_MASCHERONI_CONSTANT = 0.577215664901532;  /**< the Euler-Mascheroni constant */
   const double CS = 0.001 ;
 
-  enum DecayType { FERMI, GAMOW_TELLER, MIXED };
+  enum DecayType { FERMI, GAMOW_TELLER, MIXED , FU};
 
   const std::string atoms[] = {"H", "He", "Li", "Be", "B", "C", "N", "O", "F", "Ne", "Na", "Mg", "Al", "Si", "P", "S", "Cl", "Ar", "K", "Ca", "Sc", "Ti", "V", "Cr", "Mn", "Fe", "Co", "Ni", "Cu", "Zn", "Ga", "Ge", "As", "Se", "Br", "Kr", "Rb", "Sr", "Y", "Zr", "Nb", "Mo", "Tc", "Ru", "Rh", "Pd", "Ag", "Cd", "In", "Sn", "Sb", "Te", "I", "Xe", "Cs", "Ba", "La", "Ce", "Pr", "Nd", "Pm", "Sm", "Eu", "Gd", "Tb", "Dy", "Ho", "Er", "Tm", "Yb", "Lu", "Hf", "Ta", "W", "Re", "Os", "Ir", "Pt", "Au", "Hg", "Tl", "Pb", "Bi", "Po", "At", "Rn", "Fr", "Ra", "Ac", "Th", "Pa", "U", "Np", "Pu", "Am", "Cm", "Bk", "Cf", "Es", "Fm", "Md", "No", "Lr", "Rf", "Db", "Sg", "Bh", "Hs", "Mt"};
 
@@ -469,6 +469,13 @@ namespace utilities {
     return result;
   }
 
+
+  inline int factorial(int n) {
+    double r = 1.0;
+    for (int i = 2; i <= n; ++i) r *= i;
+    return r;
+  };
+
   inline std::tuple<double, double> CCorrectionComponents(            ////////Shape Factor ----- C (OK)
       double W, double W0, int Z, int A, double R, int betaType, int decayType,
       double gA, double gP, double fc1, double fb, double fd,
@@ -545,6 +552,23 @@ namespace utilities {
       cNS = NSC0 + NSC1 * W + NSCm1 / W + NSC2 * W * W;
 
        cNS += phi*(P0 + P1 * W + Pm1 / W);
+    }
+
+    if (decayType == FU) {
+      double pe  = std::sqrt(W * W - 1.0);
+      double pnu = W0 - W;
+      //if (pnu <= 0.0) return std::make_tuple(0.0, 0.0);
+
+      int Labs = 2; 
+      double C = 0.0;
+      for (int k = 1; k <= Labs; ++k) {
+        C += 1 //lambda_k(k)
+            * std::pow(pe,  2.0 * (k - 1))
+            * std::pow(pnu, 2.0 * (Labs - k))
+            / factorial(2 * k - 1)
+            / factorial(2 * (Labs - k) + 1);
+      }
+      double cShape = factorial(2 * Labs - 1) * C;
     }
 
     return std::make_tuple(cShape, cNS);
@@ -881,7 +905,7 @@ inline double GetBetaCorrections(int Z, int A, double Q, double E, int betaType,
         CCorr = it->second;
         //std::cout << "CCorr cache hit for Z=" << Z << ", A=" << A << ", betaType=" << betaType << ", Q=" << Q << "\n";
     } else {
-        int decayType = FERMI;
+        int decayType = FU;
         double cShape, cNS;
         DecayManager& dm = DecayManager::GetInstance();
         if (dm.configOptions.betaDecay.Default == "Gamow-Teller")
