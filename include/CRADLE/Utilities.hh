@@ -660,7 +660,7 @@ namespace utilities {
       int Labs = 2; 
       double C = 0.0;
       for (int k = 1; k <= Labs; ++k) {
-        std::cout << "lambda_" << k << " = " << lambda_k(k, Z, W, R, betaType) << "W = " << W << std::endl;
+        //std::cout << "lambda_" << k << " = " << lambda_k(k, Z, W, R, betaType) << "W = " << W << std::endl;
         C += lambda_k(k, Z, W, R, betaType)
             * std::pow(pe,  2.0 * (k - 1))
             * std::pow(pnu, 2.0 * (Labs - k))
