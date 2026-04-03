@@ -396,34 +396,90 @@ namespace utilities {
   }
 
 
-  inline double GeneralFermiFunction(int k, int Z, double W, double R, int betaType) {
-    double gamma_k = std::sqrt(k - std::pow(FINESTRUCTURE * Z, 2.));
-    double p = std::sqrt(W * W - 1.);
-    double first = 2. * (gamma_k + 1.);
-    // the second term will be incorporated in the fifth
-    // double second = 1/std::pow(gsl_sf_gamma(2*gamma+1),2);
-    double third = std::pow(2. * p * R, 2. * (gamma_k - 1.));
-    double fourth = std::exp(betaType * M_PI * FINESTRUCTURE * Z * W / p);
-
-    // the fifth is a bit tricky
-    // we use the complex gamma function from GSL
-    gsl_sf_result magn;
-    gsl_sf_result phase;
-    gsl_sf_lngamma_complex_e(gamma_k, betaType * FINESTRUCTURE * Z * W / p, &magn, &phase);
-    // now we have what we wAt in magn.val
-
-    // but we incorporate the second term here as well
-    double fifth = std::exp(2. * (magn.val - gsl_sf_lngamma(2. * gamma_k + 1.)));
-
-    double result = first * third * fourth * fifth;
+  // Double factoriel (2k-1)!!
+  inline double double_factorial(int n) {
+    if (n <= 0) return 1.0;
+    double result = 1.0;
+    for (int i = n; i > 0; i -= 2) {
+        result *= i;
+    }
     return result;
+  }
+
+  inline double GeneralFermiFunction(int k, int Z, double W, double R, int betaType) {
+    /*double gamma_k = std::sqrt(std::pow(k, 2) - std::pow(FINESTRUCTURE * Z, 2.));
+    double p = std::sqrt(W * W - 1.);
+    double y = betaType * FINESTRUCTURE * Z * W / p;
+    
+    double first = std::pow(k * double_factorial(2 * k - 1), 2) ;
+    double second = std::pow(4, k) * std::pow(2*p*R, 2 * (gamma_k - 1.)) * std::exp(M_PI * y);
+    
+    // --- Gamma complexe ---
+    gsl_sf_result lnr, arg;
+
+    // ln Γ(gk - i y)
+    gsl_sf_lngamma_complex_e(gamma_k, -y, &lnr, &arg);
+    double log_gamma_num = lnr.val;
+
+    // ln Γ(1 + 2 gk)
+    gsl_sf_result lnr_den;
+    gsl_sf_lngamma_e(1.0 + 2.0 * gamma_k, &lnr_den);
+    double log_gamma_den = lnr_den.val;
+
+    // |Γ(gk - i y) / Γ(1 + 2 gk)|^2
+    double gamma_term = std::exp(2.0 * (log_gamma_num - log_gamma_den));
+    
+    double result = first * second * gamma_term;
+    
+    std::cout << "k = " << k << ", F_k = " << result << "\n";
+    return result;*/
+    double p = std::sqrt(W * W - 1.0);
+
+    double gk = std::sqrt(k * k - std::pow(FINESTRUCTURE * Z, 2));
+    double y  = betaType * FINESTRUCTURE * Z * W / p;
+
+    // --- LOG de chaque terme ---
+
+    // (k*(2k-1)!!)^2 * 4^k
+    double df = double_factorial(2 * k - 1);
+    double log_prefactor = 2.0 * std::log(k * df) + k * std::log(4.0);
+
+    // (2 p R)^(2*(gk-k))
+    double log_power = 2.0 * (gk - k) * std::log(2.0 * p * R);
+
+    // exp(pi*y)
+    double log_exp = M_PI * y;
+
+    // --- Gamma complexe ---
+    gsl_sf_result lnr, arg;
+
+    // ln Γ(gk - i y)
+    gsl_sf_lngamma_complex_e(gk, -y, &lnr, &arg);
+    double log_gamma_num = lnr.val;
+
+    // ln Γ(1 + 2 gk)
+    gsl_sf_result lnr_den;
+    gsl_sf_lngamma_e(1.0 + 2.0 * gk, &lnr_den);
+    double log_gamma_den = lnr_den.val;
+
+    // |Γ(gk - i y) / Γ(1 + 2 gk)|^2
+    double log_gamma_term = 2.0 * (log_gamma_num - log_gamma_den);
+
+    // --- Somme totale ---
+    double log_F =
+        log_prefactor +
+        log_power +
+        log_exp +
+        log_gamma_term;
+
+    return std::exp(log_F);
   }
 
 
   // λ_k(W,Z,R) = F_k / F_0
   inline double lambda_k(int k, int Z, double W, double R, int betaType) {
     double F0 = GeneralFermiFunction(1, Z, W, R, betaType);   // k=1 correspond à γ_1 = gamma de FermiFunction
-    if (F0 == 0.0) return 0.0;
+    //if (F0 == 0.0) return 0.0;
     return GeneralFermiFunction(k, Z, W, R, betaType) / F0;
   };
 
@@ -588,6 +644,7 @@ namespace utilities {
     }
 
     if (decayType == FU) {
+      Z = std::abs(Z);
       //std::cout << "Calculating shape factor for first-forbidden unique transition, using Behrens and Bühring formalism" << std::endl;
       double pe  = std::sqrt(W * W - 1.0);
       double pnu = W0 - W;
@@ -597,6 +654,7 @@ namespace utilities {
       int Labs = 2; 
       double C = 0.0;
       for (int k = 1; k <= Labs; ++k) {
+        std::cout << "lambda_" << k << " = " << lambda_k(k, Z, W, R, betaType) << "W = " << W << std::endl;
         C += lambda_k(k, Z, W, R, betaType)
             * std::pow(pe,  2.0 * (k - 1))
             * std::pow(pnu, 2.0 * (Labs - k))
