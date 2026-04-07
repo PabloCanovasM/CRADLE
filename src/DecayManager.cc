@@ -482,7 +482,7 @@ bool DecayManager::GenerateNucleus(string name, int Z, int A) {
         int A = p->GetCharge() + p->GetNeutrons() ; 
         double R = utilities::ApproximateRadius(A) ;
         int betaType = Z/std::abs(Z);
-        bool advanced = true;
+        bool advanced = false;
         double Jpi_init = utilities::GetJpi(A, Z, 0);
         double Jpi_final = utilities::GetJpi(A, Z + betaType, daughterExcitationEnergy);
         int Labs = std::abs(std::abs(Jpi_final) - std::abs(Jpi_init));

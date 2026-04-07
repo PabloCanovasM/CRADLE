@@ -518,7 +518,7 @@ std::vector<Particle*> BetaMinusRadiative::Decay(Particle* initState, double Q, 
   int Z = (recoil->GetCharge() - initState->GetCharge())*recoil->GetCharge();
   int betaType = (int)((Z > 0) - (Z < 0));
   Z = std::abs(Z) ;
-  bool advanced = true ;
+  bool advanced = false ;
   double Jpi_init = utilities::GetJpi(initState->GetNeutrons() + initState->GetCharge(), initState->GetCharge(), initState->GetExcitationEnergy());
   double Jpi_final = utilities::GetJpi(recoil->GetNeutrons() + recoil->GetCharge(), recoil->GetCharge(), recoil->GetExcitationEnergy());
   int Labs = std::abs(std::abs(Jpi_final) - std::abs(Jpi_init));
@@ -708,7 +708,7 @@ std::vector<Particle*> BetaMinusVirtualSoft::Decay(Particle* initState, double Q
   int Z = (recoil->GetCharge() - initState->GetCharge())*recoil->GetCharge();
   int betaType = (int)((Z > 0) - (Z < 0));
   Z = std::abs(Z) ;
-  bool advanced = true ;
+  bool advanced = false ;
   double Jpi_init = utilities::GetJpi(initState->GetNeutrons() + initState->GetCharge(), initState->GetCharge(), initState->GetExcitationEnergy());
   double Jpi_final = utilities::GetJpi(recoil->GetNeutrons() + recoil->GetCharge(), recoil->GetCharge(), recoil->GetExcitationEnergy());
   int Labs = std::abs(std::abs(Jpi_final) - std::abs(Jpi_init));
@@ -1055,7 +1055,7 @@ std::vector<Particle*> BetaPlusRadiative::Decay(Particle* initState, double Q, d
   int Z = (recoil->GetCharge() - initState->GetCharge())*recoil->GetCharge();
   int betaType = (int)((Z > 0) - (Z < 0));
   Z = std::abs(Z) ;
-  bool advanced = true ;
+  bool advanced = false ;
   double Jpi_init = utilities::GetJpi(initState->GetNeutrons() + initState->GetCharge(), initState->GetCharge(), initState->GetExcitationEnergy());
   double Jpi_final = utilities::GetJpi(recoil->GetNeutrons() + recoil->GetCharge(), recoil->GetCharge(), recoil->GetExcitationEnergy());
   int Labs = std::abs(std::abs(Jpi_final) - std::abs(Jpi_init));
@@ -1286,7 +1286,7 @@ std::vector<Particle*> BetaPlusVirtualSoft::Decay(Particle* initState, double Q,
   int Z = (recoil->GetCharge() - initState->GetCharge())*recoil->GetCharge();
   int betaType = (int)((Z > 0) - (Z < 0));
   Z = std::abs(Z) ;
-  bool advanced = true ;
+  bool advanced = false ;
   double Jpi_init = utilities::GetJpi(initState->GetNeutrons() + initState->GetCharge(), initState->GetCharge(), initState->GetExcitationEnergy());
   double Jpi_final = utilities::GetJpi(recoil->GetNeutrons() + recoil->GetCharge(), recoil->GetCharge(), recoil->GetExcitationEnergy());
   int Labs = std::abs(std::abs(Jpi_final) - std::abs(Jpi_init));
