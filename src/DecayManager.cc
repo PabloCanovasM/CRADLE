@@ -155,6 +155,7 @@ void DecayManager::RegisterBasicParticles() {
 
   RegisterParticle(new Particle("enuEC", 0., 0, 0, 0.5, 0.));
 
+  // For Xavier simulations
   RegisterParticle(new Particle("e-90Y", utilities::EMASSC2, -1, 0, 0.5, 0.));
   RegisterParticle(new Particle("enubar90Y", 0., 0, 0, 0.5, 0.));
   RegisterParticle(new Particle("gammaBR90Y", 0., 0, 0, 0., 0.));
@@ -482,11 +483,16 @@ bool DecayManager::GenerateNucleus(string name, int Z, int A) {
         int A = p->GetCharge() + p->GetNeutrons() ; 
         double R = utilities::ApproximateRadius(A) ;
         int betaType = Z/std::abs(Z);
-        bool advanced = false;
+
         double Jpi_init = utilities::GetJpi(A, Z, 0);
         double Jpi_final = utilities::GetJpi(A, Z + betaType, daughterExcitationEnergy);
         int Labs = std::abs(std::abs(Jpi_final) - std::abs(Jpi_init));
         //std::cout << "Jpi init : " << Jpi_init << "\t Jpi final : " << Jpi_final << "\t Labs : " << Labs << std::endl;
+
+        bool advanced = false ;
+        if (dm.configOptions.betaDecay.FermiFunction == "Advanced") { //// réécriture de la condition par SL 10/05/2023
+            advanced = true;
+          }
         
         if (mode == "BetaPlus") {
           betaType = -1 ;

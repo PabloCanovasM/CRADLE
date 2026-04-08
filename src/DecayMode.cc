@@ -518,11 +518,16 @@ std::vector<Particle*> BetaMinusRadiative::Decay(Particle* initState, double Q, 
   int Z = (recoil->GetCharge() - initState->GetCharge())*recoil->GetCharge();
   int betaType = (int)((Z > 0) - (Z < 0));
   Z = std::abs(Z) ;
-  bool advanced = false ;
+  
   double Jpi_init = utilities::GetJpi(initState->GetNeutrons() + initState->GetCharge(), initState->GetCharge(), initState->GetExcitationEnergy());
   double Jpi_final = utilities::GetJpi(recoil->GetNeutrons() + recoil->GetCharge(), recoil->GetCharge(), recoil->GetExcitationEnergy());
   int Labs = std::abs(std::abs(Jpi_final) - std::abs(Jpi_init));
   //std::cout << "Jpi init : " << Jpi_init << "\t Jpi final : " << Jpi_final << "\t Labs : " << Labs << std::endl;
+
+  bool advanced = false ;
+  if (dm.configOptions.betaDecay.FermiFunction == "Advanced") { //// réécriture de la condition par SL 10/05/2023
+      advanced = true;
+    }
 
   std::vector<double> W;
   try {
@@ -708,11 +713,16 @@ std::vector<Particle*> BetaMinusVirtualSoft::Decay(Particle* initState, double Q
   int Z = (recoil->GetCharge() - initState->GetCharge())*recoil->GetCharge();
   int betaType = (int)((Z > 0) - (Z < 0));
   Z = std::abs(Z) ;
-  bool advanced = false ;
+
   double Jpi_init = utilities::GetJpi(initState->GetNeutrons() + initState->GetCharge(), initState->GetCharge(), initState->GetExcitationEnergy());
   double Jpi_final = utilities::GetJpi(recoil->GetNeutrons() + recoil->GetCharge(), recoil->GetCharge(), recoil->GetExcitationEnergy());
   int Labs = std::abs(std::abs(Jpi_final) - std::abs(Jpi_init));
   //std::cout << "Jpi init : " << Jpi_init << "\t Jpi final : " << Jpi_final << "\t Labs : " << Labs << std::endl;
+
+  bool advanced = false ;
+  if (dm.configOptions.betaDecay.FermiFunction == "Advanced") { //// réécriture de la condition par SL 10/05/2023
+      advanced = true;
+    }
 
   std::vector<double> W;
   try {
@@ -1055,10 +1065,15 @@ std::vector<Particle*> BetaPlusRadiative::Decay(Particle* initState, double Q, d
   int Z = (recoil->GetCharge() - initState->GetCharge())*recoil->GetCharge();
   int betaType = (int)((Z > 0) - (Z < 0));
   Z = std::abs(Z) ;
-  bool advanced = false ;
+
   double Jpi_init = utilities::GetJpi(initState->GetNeutrons() + initState->GetCharge(), initState->GetCharge(), initState->GetExcitationEnergy());
   double Jpi_final = utilities::GetJpi(recoil->GetNeutrons() + recoil->GetCharge(), recoil->GetCharge(), recoil->GetExcitationEnergy());
   int Labs = std::abs(std::abs(Jpi_final) - std::abs(Jpi_init));
+
+  bool advanced = false ;
+  if (dm.configOptions.betaDecay.FermiFunction == "Advanced") { //// réécriture de la condition par SL 10/05/2023
+      advanced = true;
+    }
 
   std::vector<double> W;
   try {
@@ -1286,11 +1301,16 @@ std::vector<Particle*> BetaPlusVirtualSoft::Decay(Particle* initState, double Q,
   int Z = (recoil->GetCharge() - initState->GetCharge())*recoil->GetCharge();
   int betaType = (int)((Z > 0) - (Z < 0));
   Z = std::abs(Z) ;
-  bool advanced = false ;
+
   double Jpi_init = utilities::GetJpi(initState->GetNeutrons() + initState->GetCharge(), initState->GetCharge(), initState->GetExcitationEnergy());
   double Jpi_final = utilities::GetJpi(recoil->GetNeutrons() + recoil->GetCharge(), recoil->GetCharge(), recoil->GetExcitationEnergy());
   int Labs = std::abs(std::abs(Jpi_final) - std::abs(Jpi_init));
   
+  bool advanced = false ;
+  if (dm.configOptions.betaDecay.FermiFunction == "Advanced") { //// réécriture de la condition par SL 10/05/2023
+      advanced = true;
+    }
+
   std::vector<double> W;
   try {
     W = DecayManager::GetInstance().GetParameterMC(oss.str()) ;
