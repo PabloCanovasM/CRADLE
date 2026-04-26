@@ -402,7 +402,7 @@ inline double rho0 (int n, double MF_2, double MGT_2, double MIMASSC2, double MF
 inline double rho0(int n, double MF, double MGT, double MIMASSC2, double MFMASSC2, int Z, int A, double R, double Q, int Labs, bool advanced, int betaType, std::string mode) {
     double b = delta(MIMASSC2, MFMASSC2, mode)-1 ;
 
-    double h = b/(n+1) ; 
+    double h = b/(n) ; 
     double result = 0 ;
     for (int i=0 ; i<n ; i++) {
         if (!std::isnan(w0(1+h*i, MF, MGT, MIMASSC2, MFMASSC2, Z, A, R, Q, Labs, advanced, betaType, mode))) {
@@ -475,7 +475,7 @@ inline double w0VS_max(double Cs, double MF, double MGT, double MIMASSC2, double
     double w0VSmax = 0 ;
     double n = 5000 ;
 
-    double intervalle_E2 = (delta(MIMASSC2, MFMASSC2, mode))/(n) ;
+    double intervalle_E2 = (delta(MIMASSC2, MFMASSC2, mode)-1)/(n) ;
     std::vector<double> tableau_E2(n); 
     for (int i=0 ; i<n ; i++) {
         tableau_E2[i] = 1 + i * intervalle_E2 ;
