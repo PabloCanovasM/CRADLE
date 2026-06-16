@@ -393,7 +393,7 @@ namespace utilities {
 
     double result = first * third * fourth * fifth;
     return result;
-  }
+  };
 
 
   inline int factorial(int n) {
@@ -401,6 +401,7 @@ namespace utilities {
     for (int i = 2; i <= n; ++i) r *= i;
     return r;
   };
+  
 
   // Double factoriel (2k-1)!!
   inline double double_factorial(int n) {
@@ -410,7 +411,8 @@ namespace utilities {
         result *= i;
     }
     return result;
-  }
+  };
+  
 
   inline double GeneralFermiFunction(int k, int Z, double W, double R, int betaType) {
     double p = std::sqrt(W * W - 1.0);
@@ -452,7 +454,7 @@ namespace utilities {
         log_gamma_term;
 
     return std::exp(log_F);
-  }
+  };
 
 
   // λ_k(W,Z,R) = F_k / F_0
@@ -891,7 +893,7 @@ namespace utilities {
     double W = E/EMASSC2+1.;
     double W0 = Q/EMASSC2+1.;
     int decayType = FERMI ;
-    double R = std::sqrt(5./3.)*ApproximateRadius(A)/NATURALLENGTH;
+    double R = ApproximateRadius(A)/NATURALLENGTH;
     int betaType = (int)((Z > 0) - (Z < 0));
     Z = std::abs(Z);
       
@@ -927,8 +929,7 @@ namespace utilities {
       //return PhaseSpace(W, W0)*FermiFunction(Z, W, R, betaType);
     }
     else {
-      
-      return PhaseSpace(W, W0) *FermiFunction(Z, W, R, betaType)  ;
+      return PhaseSpace(W, W0) * FermiFunction(Z, W, R, betaType)  ;
     }
   }
 
@@ -964,15 +965,16 @@ inline double GetBetaCorrections(int Z, int A, double Q, double E, int betaType,
     
     double W = E;  // E est déjà en unités de m_e c²
     double W0 = Q / EMASSC2 + 1.;
-    double R = std::sqrt(5./3.) * ApproximateRadius(A) / NATURALLENGTH;
+    double R = ApproximateRadius(A) / NATURALLENGTH;
     Z = std::abs(Z);
 
     if (!advanced) {
+        //std::cout << "Returning only Fermi function correction" << std::endl;
         return FermiFunction(Z, W, R, betaType);
     }
-    
+    //std::cout << "Calculating full beta corrections" << std::endl;
     W = std::max(W, 1.001); // Avoid W=1 which causes divergences in some corrections
-    int decayType = FU;
+    int decayType = GAMOW_TELLER;
     double cShape, cNS;
     std::tie(cShape, cNS) = CCorrectionComponents(W, W0, Z, A, R, betaType, decayType, 1.27, -229, 1, 4.*A, 1*A, 0, Labs);
     double CCorr = cShape + cNS;

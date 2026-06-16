@@ -383,7 +383,7 @@ bool DecayManager::GenerateNucleus(string name, int Z, int A) {
         int betaType = Z/std::abs(Z);
   
         if (mode == "BetaPlus") {
-          betaType = -betaType ;
+          betaType = -1 ;
         }
 	
 	double j_i = utilities::GetJpi(A,Z,excitationEnergy);
@@ -483,22 +483,21 @@ bool DecayManager::GenerateNucleus(string name, int Z, int A) {
         int A = p->GetCharge() + p->GetNeutrons() ; 
         double R = utilities::ApproximateRadius(A) ;
         int betaType = Z/std::abs(Z);
+        if (mode == "BetaPlus") {
+          betaType = -1 ;
+        }
 
         double Jpi_init = utilities::GetJpi(A, Z, 0);
         double Jpi_final = utilities::GetJpi(A, Z + betaType, daughterExcitationEnergy);
         int Labs = std::abs(std::abs(Jpi_final) - std::abs(Jpi_init));
-        //std::cout << "Jpi init : " << Jpi_init << "\t Jpi final : " << Jpi_final << "\t Labs : " << Labs << std::endl;
+        std::cout << "Jpi init : " << Jpi_init << "\t Jpi final : " << Jpi_final << "\t Labs : " << Labs << std::endl;
 
         bool advanced = false ;
         if (dm.configOptions.betaDecay.FermiFunction == "Advanced") { //// réécriture de la condition par SL 10/05/2023
             advanced = true;
           }
         
-        if (mode == "BetaPlus") {
-          betaType = -1 ;
-        }
-
-        double ph = radiativecorrections::PH(Cs, mf, mgt, a, mass_i, mass_f, std::abs(Z), A, R, Q, Labs, advanced, betaType, mode) ;
+        double ph = radiativecorrections::PH(Cs, mf, mgt, a, mass_i, mass_f, std::abs(Z), A, Q, Labs, advanced, betaType, mode, dm.generator) ;
 
         if (std::isnan(ph)) {
           std::cout << "Intensity : " << intensity << "\n";

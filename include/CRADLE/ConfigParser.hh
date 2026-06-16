@@ -18,7 +18,7 @@ struct NuclearOptions {
 struct General {
   int Verbosity = 1;
   int Loop = 0;
-  int Threads = 5;
+  int Threads = 8;
   std::string Output = "output.txt";
   int Seed = 0;
 };
