@@ -1,4 +1,4 @@
-  #include "CRADLE/DecayManager.hh"
+#include "CRADLE/DecayManager.hh"
 #include "CRADLE/Utilities.hh"
 #include "CRADLE/DecayChannel.hh"
 #include "CRADLE/Particle.hh"
@@ -497,7 +497,7 @@ bool DecayManager::GenerateNucleus(string name, int Z, int A) {
             advanced = true;
           }
         
-        double ph = radiativecorrections::PH(Cs, mf, mgt, a, mass_i, mass_f, std::abs(Z), A, Q, Labs, advanced, betaType, mode, dm.generator) ;
+        double ph = radiativecorrections::PH(Cs, mf, mgt, a, mass_i, std::abs(Z), A, Q, Labs, advanced, betaType, dm.generator) ;
 
         if (std::isnan(ph)) {
           std::cout << "Intensity : " << intensity << "\n";
