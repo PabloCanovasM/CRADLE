@@ -920,8 +920,6 @@ std::vector<Particle*> BetaPlusRadiative::Decay(Particle* initState, double Q, d
   
   DecayManager& dm = DecayManager::GetInstance();
 
-  double E0 = Q-2*utilities::EMASSC2;
-
   std::ostringstream oss;
   oss << initState->GetCharge()+initState->GetNeutrons() << utilities::atoms[initState->GetCharge()-2];
   Particle* recoil = DecayManager::GetInstance().GetNewParticle(oss.str()+"", initState->GetCharge()-1, initState->GetCharge()+initState->GetNeutrons());
@@ -1260,7 +1258,7 @@ std::vector<Particle*> BetaPlusVirtualSoft::Decay(Particle* initState, double Q,
 
       pos->SetMomentum(posFourMomentum);
       enu->SetMomentum(enuFourMomentum);
-      ThreeBodyDecay(velocity, pos, enu, recoil, n_NEUTRINO, E0);
+      ThreeBodyDecay(velocity, pos, enu, recoil, n_NEUTRINO, Q);
 
       finalStates.push_back(pos);
       finalStates.push_back(enu);

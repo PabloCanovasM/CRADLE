@@ -485,6 +485,7 @@ bool DecayManager::GenerateNucleus(string name, int Z, int A) {
         int betaType = Z/std::abs(Z);
         if (mode == "BetaPlus") {
           betaType = -1 ;
+          Q = Q - 2*utilities::EMASSC2 ;
         }
 
         double Jpi_init = utilities::GetJpi(A, Z, 0);
@@ -509,6 +510,7 @@ bool DecayManager::GenerateNucleus(string name, int Z, int A) {
         std::cout << mode+"Radiative" << "\n";
         std::cout << "Intensity : " << intensity << "\n";
         std::cout << "PH (en %) : " << ph*100 << "\n" ;
+        std::cout << "Q : " << Q/utilities::EMASSC2 + 1 << "\n" ;
         std::cout << "\n" ;
 
         DecayChannel* dc1 = new DecayChannel(mode+"VirtualSoft", &GetDecayMode(mode+"VirtualSoft"), Q, intensity*(1.-ph), lifetime, excitationEnergy, daughterExcitationEnergy);
