@@ -28,7 +28,7 @@ import os
 col_map = {
     "id": 0,
     "hl": 1,
-    "particle": 2,
+    "name": 2,
     "idk": 3,
     "p": 4,
     "E": 5,
@@ -51,7 +51,7 @@ requested_cols = sys.argv[2:]
 
 # default behavior
 if not requested_cols:
-    requested_cols = ["particle", "p"]
+    requested_cols = ["name", "p"]
 
 # output file name
 base_name = os.path.splitext(input_file)[0]

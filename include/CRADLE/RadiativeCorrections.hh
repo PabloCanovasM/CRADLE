@@ -2,31 +2,9 @@
 #define RADIATIVECORRECTIONS
 
 #include <math.h>
-#include <stdlib.h>
-#include <string>
-#include <vector>
-#include <fstream>
-#include <iostream>
-#include <sstream>
-#include <algorithm>
-#include <map>
-#include <boost/numeric/ublas/vector.hpp>
-#include <boost/numeric/ublas/symmetric.hpp>
-#include <boost/numeric/ublas/matrix.hpp>
-#include <boost/numeric/ublas/io.hpp>
-#include <boost/math/special_functions/gamma.hpp>
-#include <boost/math/special_functions/legendre.hpp>
-#include <complex>
-#include <random>
 #include <thread>    
-#include <functional> 
-#include "gsl/gsl_sf_gamma.h"
-#include "gsl/gsl_sf_result.h"
-#include "gsl/gsl_complex_math.h"
 #include "gsl/gsl_sf_dilog.h"
 
-//#include "CRADLE/ConfigParser.hh"
-//#include "CRADLE/Particle.hh"
 #include "CRADLE/Utilities.hh"
 
 
@@ -36,29 +14,14 @@ namespace radiativecorrections {
   using namespace boost::numeric::ublas;
 
   const double PI = 3.14159265359;
-  const double C = 299792458;//m/s
   const double EMASSC2 = 510.9989461;//keV
   const double PMASSC2 = 938272.046;//keV
-  const double NMASSC2 = 939565.4133;//keV
-  const double UMASSC2 = 931494.10242;//keV
-  const double ALPHAMASSC2 = 3727379.4066;//keV
-  const double FINESTRUCTUREMASSC2 = 3727379.508;//keV
   const double FINESTRUCTURE = 0.0072973525664;
-  const double E = 2.718281828459045;
   const double e = std::sqrt( (4 * PI * FINESTRUCTURE));
-  const double HBAR = 6.58211889e-16;//ev*s
-  const double NATURALLENGTH = HBAR*C/EMASSC2/1000.;//m
-  const double a_CORR = -1.0;
-  const double EULER_MASCHERONI_CONSTANT = 0.577215664901532;  /**< the Euler-Mascheroni constant */
   const double LAMBDA = -1.2754;
-  //const double Cs = 0.001 ;
   const double Vud = 0.97435 ;
   const double GF = 1.166378 * std::pow(10, -5) ;
   const double FERMICONSTANT =  1. ; //GF ; //GF * Vud ;
-
-  enum DecayType { FERMI, GAMOW_TELLER, MIXED };
-
-  const std::string atoms[] = {"H", "He", "Li", "Be", "B", "C", "N", "O", "F", "Ne", "Na", "Mg", "Al", "Si", "P", "S", "Cl", "Ar", "K", "Ca", "Sc", "Ti", "V", "Cr", "Mn", "Fe", "Co", "Ni", "Cu", "Zn", "Ga", "Ge", "As", "Se", "Br", "Kr", "Rb", "Sr", "Y", "Zr", "Nb", "Mo", "Tc", "Ru", "Rh", "Pd", "Ag", "Cd", "In", "Sn", "Sb", "Te", "I", "Xe", "Cs", "Ba", "La", "Ce", "Pr", "Nd", "Pm", "Sm", "Eu", "Gd", "Tb", "Dy", "Ho", "Er", "Tm", "Yb", "Lu", "Hf", "Ta", "W", "Re", "Os", "Ir", "Pt", "Au", "Hg", "Tl", "Pb", "Bi", "Po", "At", "Rn", "Fr", "Ra", "Ac", "Th", "Pa", "U", "Np", "Pu", "Am", "Cm", "Bk", "Cf", "Es", "Fm", "Md", "No", "Lr", "Rf", "Db", "Sg", "Bh", "Hs", "Mt"};
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -262,8 +225,7 @@ inline double Vg_variable(double Cs, double Q){
 
 
 inline double rho_H(int n, double Cs, double MF, double MGT, double a, double MIMASSC2, int Z, 
-                    int A, double Q, int Labs, bool advanced, int betaType,
-                    std::mt19937& generator) {
+                    int A, double Q, int Labs, bool advanced, int betaType) {
     double somme_rhoH = 0. ;
     double Vg = Vg_variable(Cs, Q) ;
     int nout = 0 ;
@@ -331,8 +293,7 @@ inline double rho_H(int n, double Cs, double MF, double MGT, double a, double MI
 
 
 inline double WH_max(int n, double Cs, double MF, double MGT, double a, double MIMASSC2, int Z, 
-                     int A, double Q, int Labs, bool advanced, int betaType,
-                     std::mt19937& generator) {
+                     int A, double Q, int Labs, bool advanced, int betaType) {
     double max = 0. ;
 
     std::uniform_real_distribution<double> distribution(0.0, 1.0);
@@ -596,19 +557,18 @@ inline double W0VS_max(double Cs, double MF, double MGT, double a, double MIMASS
 
 // Efficiency of the “soft” Monte Carlo method (0VS) by Neumann rejection
 inline double Efficiency_0VS(int ns, double Cs, double MF, double MGT, double a, double MIMASSC2,
-                             int Z, int A, double Q, int Labs, bool advanced, int betaType,
-                             std::mt19937& generator) {
+                             int Z, int A, double Q, int Labs, bool advanced, int betaType) {
     double somme_W0VS = 0. ;
     int nout = 0 ;
 
     std::uniform_real_distribution<double> distribution(0.0, 1.0);
     double DELTA = Q / EMASSC2 + 1. ;
-    
+    auto& gen = get_thread_local_generator();
     //for (int i = 0 ; i < ns ; i++) {
     int i = 0 ;
     while (i < ns) {
-        double U_E2 = distribution(generator) ;
-        double U_COS = distribution(generator) ;
+        double U_E2 = distribution(gen) ;
+        double U_COS = distribution(gen) ;
 
         double E2 = 1. + (DELTA - 1.) * U_E2 ;
         double COS = 1. - 2. * U_COS ;
@@ -633,19 +593,18 @@ inline double Efficiency_0VS(int ns, double Cs, double MF, double MGT, double a,
 
 // Efficiency of the “hard” Monte Carlo method (H) by Neumann rejection
 inline double Efficiency_H(int nH, double Cs, double MF, double MGT, double a, double MIMASSC2,
-                           int Z, int A, double Q, int Labs, bool advanced, int betaType,
-                           std::mt19937& generator) {
+                           int Z, int A, double Q, int Labs, bool advanced, int betaType) {
     double somme_w = 0. ;
     int nout = 0 ;
 
     std::uniform_real_distribution<double> distribution(0.0, 1.0);
     double DELTA = Q / EMASSC2 + 1. ;
-
+    auto& gen = get_thread_local_generator();
     //for (int i = 0 ; i < nH ; i++) {
     int i = 0 ;
     while (i < nH) {
         double U[8];
-        for (int j = 0; j < 8; j++) U[j] = distribution(generator);
+        for (int j = 0; j < 8; j++) U[j] = distribution(gen);
 
         double E2 = 1. + (DELTA - 1.) * U[0] ;
         double E10 = E10_variable(E2, Q);
@@ -694,7 +653,7 @@ inline double Efficiency_H(int nH, double Cs, double MF, double MGT, double a, d
     }
 
     double mean_w = somme_w / (nH - nout) ;
-    double w_max = WH_max(nH, Cs, MF, MGT, a, MIMASSC2, Z, A, Q, Labs, advanced, betaType, generator) ;
+    double w_max = WH_max(nH, Cs, MF, MGT, a, MIMASSC2, Z, A, Q, Labs, advanced, betaType) ;
 
     double E_H = 100. * mean_w / w_max ;
     return E_H ;
@@ -702,15 +661,15 @@ inline double Efficiency_H(int nH, double Cs, double MF, double MGT, double a, d
 
 
 inline double PH(double Cs, double MF, double MGT, double a, double MIMASSC2, int Z, int A, 
-                 double Q, int Labs, bool advanced, int betaType, std::mt19937& generator) {
+                 double Q, int Labs, bool advanced, int betaType) {
 
-    double RHOH = rho_H(1000000, Cs, MF, MGT, a, MIMASSC2, Z, A, Q, Labs, advanced, betaType, generator) ;
+    double RHOH = rho_H(1000000, Cs, MF, MGT, a, MIMASSC2, Z, A, Q, Labs, advanced, betaType) ;
     double RHO0 = rho0(5000, MF, MGT, Z, A, Q, Labs, advanced, betaType) ;
     double RHOVS = rhoVS(5000, Cs, MF, MGT, Z, A, Q, Labs, advanced, betaType) ;
     double RHO0VS = RHO0 + RHOVS ;
 
-    double E_0VS = Efficiency_0VS(100000, Cs, MF, MGT, a, MIMASSC2, Z, A, Q, Labs, advanced, betaType, generator) ;
-    double E_H = Efficiency_H(100000, Cs, MF, MGT, a, MIMASSC2, Z, A, Q, Labs, advanced, betaType, generator) ;
+    double E_0VS = Efficiency_0VS(100000, Cs, MF, MGT, a, MIMASSC2, Z, A, Q, Labs, advanced, betaType) ;
+    double E_H = Efficiency_H(100000, Cs, MF, MGT, a, MIMASSC2, Z, A, Q, Labs, advanced, betaType) ;
     std::cout << "Efficacite 0VS (%) : " << E_0VS << "\n";
     std::cout << "Efficacite H (%) : " << E_H << "\n";
     
@@ -718,14 +677,13 @@ inline double PH(double Cs, double MF, double MGT, double a, double MIMASSC2, in
     //std::cout << "rho0 : " << RHO0 << "\n";
     //std::cout << "rhoVS : " << RHOVS << "\n";
     //std::cout << "rho0VS : " << RHO0VS << "\n";
-    std::cout << "r_rho :" << 100*(RHOVS+RHOH)/RHO0 << "\n";
     //std::cout << "pH : " << RHOH/(RHO0VS + RHOH) << "\n";
     //std::cout << "mf : " << MF_2 << "\n";
     //std::cout << "mgt : " << MGT_2 << "\n";  
     //std::cout << "wh max : " << WH_max(1000000, Cs, a, MIMASSC2, MFMASSC2, Z, betaType, mode) << "\n";
     //std::cout << "w0vs max : " << W0VS_max(MF_2, MGT_2, MIMASSC2, MFMASSC2) << "\n";"
-    
-    
+    std::cout << "r_rho :" << 100*(RHOVS+RHOH)/RHO0 << "\n";
+
     return RHOH/(RHO0VS + RHOH) ; 
 };
 

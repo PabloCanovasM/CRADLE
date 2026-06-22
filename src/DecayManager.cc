@@ -17,6 +17,7 @@
 #include <sys/stat.h>
 #include <future>
 #include <complex>
+#include <chrono>
 // 
 // #include <iostream>
 // #include <iomanip>
@@ -498,7 +499,7 @@ bool DecayManager::GenerateNucleus(string name, int Z, int A) {
             advanced = true;
           }
         
-        double ph = radiativecorrections::PH(Cs, mf, mgt, a, mass_i, std::abs(Z), A, Q, Labs, advanced, betaType, dm.generator) ;
+        double ph = radiativecorrections::PH(Cs, mf, mgt, a, mass_i, std::abs(Z), A, Q, Labs, advanced, betaType) ;
 
         if (std::isnan(ph)) {
           std::cout << "Intensity : " << intensity << "\n";
@@ -512,10 +513,10 @@ bool DecayManager::GenerateNucleus(string name, int Z, int A) {
         std::cout << "PH (en %) : " << ph*100 << "\n" ;
         std::cout << "Q : " << Q/utilities::EMASSC2 + 1 << "\n" ;
         std::cout << "\n" ;
-
+        
         DecayChannel* dc1 = new DecayChannel(mode+"VirtualSoft", &GetDecayMode(mode+"VirtualSoft"), Q, intensity*(1.-ph), lifetime, excitationEnergy, daughterExcitationEnergy);
         p->AddDecayChannel(dc1) ;
-        
+
         DecayChannel* dc2 = new DecayChannel(mode+"Radiative", &GetDecayMode(mode+"Radiative"), Q, intensity*ph, lifetime, excitationEnergy, daughterExcitationEnergy);
         p->AddDecayChannel(dc2) ;
         }
@@ -757,7 +758,6 @@ bool DecayManager::MainLoop() {
     for (int t = 0; t < threads; t++) {
       f[t] = std::async(std::launch::async, &DecayManager::GenerateEvent, this, i+t);
     }
-
     for (int t = 0; t < threads; t++) {
       fileStream << f[t].get();
       ++show_progress;

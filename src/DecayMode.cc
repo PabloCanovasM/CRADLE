@@ -9,6 +9,7 @@
 #include <string>
 #include <sstream>
 #include <complex>
+#include <chrono>
 
 namespace CRADLE {
 
@@ -391,8 +392,8 @@ std::vector<Particle*> BetaPlus::Decay(Particle* initState, double Q, double dau
 
 ////////////////////////////////////////////////////////////
 std::vector<Particle*> BetaMinusRadiative::Decay(Particle* initState, double Q, double daughterExEn) {
-  std::vector<Particle*> finalStates;
   
+  std::vector<Particle*> finalStates;
   DecayManager& dm = DecayManager::GetInstance();
 
   std::ostringstream oss;
@@ -403,9 +404,9 @@ std::vector<Particle*> BetaMinusRadiative::Decay(Particle* initState, double Q, 
   
   std::string parentName = oss.str();
   
-  Particle* e = DecayManager::GetInstance().GetNewParticle("e-"+parentName);
-  Particle* enubar = DecayManager::GetInstance().GetNewParticle("enubar"+parentName);
-  Particle* gamma = DecayManager::GetInstance().GetNewParticle("gammaBR"+parentName);
+  Particle* e = DecayManager::GetInstance().GetNewParticle("e-"); //+parentName);
+  Particle* enubar = DecayManager::GetInstance().GetNewParticle("enubar"); //+parentName);
+  Particle* gamma = DecayManager::GetInstance().GetNewParticle("gammaBR"); //+parentName);
 
   oss.str("");
   oss.clear();
@@ -480,13 +481,13 @@ std::vector<Particle*> BetaMinusRadiative::Decay(Particle* initState, double Q, 
   if (dm.configOptions.betaDecay.FermiFunction == "Advanced") { //// réécriture de la condition par SL 10/05/2023
       advanced = true;
     }
-  
+
   auto& gen = radiativecorrections::get_thread_local_generator();
   std::vector<double> W;
   try {
     W = DecayManager::GetInstance().GetParameterMC(oss.str()) ;
   } catch (const std::invalid_argument& e) {
-    double WHmax = radiativecorrections::WH_max(1000000, Cs, mf, mgt, a, mass_i, Z, A, Q, Labs, advanced, betaType, dm.generator);
+    double WHmax = radiativecorrections::WH_max(1000000, Cs, mf, mgt, a, mass_i, Z, A, Q, Labs, advanced, betaType);
     W = {WHmax, 0} ;
     DecayManager::GetInstance().RegisterParameterMC(oss.str(), W) ;
   }
@@ -582,8 +583,8 @@ std::vector<Particle*> BetaMinusRadiative::Decay(Particle* initState, double Q, 
 }
 
 std::vector<Particle*> BetaMinusVirtualSoft::Decay(Particle* initState, double Q, double daughterExEn) {
+
   std::vector<Particle*> finalStates;
-  
   DecayManager& dm = DecayManager::GetInstance();
 
   std::ostringstream oss;
@@ -596,8 +597,8 @@ std::vector<Particle*> BetaMinusVirtualSoft::Decay(Particle* initState, double Q
   //std::cout << "Parent name : " << parentName << std::endl;
   //std::cout << "e-"+parentName << std::endl;
   
-  Particle* e = DecayManager::GetInstance().GetNewParticle("e-"+parentName);
-  Particle* enubar = DecayManager::GetInstance().GetNewParticle("enubar"+parentName);
+  Particle* e = DecayManager::GetInstance().GetNewParticle("e-"); //+parentName);
+  Particle* enubar = DecayManager::GetInstance().GetNewParticle("enubar"); //+parentName);
 
     
   oss.str("");
@@ -1011,21 +1012,22 @@ std::vector<Particle*> BetaPlusRadiative::Decay(Particle* initState, double Q, d
   try {
     W = DecayManager::GetInstance().GetParameterMC(oss.str()) ;
   } catch (const std::invalid_argument& e) {
-    double WHmax = radiativecorrections::WH_max(1000000, Cs, mf, mgt, a, mass_i, Z, A, Q, Labs, advanced, betaType, dm.generator);
+    double WHmax = radiativecorrections::WH_max(1000000, Cs, mf, mgt, a, mass_i, Z, A, Q, Labs, advanced, betaType);
     W = {WHmax, 0} ;
     DecayManager::GetInstance().RegisterParameterMC(oss.str(), W) ;
   }
 
   std::uniform_real_distribution<double> distribution(0.0, 1.0);
   std::uniform_real_distribution<double> distribution_wHmax(0.0, W[0]); 
-
+  
+  auto& gen = radiativecorrections::get_thread_local_generator();
   double DELTA = Q /utilities::EMASSC2 + 1. ;
   int n_verif = nH ;
   while (n_verif == nH) {
-    double wH_NR = distribution_wHmax(dm.generator) ;
+    double wH_NR = distribution_wHmax(gen) ;
 
     double U[8];
-    for (int j = 0; j < 8; j++) U[j] = distribution(dm.generator);
+    for (int j = 0; j < 8; j++) U[j] = distribution(gen);
     
     double E2 = 1. + (DELTA - 1.) * U[0] ;
     double E10 = radiativecorrections::E10_variable(E2, Q); 
@@ -1208,14 +1210,15 @@ std::vector<Particle*> BetaPlusVirtualSoft::Decay(Particle* initState, double Q,
 
   std::uniform_real_distribution<double> distribution(0.0, 1.0);
   std::uniform_real_distribution<double> distribution_w0VSmax(0.0, W[0]); 
-
+  
+  auto& gen = radiativecorrections::get_thread_local_generator();
   double DELTA = Q /utilities::EMASSC2 + 1. ;
   int n_verif = n0VS ;
   while (n_verif == n0VS) {
-    double w0VS_NR = distribution_w0VSmax(dm.generator) ;
+    double w0VS_NR = distribution_w0VSmax(gen) ;
 
     double U[5];
-    for (int j = 0; j < 5; j++) U[j] = distribution(dm.generator);
+    for (int j = 0; j < 5; j++) U[j] = distribution(gen);
     double E2 = 1. + (DELTA - 1 ) * U[0] ;
     double COS_NEUTRINO = 2. * U[1] - 1. ;    
 
