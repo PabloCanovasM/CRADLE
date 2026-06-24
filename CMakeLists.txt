@@ -14,6 +14,16 @@ cmake_minimum_required(VERSION 3.5)
 
 project(CRADLE++ VERSION 1.0 LANGUAGES CXX)
 
+# - Default to a Release build if the user/generator didn't specify one.
+# Without this, CMake adds NO optimization flags at all (effectively -O0),
+# which is very costly for a Monte Carlo code full of inline math functions.
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+    set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build (Debug, Release, RelWithDebInfo, MinSizeRel)" FORCE)
+    set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "RelWithDebInfo" "MinSizeRel")
+endif()
+message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
+
+
 set(CMAKE_MACOSX_RPATH OFF)
 
 # # use, i.e. don't skip the full RPATH for the build tree
@@ -70,10 +80,12 @@ add_executable(CRADLE++ src/CRADLE++.cc)
 
 find_package(Boost REQUIRED)
 find_package(GSL REQUIRED)
-find_package(Threads)
+find_package(Threads REQUIRED)
+find_package(ROOT REQUIRED)
 
 target_include_directories(Cradle PUBLIC ${Boost_INCLUDE_DIRS})
 target_include_directories(Cradle PUBLIC ${GSL_INCLUDE_DIRS})
+target_include_directories(Cradle PUBLIC ${ROOT_INCLUDE_DIRS})
 
 target_include_directories(
     Cradle
@@ -87,18 +99,19 @@ set(HEADER_BASE "${CMAKE_CURRENT_SOURCE_DIR}/include")
 target_link_libraries(Cradle PUBLIC ${GSL_LIBRARIES} ${GSL_CBLAS_LIBRARIES})
 target_link_libraries(Cradle PUBLIC ${Boost_LIBRARIES})
 target_link_libraries(Cradle PUBLIC ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(Cradle PUBLIC ${ROOT_LIBRARIES})
 			     
 target_link_libraries(CRADLE++ PRIVATE Cradle)	
 
-#Test executable. TO DO: add config to toggle
-add_library(BetaNuclearPolTest SHARED 
-    src_tests/beta_nuclear_polarisation/lambda_cte_test.cc 
-    src_tests/beta_nuclear_polarisation/ang_corr_factor_test.cc 
-    src_tests/beta_nuclear_polarisation/sampling_test.cc)
-add_executable(BetaNuclearPolTests src_tests/beta_nuclear_polarisation/main_test.cc)
+# Test executable. TO DO: add config to toggle
+#add_library(BetaNuclearPolTest SHARED 
+#    src_tests/beta_nuclear_polarisation/lambda_cte_test.cc 
+#    src_tests/beta_nuclear_polarisation/ang_corr_factor_test.cc 
+#    src_tests/beta_nuclear_polarisation/sampling_test.cc)
+#add_executable(BetaNuclearPolTests src_tests/beta_nuclear_polarisation/main_test.cc)
 
-target_link_libraries(BetaNuclearPolTest PUBLIC Cradle)
-target_link_libraries(BetaNuclearPolTests PRIVATE BetaNuclearPolTest)
+#target_link_libraries(BetaNuclearPolTest PUBLIC Cradle)
+#target_link_libraries(BetaNuclearPolTests PRIVATE BetaNuclearPolTest)
 
 
 # add_custom_command(TARGET CRADLE++

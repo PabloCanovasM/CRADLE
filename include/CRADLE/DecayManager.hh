@@ -14,6 +14,19 @@ namespace CRADLE {
   class DecayMode;
   class SpectrumGenerator;
 
+  struct ParticleData {
+    int event;
+    double time;
+    std::string name; 
+    int code;
+    double excitation_energy;
+    double kinetic_energy;
+    double total_energy;
+    double px;
+    double py;
+    double pz;
+};
+
   class DecayManager {
   public:
     static DecayManager& GetInstance() {
@@ -37,7 +50,11 @@ namespace CRADLE {
     void RegisterSpectrumGenerator(const std::string, SpectrumGenerator&);
     void RegisterBasicSpectrumGenerators();
     void ListRegisteredParticles();
-    std::string GenerateEvent(int);
+
+    //std::string GenerateEvent(int);
+    std::vector<ParticleData> GenerateEvent_ROOT(int, int);
+    std::string GenerateEvent_TXT(int);
+
     Particle* GetNewParticle(const std::string, int Z=0, int A=0);
     DecayMode& GetDecayMode(const std::string);
     std::vector<std::vector<double> >* GetDistribution(const std::string);

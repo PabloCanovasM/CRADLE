@@ -8,6 +8,10 @@
 #include "CRADLE/Polarisation.hh"
 #include "CRADLE/ECshell.hh"
 
+// ROOT headers for .root output format
+#include "TFile.h"
+#include "TTree.h"
+
 #define BOOST_TIMER_ENABLE_DEPRECATED
 #include <boost/progress.hpp>
 #include <fstream>
@@ -18,9 +22,8 @@
 #include <future>
 #include <complex>
 #include <chrono>
-// 
+#include <iomanip>
 // #include <iostream>
-// #include <iomanip>
 
 template<typename A, typename B>
 std::pair<B,A> flip_pair(const std::pair<A,B> &p)
@@ -625,7 +628,221 @@ bool DecayManager::GenerateNucleus(string name, int Z, int A) {
     }
   }
 
-std::string DecayManager::GenerateEvent(int eventNr) {
+
+// ---------------------------------------------------------------------------
+// GenerateEvent_ROOT: runs one decay chain and returns a vector of
+// ParticleData structs ready to be filled into a ROOT TTree.
+// verbosity == 0 : only final-state particles (e-, e+, gamma, alpha, p, n)
+// verbosity != 0 : all particles in the decay chain
+// ---------------------------------------------------------------------------
+std::vector<ParticleData> DecayManager::GenerateEvent_ROOT(int eventNr, int verbosity) {
+  std::vector<ParticleData> vec;
+
+  // Template for a zeroed-out ParticleData entry
+  ParticleData pData_blank;
+  pData_blank.event             = 0;
+  pData_blank.time              = 0;
+  pData_blank.name              = "";
+  pData_blank.code              = 0;               
+  pData_blank.excitation_energy = 0;
+  pData_blank.kinetic_energy    = 0;
+  pData_blank.total_energy      = 0;
+  pData_blank.px                = 0;
+  pData_blank.py                = 0;
+  pData_blank.pz                = 0;
+
+  double time    = 0.;
+  int totEvents  = 0;
+
+  std::vector<Particle*> particleStack;
+  Particle* initState = GetNewParticle(initStateName);
+  initState->SetExcitationEnergy(initExcitationEn);
+  particleStack.push_back(initState);
+
+
+  while (!particleStack.empty()) {
+    Particle* p = particleStack.back();
+    vector<Particle*> finalStates;
+    double decayTime = p->GetDecayTime();
+
+    // Determine whether this particle should be recorded
+    bool isDetectable = (p->GetRawName() == "p"     ||
+                         p->GetRawName() == "e+"    ||
+                         p->GetRawName() == "e-"    ||
+                         p->GetRawName() == "enu"    ||
+                         p->GetRawName() == "enubar"    ||
+                         p->GetRawName() == "gamma" ||
+                         p->GetRawName() == "gammaBR" ||
+                         p->GetRawName() == "alpha" ||
+                         p->GetRawName() == "2He"   ||
+                         p->GetRawName() == "n");
+
+    if (verbosity == 0) {
+      // Record only detectable final-state particles
+      if (isDetectable) {
+        vec.push_back(pData_blank);
+        double mom = std::sqrt(p->GetMomentum()[1]*p->GetMomentum()[1] +
+                               p->GetMomentum()[2]*p->GetMomentum()[2] +
+                               p->GetMomentum()[3]*p->GetMomentum()[3]);
+        vec[totEvents].event             = eventNr;
+        vec[totEvents].time              = roundf(time * 10000) / 10000.;
+        vec[totEvents].name              = p->GetRawName();
+        vec[totEvents].code              = screening::NametoPDG(p->GetRawName()); 
+        vec[totEvents].excitation_energy = p->GetExcitationEnergy();
+        vec[totEvents].kinetic_energy    = p->GetKinEnergy();
+        vec[totEvents].total_energy    = p->GetKinEnergy()+p->GetMass();
+        vec[totEvents].px = (mom > 0.) ? p->GetMomentum()[1] / mom : 0.;
+        vec[totEvents].py = (mom > 0.) ? p->GetMomentum()[2] / mom : 0.;
+        vec[totEvents].pz = (mom > 0.) ? p->GetMomentum()[3] / mom : 0.;
+        ++totEvents;
+      }
+    } else {
+      // Verbose mode: record every particle in the chain
+      vec.push_back(pData_blank);
+      double mom = std::sqrt(p->GetMomentum()[1]*p->GetMomentum()[1] +
+                             p->GetMomentum()[2]*p->GetMomentum()[2] +
+                             p->GetMomentum()[3]*p->GetMomentum()[3]);
+      vec[totEvents].event             = eventNr;
+      vec[totEvents].time              = roundf(time * 10000) / 10000.;
+      vec[totEvents].name              = p->GetRawName();
+      vec[totEvents].code              = screening::NametoPDG(p->GetRawName()); 
+      vec[totEvents].excitation_energy = p->GetExcitationEnergy();
+      vec[totEvents].kinetic_energy    = p->GetKinEnergy();
+      vec[totEvents].total_energy    = p->GetKinEnergy()+p->GetMass();
+      vec[totEvents].px = (mom > 0.) ? p->GetMomentum()[1] / mom : 0.;
+      vec[totEvents].py = (mom > 0.) ? p->GetMomentum()[2] / mom : 0.;
+      vec[totEvents].pz = (mom > 0.) ? p->GetMomentum()[3] / mom : 0.;
+      ++totEvents;
+    }
+
+    if ((time + decayTime) <= configOptions.cuts.Lifetime) {
+      try {
+        time += decayTime;
+        finalStates = p->Decay();
+      } catch (const std::invalid_argument& e) {
+        std::cerr << "Decay Mode for particle " << p->GetName()
+                  << " not found. Aborting." << endl;
+      }
+    }
+    delete particleStack.back();
+    particleStack.pop_back();
+    if (!finalStates.empty()) {
+      particleStack.insert(particleStack.end(), finalStates.begin(),
+                           finalStates.end());
+    }
+  }
+  return vec;
+};
+
+
+// ---------------------------------------------------------------------------
+// GenerateEvent_TXT: runs one decay chain and returns formatted text lines
+// for appending to a plain-text output file.
+// verbosity == 0 : only detectable final-state particles are written
+// verbosity != 0 : full sub-event structure (all intermediate states)
+// ---------------------------------------------------------------------------
+/*std::string DecayManager::GenerateEvent_TXT(int eventNr, int verbosity) {
+  double time         = 0.;
+  double checkTime    = 0.;
+  int subEventNr      = 0;
+  int totSubEvents    = 0;
+  int totEvents       = 0;
+  std::ostringstream eventData;
+  std::ostringstream subHeader;
+  std::ostringstream subEventData;
+  std::vector<Particle*> particleStack;
+  Particle* ini = GetNewParticle(initStateName);
+  ini->SetExcitationEnergy(initExcitationEn);
+  particleStack.push_back(ini);
+
+  if (verbosity == 0) {
+    // Simple mode: write only detectable particles
+    while (!particleStack.empty()) {
+      Particle* p = particleStack.back();
+      vector<Particle*> finalStates;
+      double decayTime = p->GetDecayTime();
+
+      bool isDetectable = (p->GetRawName() == "p"     ||
+                           p->GetRawName() == "e+"    ||
+                           p->GetRawName() == "e-"    ||
+                           p->GetRawName() == "gamma" ||
+                           p->GetRawName() == "alpha" ||
+                           p->GetRawName() == "2He"   ||
+                           p->GetRawName() == "n");
+
+      if (decayTime > configOptions.cuts.Lifetime && isDetectable) {
+        ++totSubEvents;
+        subEventData << eventNr << "\t\t"
+                     << std::fixed << std::setprecision(4)
+                     << roundf(time * 10000) / 10000.
+                     << "\t" << p->GetInfoForFile() << "\n";
+      }
+
+      if ((time + decayTime) <= configOptions.cuts.Lifetime) {
+        try {
+          time += decayTime;
+          finalStates = p->Decay();
+        } catch (const std::invalid_argument& e) {
+          cout << "Decay Mode for particle " << p->GetName()
+               << " not found. Aborting." << endl;
+          return "";
+        }
+      }
+      delete particleStack.back();
+      particleStack.pop_back();
+      if (!finalStates.empty()) {
+        particleStack.insert(particleStack.end(), finalStates.begin(),
+                             finalStates.end());
+      }
+    }
+  } else {
+    // Verbose mode: write full sub-event structure
+    while (!particleStack.empty()) {
+      Particle* p = particleStack.back();
+      vector<Particle*> finalStates;
+      double decayTime = p->GetDecayTime();
+
+      ++totSubEvents;
+      subEventData << eventNr << "\t\t"
+                   << std::fixed << std::setprecision(4)
+                   << roundf(time * 10000) / 10000.
+                   << "\t" << p->GetInfoForFile() << "\n";
+
+      if ((time + decayTime) <= configOptions.cuts.Lifetime) {
+        try {
+          time += decayTime;
+          finalStates = p->Decay();
+          subHeader << eventNr << std::setw(8) << subEventNr
+                    << "\t\t" << totSubEvents << "\n" << subEventData.str();
+          subEventData.str(std::string());
+          totEvents    += totSubEvents;
+          totSubEvents  = 0;
+          ++subEventNr;
+        } catch (const std::invalid_argument& e) {
+          cout << "Decay Mode for particle " << p->GetName()
+               << " not found. Aborting." << endl;
+          return "";
+        }
+      }
+      delete particleStack.back();
+      particleStack.pop_back();
+      if (!finalStates.empty()) {
+        particleStack.insert(particleStack.end(), finalStates.begin(),
+                             finalStates.end());
+      }
+    }
+  }
+
+  totEvents += totSubEvents;
+  subHeader << eventNr << std::setw(8) << subEventNr
+            << "\t\t" << totSubEvents << "\n" << subEventData.str();
+  eventData << eventNr << "\t\t" << totEvents << "\n" << subHeader.str();
+
+  return eventData.str();
+};*/
+
+
+std::string DecayManager::GenerateEvent_TXT(int eventNr) {
   double time = 0.;
   std::ostringstream eventDataSS;
   std::vector<Particle*> particleStack;
@@ -663,111 +880,86 @@ std::string DecayManager::GenerateEvent(int eventNr) {
   return eventDataSS.str();
 }
 
-// std::string DecayManager::GenerateEvent(int eventNr)
-// {
-//   double time = 0.;
-//   double checkTime = 0.;
-//   int subEventNr=0;
-//   int totSubEvents = 0;
-//   int totEvents = 0;
-//   std::ostringstream eventData;
-//   std::ostringstream subHeader;
-//   std::ostringstream subEventData;
-//   std::vector<Particle *> particleStack;
-//   Particle *ini = GetNewParticle(initStateName);
-//   ini->SetExcitationEnergy(initExcitationEn);
-//   particleStack.push_back(ini);
-//   cout<<particleStack.size()<<endl;
-//   while (!particleStack.empty())
-//   {
-//
-//     Particle *p = particleStack.back();
-//     vector<Particle *> finalStates;
-//     double decayTime = p->GetDecayTime();
-//     std::cout << eventNr << "\t" << subEventNr << std::endl;
-//     std::cout << "     Time =\t" << time      << "\n "
-//               << "CheckTime =\t" << checkTime << "\n "
-//               << "decayTime =\t" << decayTime << std::endl;
-//     std::cout <<  p->GetInfoForFile() << std::endl;
-//
-//     if (decayTime >= 0.)
-//     {
-//       try
-//       {
-//
-//         finalStates = p->Decay();
-//         time += decayTime;
-//         //cout << "Decay finished" << endl;
-//       }
-//       catch (const std::invalid_argument& e)
-//       {
-//         std::cout << "Decay Mode for particle " << p->GetName() << " not found. Aborting." << endl;
-//         return "";
-//       }
-//     }
-//     else
-//     {
-//       if (time != checkTime)
-//       {
-//         subHeader << eventNr << std::setw(8) << subEventNr << "\t\t" << totSubEvents << "\n" << subEventData.str();
-//         totSubEvents = 0;
-//         ++subEventNr;
-//         checkTime = time;
-//         subEventData.str(std::string());
-//       }
-//       ++totEvents;
-//       ++totSubEvents;
-//
-//       subEventData << eventNr << "\t\t" << std::fixed<<std::setprecision(4)<<roundf(time*100)/100. << "\t" << p->GetInfoForFile() << "\n";
-//     }
-//     delete particleStack.back();
-//     particleStack.pop_back();
-//     if (!finalStates.empty())
-//     {
-//       particleStack.insert(particleStack.end(), finalStates.begin(),
-//                            finalStates.end());
-//     }
-//   }
-//   // Write down the last event that occured!
-//   subHeader << eventNr << "\t\t" << subEventNr << "\t\t" << totSubEvents << "\n"
-//             << subEventData.str();
-//   eventData << eventNr << "\t\t" << totEvents << "\n"
-//             << subHeader.str();
-//
-//   return eventData.str();
-// }
 
 bool DecayManager::MainLoop() {
   int nrParticles = configOptions.general.Loop;
+  int verbosity   = configOptions.general.Verbosity_file;
+
   if (nrParticles < 1) {
     std::cerr << "ERROR: Incorrect number of events (" << nrParticles << ")" << std::endl;
     return true;
   }
   cout << "Starting Main Loop (" << nrParticles << " events)" << endl;
-  std::ofstream fileStream;
-  fileStream.open(outputName.c_str());
 
   std::ios::sync_with_stdio(false);
   boost::progress_display show_progress(nrParticles);
   boost::progress_timer t;
-  //fileStream << GenerateEvent(0);                        ///// and i started to 0 before
-  for (int i = 0; i < nrParticles; i+=NRTHREADS) {
-    // cout << "LOOP NR " << i+1 << endl;
-    int threads = std::min(NRTHREADS, nrParticles-i);
-    std::future<std::string> f[threads];
-    for (int t = 0; t < threads; t++) {
-      f[t] = std::async(std::launch::async, &DecayManager::GenerateEvent, this, i+t);
+
+  // ----- ROOT output -----
+  if (outputName.find("root") != std::string::npos) {
+    TFile* outputFile = new TFile(outputName.c_str(), "RECREATE");
+    TTree* tree = new TTree("ParticleTree", "Tree for Particle Data");
+
+    ParticleData pData;
+    tree->Branch("event",              &pData.event);
+    tree->Branch("time",               &pData.time);
+    tree->Branch("name",               &pData.name);
+    tree->Branch("code",               &pData.code);
+    tree->Branch("kinetic_energy",     &pData.kinetic_energy);
+    tree->Branch("excitation_energy",  &pData.excitation_energy);
+    tree->Branch("total_energy",       &pData.total_energy);
+    tree->Branch("px",                 &pData.px);
+    tree->Branch("py",                 &pData.py);
+    tree->Branch("pz",                 &pData.pz);
+
+    for (int i = 0; i < nrParticles; i += NRTHREADS) {
+      int threads = std::min(NRTHREADS, nrParticles - i);
+      std::future<std::vector<ParticleData>> f[threads];
+      for (int t = 0; t < threads; t++) {
+        f[t] = std::async(std::launch::async,
+                          &DecayManager::GenerateEvent_ROOT, this, i + t, verbosity);
+      }
+      for (int t = 0; t < threads; t++) {
+        for (const auto& particle : f[t].get()) {
+          pData = particle;
+          tree->Fill();
+        }
+        ++show_progress;
+      }
     }
-    for (int t = 0; t < threads; t++) {
-      fileStream << f[t].get();
-      ++show_progress;
+    outputFile->Write();
+    outputFile->Close();
+    delete outputFile;
+
+  // ----- Plain-text output -----
+  } else if (outputName.find("txt") != std::string::npos) {
+    std::ofstream fileStream;
+    fileStream.open(outputName.c_str());
+    for (int i = 0; i < nrParticles; i += NRTHREADS) {
+      int threads = std::min(NRTHREADS, nrParticles - i);
+      std::future<std::string> f[threads];
+      for (int t = 0; t < threads; t++) {
+        f[t] = std::async(std::launch::async,
+                          &DecayManager::GenerateEvent_TXT, this, i + t);
+      }
+      for (int t = 0; t < threads; t++) {
+        fileStream << f[t].get();
+        ++show_progress;
+      }
     }
+    fileStream.flush();
+    fileStream.close();
+
+  // ----- Unknown extension -----
+  } else {
+    std::cerr << "ERROR: Output file extension not recognised. "
+                 "Please use .txt or .root for the output filename." << std::endl;
+    return true;
   }
+
   std::cout << "Done! Time taken: ";
-  fileStream.flush();
-  fileStream.close();
   return true;
-}
+};
 
 
 }//End of CRADLE namespace

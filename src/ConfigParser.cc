@@ -34,6 +34,7 @@ namespace CRADLE {
   void SetGeneralOptions (CLI::App& app, General& general) {
     CLI::App* comp = app.add_subcommand("General", "This is the general subcommand")->ignore_case();
     comp->add_option("-v,--verbosity", general.Verbosity, "Verbosity settings");
+    comp->add_option("-w,--Verbosity_file", general.Verbosity_file, "Verbosity File settings");
     comp->add_option("-l,--loop", general.Loop, "Number of events to generate.");
     comp->add_option("-t,--threads", general.Threads, "Number of threads (2 x #CPU).");
     comp->add_option("-o,--output", general.Output, "Name of the output file.");
@@ -64,6 +65,7 @@ namespace CRADLE {
 
   void SetBetaDecayOptions (CLI::App& app, BetaDecay& betaDecay) {
     CLI::App* comp = app.add_subcommand("BetaDecay", "This is the beta decay subcommand")->ignore_case();
+    comp->add_option("--DecayType", betaDecay.Default, "Decay type : Fermi, Gamow-Teller, FU, AUTO");
     comp->add_option("--FermiFunction", betaDecay.FermiFunction, "");
     comp->add_option("--PolarisationX", betaDecay.PolarisationX, "X component of polarisation direction"); 
     comp->add_option("--PolarisationY", betaDecay.PolarisationY, "Y component of polarisation direction");

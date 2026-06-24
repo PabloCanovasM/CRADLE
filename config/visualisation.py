@@ -3,6 +3,17 @@
 Created on Mon Jan  4 15:34:48 2016
 
 @author: leendert
+
+    Columns in the input file:
+        1st column: id of event (id)
+        2nd column: half life of event (hl)
+        3rd column: name of particle (name)
+        4th column: i dont know (idk)
+        5th column: kinetic energy of particle (p)
+        6th column: total energy of particle (E=m+p) (E)
+        7th column: momentum x of particle (px)
+        8th column: momentum y of particle (py)
+        9th column: momentum z of particle (pz)
 """
 
 import numpy as np
@@ -28,6 +39,7 @@ def DalitzPlot(name1, name2, name3):
     plt.hist2d(s12, s13, bins=50)
 
 def histParam(name):
+    # kinetic energy
     plt.figure()
     data1 = data[[i for i in range(len(names)) if names[i] == name],3]
     plt.hist(data1, bins=100)
@@ -36,6 +48,8 @@ def histParam(name):
     #plt.yscale('log')
     plt.title(name)
     plt.savefig(name + '_energy.pdf')
+    
+    # half life
     plt.figure()
     data2 = data[[i for i in range(len(names)) if names[i] == name],1]
     plt.hist(data2, bins=100)
@@ -43,6 +57,31 @@ def histParam(name):
     plt.ylabel('Counts')
     plt.title(name)
     plt.savefig(name + '_time.pdf')
+    
+    # px, py, pz
+    fig, axes = plt.subplots(1, 3, figsize=(15, 4))
+    datax = data[[i for i in range(len(names)) if names[i] == name],5]
+    datay = data[[i for i in range(len(names)) if names[i] == name],6]
+    dataz = data[[i for i in range(len(names)) if names[i] == name],7]
+    
+    axes[0].hist(datax, bins=100)
+    axes[0].set_title("px")
+    axes[0].set_xlabel("")
+    axes[0].set_ylabel('Counts')
+    
+    axes[1].hist(datay, bins=100)
+    axes[1].set_title("py")
+    axes[1].set_xlabel("")
+    axes[1].set_ylabel('Counts')
+    
+    axes[2].hist(dataz, bins=100)
+    axes[2].set_title("pz")
+    axes[2].set_xlabel("")
+    axes[2].set_ylabel('Counts')
+    
+    plt.title(name)
+    plt.tight_layout()
+    plt.savefig(name + '_momentum.pdf')
     print(name + " Total # events: " +  str(len(data1)))
 
 def hist2DParam(name1, name2):

@@ -963,7 +963,6 @@ inline double GetBetaCorrections(int Z, int A, double Q, double E, int betaType,
     //               * RecoilCorrection
     //               * AtomicMismatchCorrection
     //               * QCorrection
-    auto t0 = std::chrono::high_resolution_clock::now();
     double W = E;  // E est déjà en unités de m_e c²
     double W0 = Q / EMASSC2 + 1.;
     double R = ApproximateRadius(A) / NATURALLENGTH;
@@ -980,7 +979,21 @@ inline double GetBetaCorrections(int Z, int A, double Q, double E, int betaType,
         //std::cerr << "Warning: W (" << W << ") is greater than W0 (" << W0 << "). Setting W = W0." << std::endl;
         W = W0 - 0.001; // Slightly below W0 to avoid issues
     }
-    int decayType = FU;
+    DecayManager& dm = DecayManager::GetInstance();
+    int decayType;
+    if (dm.configOptions.betaDecay.Default == "Fermi") {
+        decayType = FERMI;
+        //std::cout << "fermi" << "\n";
+    } else if (dm.configOptions.betaDecay.Default == "Gamow-Teller") {
+        decayType = GAMOW_TELLER;
+        //std::cout << "GT" << "\n";
+    } else if (dm.configOptions.betaDecay.Default == "FU"){
+        decayType = FU;
+        //std::cout << "FU" << "\n";
+    } else {
+        std::cout << "No decay type" << std::endl;
+    }
+
     double cShape, cNS;
     std::tie(cShape, cNS) = CCorrectionComponents(W, W0, Z, A, R, betaType, decayType, 1.27, -229, 1, 4.*A, 1*A, 0, Labs);
     double CCorr = cShape + cNS;
@@ -995,36 +1008,7 @@ inline double GetBetaCorrections(int Z, int A, double Q, double E, int betaType,
                + std::atanh(beta)/beta * (2.*(1.+beta*beta) + (W0-W)*(W0-W)/6./W/W - 4.*std::atanh(beta));
 
     double RC_O1corr = 1 + FINESTRUCTURE / 2. / M_PI * g;
-    /*double RC = RadiativeCorrection(W, W0, Z, R, 1.27, 4.7) ;
 
-    if (std::isnan(RC_O1corr) || std::isinf(RC_O1corr)) {
-        std::cerr << "Warning: RC_O1corr is NaN or Inf. Setting to 1." << std::endl;
-        std::cout //<< "l1 : " << std::log(PMASSC2/EMASSC2) << std::endl
-                  << "l2 1: " << 4.*(std::atanh(beta)/beta - 1.)  << std::endl
-                  << "l2 2 : " << ((W0-W)/3./W - 1.5 + std::log(2*(W0-W))) << std::endl
-                  << "l2 3 : " << std::atanh(beta)/beta << std::endl
-                  //<< "l3 : " << 4.0/beta * Spence(2.*beta/(1.+beta)) << std::endl
-                  //<< "l4 : " << std::atanh(beta)/beta * (2.*(1.+beta*beta) + (W0-W)*(W0-W)/6./W/W - 4.*std::atanh(beta)) << std::endl
-                  << "W : " << W << std::endl
-                  << "W0 : " << W0 << std::endl
-                  ;
-        RC_O1corr = 1.0;
-    }
-
-    if (std::isnan(RC) || std::isinf(RC)) {
-        std::cerr << "Warning: RC is NaN or Inf. Setting to 1." << std::endl;
-        RC = 1.0;
-    }
-    */
-    //std::cout << "RC_O1corr = " << RC_O1corr << std::endl;
-    //std::cout << "RC = " << RC << std::endl;
-    //std::cout << "W0 : " << W0 << std::endl;
-    auto t2 = std::chrono::high_resolution_clock::now();
-
-    auto duree1 = std::chrono::duration_cast<std::chrono::milliseconds>(t1 - t0);
-    auto duree2 = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1);
-    //std::cout << "Temps d'execution1 : " << duree1.count() << " ms" << std::endl;
-    //std::cout << "Temps d'execution2 : " << duree2.count() << " ms" << std::endl;
     return FermiFunction(Z, W, R, betaType) 
                * AtomicExchangeCorrection(W, Z) 
                * L0Correction(W, Z, R, betaType)
