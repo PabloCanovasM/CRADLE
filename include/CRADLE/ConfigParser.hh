@@ -19,7 +19,7 @@ struct General {
   int Verbosity = 1;
   int Verbosity_file = 1;
   int Loop = 0;
-  int Threads = 4;
+  int Threads = 8;
   std::string Output = "output.txt";
   int Seed = 0;
 };
@@ -36,6 +36,14 @@ struct CouplingConstants {
   double a = std::nan("");
   double b = std::nan("");
 };
+
+
+struct FormFactors {
+    float fb = 4.0; // by default 4.0
+    float fc1 = 1.0; // by default 1.0
+    float fd = 1.0 ; // by default 1.0
+};
+
 
 struct Cuts {
   double Distance = 1.E10;
@@ -67,6 +75,7 @@ struct ConfigOptions{
   NuclearOptions nuclearOptions;
   General general;
   CouplingConstants couplingConstants;
+  FormFactors formfactors;
   Cuts cuts;
   BetaDecay betaDecay;
   EnvOptions envOptions;
@@ -77,6 +86,7 @@ ConfigOptions ParseOptions(std::string, int argc = 0, const char** argv = nullpt
 void SetCmdOptions(CLI::App&, NuclearOptions&);
 void SetGeneralOptions(CLI::App&, General&);
 void SetCouplingConstants(CLI::App&, CouplingConstants&);
+void SetFormFactors(CLI::App&, FormFactors&);
 void SetCuts(CLI::App&, Cuts&);
 void SetBetaDecayOptions(CLI::App&, BetaDecay&);
 void SetEnvironmentOptions(CLI::App&, EnvOptions&);

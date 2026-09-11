@@ -54,6 +54,13 @@ namespace CRADLE {
     coupling->add_option("--a", couplingConstants.a, "Angular correlation coefficient.");
     coupling->add_option("--b", couplingConstants.b, "Fierz term.");
   }
+  
+  void SetFormFactors (CLI::App& app, FormFactors& formfactors) {
+    CLI::App* formfactor = app.add_subcommand("FormFactors", "This is the form factors subcommand")->ignore_case();
+    formfactor->add_option("--fb", formfactors.fb, "Weak Magnetism (b) form factor");
+    formfactor->add_option("--fc1", formfactors.fc1, "Gamow-Teller (c1) form factor");
+    formfactor->add_option("--fd", formfactors.fd, "Induced Tensor (d) form factor");
+  }
 
   void SetCuts (CLI::App& app, Cuts& cuts) {
     CLI::App* comp = app.add_subcommand("Cuts", "This is the cuts subcommand")->ignore_case();
@@ -96,6 +103,7 @@ namespace CRADLE {
     SetCmdOptions(app,configOptions.nuclearOptions);
     SetGeneralOptions(app,configOptions.general);
     SetCouplingConstants(app,configOptions.couplingConstants);
+    SetFormFactors(app,configOptions.formfactors);
     SetCuts(app,configOptions.cuts);
     SetBetaDecayOptions(app,configOptions.betaDecay);
     SetEnvironmentOptions(app,configOptions.envOptions);

@@ -64,12 +64,16 @@ inline double BETA_variable(double E2) {
 
 inline double E10_variable(double E2, double Q) {
     double DELTA = Q / EMASSC2 + 1. ;
+    std::cout << "Delta : " << DELTA << std::endl;
+    std::cout << "Q : " << Q << std::endl;
     return DELTA - E2;
 };
 
 
 inline double E1_variable(double E2, double K, double Q) {
     double DELTA = Q / EMASSC2 + 1. ;
+    std::cout << "Delta : " << DELTA << std::endl;
+    std::cout << "Q : " << Q << std::endl;
     return DELTA - K - E2 ;
 };
 
@@ -100,7 +104,7 @@ inline double p2_k_variable(double E2, double K, double COS_GAMMA) {
 
 inline double P2_variable(double E2, double K, double COS_GAMMA) {
     double p2_k = p2_k_variable(E2, K, COS_GAMMA);
-    return 1./std::pow(K, 2) + 1./std::pow(p2_k, 2) - (2. * E2)/(K * p2_k);
+    return 1. / K / K + 1. / p2_k / p2_k - (2. * E2)/(K * p2_k);
 };
 
 
@@ -119,7 +123,7 @@ inline double H0(double E2,double K, double COS_GAMMA, double Q) {
     double E1 = E1_variable(E2, K, Q);
     double p2_k = p2_k_variable(E2, K, COS_GAMMA);
     double P2 = P2_variable(E2, K, COS_GAMMA);
-    return E1 * (-(E2 + K) * P2 + K / (p2_k)) ;
+    return E1 * (-(E2 + K) * P2 + K / p2_k) ;
 };
 
 
@@ -129,14 +133,14 @@ inline double H1(double E2, double K, double COS_GAMMA, double N1_K, double N1_N
     double P2 = P2_variable(E2, K, COS_GAMMA);
     double p1_p2 = p1_p2_variable(E2, E1, N1_N2);
     double p1_k = p1_k_variable(E1, K, N1_K) ; 
-    return p1_p2 * (-P2 + 1. / p2_k) + p1_k * ((E2 + K)/(K * p2_k) - 1. / std::pow(p2_k, 2)) ;
+    return p1_p2 * (-P2 + 1. / p2_k) + p1_k * ((E2 + K)/(K * p2_k) - 1. / p2_k / p2_k) ;
 };
 
 
 inline double MBR(double E2, double K, double COS_GAMMA, double N1_K, double N1_N2, double MF, double MGT, double a, 
                   double MIMASSC2, int Z, int A, double Q, int Labs, bool advanced, 
                   int betaType) {
-    return (16. * std::pow(FERMICONSTANT, 2) * std::pow( (MIMASSC2/EMASSC2) , 2) 
+    return (16. * std::pow(FERMICONSTANT, 2) * std::pow((MIMASSC2/EMASSC2) , 2) 
             * std::pow(e, 2) * (1. * H0(E2, K, COS_GAMMA, Q) 
             + a * H1(E2, K, COS_GAMMA, N1_K, N1_N2, Q)) 
             * utilities::GetBetaCorrections(Z, A, Q, E2, betaType, Labs, advanced)
@@ -168,7 +172,7 @@ inline double Mtilde(double E2, double MF, double MGT, double MIMASSC2, int Z, i
     double BETA = BETA_variable(E2) ;
     double N = N_variable(E2) ;
     return (- (FINESTRUCTURE/PI) * (16. * std::pow(FERMICONSTANT, 2) 
-            * ((1 - std::pow(BETA, 2))/BETA) * N * std::pow( (MIMASSC2/EMASSC2), 2)
+            * ((1 - std::pow(BETA, 2))/BETA) * N * std::pow((MIMASSC2/EMASSC2), 2)
             * E10 * E2) 
             * utilities::GetBetaCorrections(Z, A, Q, E2, betaType, Labs, advanced)
             );
@@ -184,7 +188,7 @@ inline double zVS_variable(double E2, double E10, double Cs) {
     double BETA = BETA_variable(E2) ;
     double N = N_variable(E2) ;
     double omega = OMEGA_variable(E10, Cs);
-    return ((FINESTRUCTURE/PI) * (1.5 * log(PMASSC2/EMASSC2) + 2.*( (N/BETA) - 1.) * log( (2.*omega)) 
+    return ((FINESTRUCTURE/PI) * (1.5 * log(PMASSC2/EMASSC2) + 2.*((N/BETA) - 1.) * log( (2.*omega)) 
             + 2. * (N/BETA) * (1. - N) + (2./BETA) * (Spence_function(2. * BETA/(1. + BETA))) - (3./8.)));
 };
 
@@ -205,7 +209,7 @@ inline double g_weight(double E2, double K, double COS_GAMMA) {
     double BETA = BETA_variable(E2);
     double N = N_variable(E2) ;
     double p2_k = p2_k_variable(E2, K, COS_GAMMA) ;
-    return (BETA * E2)/(2 * N * p2_k) ; 
+    return (BETA * E2)/(2. * N * p2_k) ; 
 };
 
 
@@ -359,7 +363,7 @@ inline double w0(double E2, double MF, double MGT, int Z, int A,
                  double Q, int Labs, bool advanced, int betaType) {
     double E10 = E10_variable(E2, Q) ;
     double BETA = BETA_variable(E2) ;
-    double weight0 = (std::pow(FERMICONSTANT, 2) * BETA * std::pow(E10, 2) * std::pow(E2, 2))/(2. * std::pow(PI, 3)) ;
+    double weight0 = (std::pow(FERMICONSTANT, 2) * BETA * E10 * E10 * E2 * E2)/(2. * std::pow(PI, 3)) ;
 
     return (weight0 
             * utilities::GetBetaCorrections(Z, A, Q, E2, betaType, Labs, advanced)

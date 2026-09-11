@@ -218,6 +218,10 @@ std::vector<Particle*> BetaMinus::Decay(Particle* initState, double Q, double da
 
   //std::cout << "fierz " << fierz << " a " << a << std::endl;
   
+  double Jpi_init = utilities::GetJpi(initState->GetNeutrons() + initState->GetCharge(), initState->GetCharge(), initState->GetExcitationEnergy());
+  double Jpi_final = utilities::GetJpi(recoil->GetNeutrons() + recoil->GetCharge(), recoil->GetCharge(), recoil->GetExcitationEnergy());
+  int Labs = std::abs(std::abs(Jpi_final) - std::abs(Jpi_init));
+  
   std::vector<std::vector<double> >* dist;
   try {
     dist = DecayManager::GetInstance().GetDistribution(oss.str());
@@ -226,7 +230,7 @@ std::vector<Particle*> BetaMinus::Decay(Particle* initState, double Q, double da
     if (dm.configOptions.betaDecay.FermiFunction == "Advanced") { //// réécriture de la condition par SL 10/05/2023
       advancedFermi = true;
     }
-    dist = spectrumGen->GenerateSpectrum(initState, recoil, Q); //// changement de Q en E0 par SL 10/05/2023
+    dist = spectrumGen->GenerateSpectrum(initState, recoil, Q, Labs); //// changement de Q en E0 par SL 10/05/2023
     double gamma = std::sqrt(1-std::pow(utilities::FINESTRUCTURE*recoil->GetCharge(), 2.));
     for ( int i = 0; i<dist->size(); i++) {                                  ////// changement de boucle et element par ((*dist)[i]) par SL 10/05/2023
       double E = ((*dist)[i])[0]+utilities::EMASSC2;
@@ -343,6 +347,10 @@ std::vector<Particle*> BetaPlus::Decay(Particle* initState, double Q, double dau
 
   //std::cout <<" b = " << fierz <<"\t a = " << a << std::endl;
   //std::cout << "a : " << a << "\n";
+  
+  double Jpi_init = utilities::GetJpi(initState->GetNeutrons() + initState->GetCharge(), initState->GetCharge(), initState->GetExcitationEnergy());
+  double Jpi_final = utilities::GetJpi(recoil->GetNeutrons() + recoil->GetCharge(), recoil->GetCharge(), recoil->GetExcitationEnergy());
+  int Labs = std::abs(std::abs(Jpi_final) - std::abs(Jpi_init));
 
   std::vector<std::vector<double> >* dist;
   try {
@@ -352,7 +360,7 @@ std::vector<Particle*> BetaPlus::Decay(Particle* initState, double Q, double dau
     if (dm.configOptions.betaDecay.FermiFunction == "Advanced") { //// réécriture de la condition par SL 10/05/2023
       advancedFermi = true;
     }
-    dist = spectrumGen->GenerateSpectrum(initState, recoil, E0); //// changement de Q en E0 par SL 10/05/2023
+    dist = spectrumGen->GenerateSpectrum(initState, recoil, E0, Labs); //// changement de Q en E0 par SL 10/05/2023
     double gamma = std::sqrt(1-std::pow(utilities::FINESTRUCTURE*recoil->GetCharge(), 2.));
     int i=0;
     for ( int i = 0; i<dist->size(); i++) {                                  ////// changement de boucle et element par ((*dist)[i]) par SL 10/05/2023
@@ -459,6 +467,10 @@ std::vector<Particle*> BetaMinusRadiative::Decay(Particle* initState, double Q, 
       mf = 1. ;
     }
   } 
+  else {
+    mgt = 1.0;
+    mf = 1.0;
+    } 
 
   double a = utilities::CalculateBetaNeutrinoAsymmetry(CS, CSP, CT, CTP, CV, CVP, CA, CAP, mf, mgt, a_conf, b_conf);
   double fierz = utilities::CalculateFierz(CS, CSP, CT, CTP, CV, CVP, CA, CAP, mf, mgt, a_conf, b_conf);
@@ -811,6 +823,10 @@ std::vector<Particle*> BetaMinusPolarised::Decay(Particle* initState, double Q, 
   } 
   //mgt = 0. ;
   //mf = 1. ;
+  
+  double Jpi_init = utilities::GetJpi(initState->GetNeutrons() + initState->GetCharge(), initState->GetCharge(), initState->GetExcitationEnergy());
+  double Jpi_final = utilities::GetJpi(recoil->GetNeutrons() + recoil->GetCharge(), recoil->GetCharge(), recoil->GetExcitationEnergy());
+  int Labs = std::abs(std::abs(Jpi_final) - std::abs(Jpi_init));
 
   //std::cout << "fierz " << fierz << " a " << a << std::endl;
   double fierz = utilities::CalculateFierz(CS, CSP, CT, CTP, CV, CVP, CA, CAP, mf, mgt, a_conf, b_conf, recoil->GetCharge(), +1); //beta_minus 
@@ -823,7 +839,7 @@ std::vector<Particle*> BetaMinusPolarised::Decay(Particle* initState, double Q, 
     if (dm.configOptions.betaDecay.FermiFunction == "Advanced") { //// réécriture de la condition par SL 10/05/2023
       advancedFermi = true;
     }
-    dist = spectrumGen->GenerateSpectrum(initState, recoil, Q); //// changement de Q en E0 par SL 10/05/2023
+    dist = spectrumGen->GenerateSpectrum(initState, recoil, Q, Labs); //// changement de Q en E0 par SL 10/05/2023
     for ( int i = 0; i<dist->size(); i++) {                                  ////// changement de boucle et element par ((*dist)[i]) par SL 10/05/2023
       double E = ((*dist)[i])[0]+utilities::EMASSC2;
       double SH = ((*dist)[i])[1];
@@ -1349,6 +1365,10 @@ std::vector<Particle*> BetaPlusPolarised::Decay(Particle* initState, double Q, d
 
   //std::cout <<" b = " << fierz <<"\t a = " << a << std::endl;
   //std::cout << "a : " << a << "\n";
+  
+  double Jpi_init = utilities::GetJpi(initState->GetNeutrons() + initState->GetCharge(), initState->GetCharge(), initState->GetExcitationEnergy());
+  double Jpi_final = utilities::GetJpi(recoil->GetNeutrons() + recoil->GetCharge(), recoil->GetCharge(), recoil->GetExcitationEnergy());
+  int Labs = std::abs(std::abs(Jpi_final) - std::abs(Jpi_init));
 
   std::vector<std::vector<double> >* dist;
   try {
@@ -1358,7 +1378,7 @@ std::vector<Particle*> BetaPlusPolarised::Decay(Particle* initState, double Q, d
     if (dm.configOptions.betaDecay.FermiFunction == "Advanced") { //// réécriture de la condition par SL 10/05/2023
       advancedFermi = true;
     }
-    dist = spectrumGen->GenerateSpectrum(initState, recoil, E0); //// changement de Q en E0 par SL 10/05/2023
+    dist = spectrumGen->GenerateSpectrum(initState, recoil, E0, Labs); //// changement de Q en E0 par SL 10/05/2023
     for ( int i = 0; i<dist->size(); i++) {                                  ////// changement de boucle et element par ((*dist)[i]) par SL 10/05/2023
       double E = ((*dist)[i])[0]+utilities::EMASSC2;
       double SH = ((*dist)[i])[1];

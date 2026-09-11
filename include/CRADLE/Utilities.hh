@@ -581,12 +581,13 @@ namespace utilities {
     ACm1 = -2. / 45. * W0 * R * R + betaType * FINESTRUCTURE * Z * R / 3. * F1211;
 
     AC2 = -4. / 9. * R * R;
-
+    
     double cShape = 0.;
     
     if (Labs == 2) {
       decayType = FU;
     }
+
 
     if (decayType == FERMI) {
       cShape = 1. + VC0 + VC1 * W + VCm1 / W + VC2 * W * W;
@@ -626,7 +627,7 @@ namespace utilities {
 
       cNS = NSC0 + NSC1 * W + NSCm1 / W + NSC2 * W * W;
 
-       cNS += phi*(P0 + P1 * W + Pm1 / W);
+      cNS += phi*(P0 + P1 * W + Pm1 / W);
     }
 
     if (decayType == FU) {
@@ -890,11 +891,11 @@ namespace utilities {
     return (1.15+1.8*std::pow(A, -2./3.)-1.2*std::pow(A, -4./3.))*std::pow(A, 1./3.)*1.E-15;
   }
 
-  inline double GetSpectrumHeight(int Z, int A, double Q, double E, bool advanced) {
+  inline double GetSpectrumHeight(int Z, int A, double Q, double E, bool advanced, int Labs) {
     double W = E/EMASSC2+1.;
     double W0 = Q/EMASSC2+1.;
     int decayType = FERMI ;
-    double R = std::sqrt(5.0/3.0) * ApproximateRadius(A)/NATURALLENGTH;
+    double R = std::sqrt(5./3.) * ApproximateRadius(A) / NATURALLENGTH;
     int betaType = (int)((Z > 0) - (Z < 0));
     Z = std::abs(Z);
       
@@ -902,45 +903,56 @@ namespace utilities {
       Z = std::abs(Z);
       int betaType = (int)((Z > 0) - (Z < 0));
       double cShape, cNS;
-      DecayManager& dm = DecayManager::GetInstance();
       
 
+      DecayManager& dm = DecayManager::GetInstance();
+      int decayType;
       if (dm.configOptions.betaDecay.Default == "Fermi") {
+          decayType = FERMI;
+          //std::cout << "fermi" << "\n";
+      } else if (dm.configOptions.betaDecay.Default == "Gamow-Teller") {
+          decayType = GAMOW_TELLER;
+          //std::cout << "GT" << "\n";
+      } else if ((dm.configOptions.betaDecay.Default == "FU") and (Labs == 2)) {
+          decayType = FU;
+          //std::cout << "FU" << "\n";
+      } else {
         decayType = FERMI;
-        std::cout << "fermi" << "\n";
-      }
-      if (dm.configOptions.betaDecay.Default == "Gamow-Teller") {
-        decayType = GAMOW_TELLER;
-        std::cout << "GT" << "\n";
-      }
-      else{
-        decayType = FERMI;
-        std::cout << "here" << "\n";
-      }
+        //std::cout << "No decay type" << std::endl;
+    }
 
-      std::tie(cShape, cNS) = CCorrectionComponents(W, W0, Z, A, R, betaType, decayType, 1.27, -229, 1, 4.*A, 1*A, 0, 0);
+      std::tie(cShape, cNS) = CCorrectionComponents(W, W0, Z, A, R, betaType, decayType, 1.27, -229, 1, 4.*A, 1.*A, 0, Labs);
       double CCorr = cShape + cNS;
       //My correction SL 10/05/2023
-      return PhaseSpace(W, W0)*FermiFunction(Z, W, R, betaType)*AtomicExchangeCorrection(W, Z)*L0Correction(W, Z, R, betaType)*CCorr*UCorrection(W, Z, betaType)*AtomicScreeningCorrection(W, Z, betaType)*RadiativeCorrection(W, W0, Z, R, 1.27, 4.7)*RecoilCorrection(W, W0, A, 0, 0)*AtomicMismatchCorrection(W, W0, Z, A, betaType)*QCorrection(W, W0, Z, A, betaType);
-
-      //Raw implementation
-      //return PhaseSpace(W, W0)*FermiFunction(Z, W, R, betaType)*L0Correction(W, Z, R, betaType)*CCorr*UCorrection(W, Z, betaType)*AtomicScreeningCorrection(W, Z, betaType)*RadiativeCorrection(W, W0, Z, R, 1.27, 4.7);
-
-      //No Correction
-      //return PhaseSpace(W, W0)*FermiFunction(Z, W, R, betaType);
+      return PhaseSpace(W, W0) 
+             * FermiFunction(Z, W, R, betaType) 
+             * AtomicExchangeCorrection(W, Z) 
+             * L0Correction(W, Z, R, betaType) 
+             * CCorr 
+             * UCorrection(W, Z, betaType) 
+             * AtomicScreeningCorrection(W, Z, betaType) 
+             * RadiativeCorrection(W, W0, Z, R, 1.27, 4.7) 
+             * RecoilCorrection(W, W0, A, 0, 0) 
+             * AtomicMismatchCorrection(W, W0, Z, A, betaType) 
+             * QCorrection(W, W0, Z, A, betaType);
     }
     else {
       return PhaseSpace(W, W0) * FermiFunction(Z, W, R, betaType)  ;
     }
   }
 
-  inline std::vector<std::vector<double> >* GenerateBetaSpectrum(int Z, int A, double Q, bool advancedFermi) {
+  inline std::vector<std::vector<double> >* GenerateBetaSpectrum(int Z, int A, double Q, bool advancedFermi, int Labs) {
     std::vector<std::vector<double> >* dist = new std::vector<std::vector<double> >();
+    
+    DecayManager& dm = DecayManager::GetInstance();
+    if (dm.configOptions.betaDecay.FermiFunction == "Advanced") {
+      advancedFermi = true;
+    }
     
     double stepSize = 1. ;
     double currentEnergy = stepSize;
     while(currentEnergy <= Q) {
-      double s = GetSpectrumHeight(Z, A, Q, currentEnergy, advancedFermi);
+      double s = GetSpectrumHeight(Z, A, Q, currentEnergy, advancedFermi, Labs);
       std::vector<double> pair;
       pair.push_back(currentEnergy);
       pair.push_back(s);
@@ -965,7 +977,7 @@ inline double GetBetaCorrections(int Z, int A, double Q, double E, int betaType,
     //               * QCorrection
     double W = E;  // E est déjà en unités de m_e c²
     double W0 = Q / EMASSC2 + 1.;
-    double R = ApproximateRadius(A) / NATURALLENGTH;
+    double R = std::sqrt(5./3.) * ApproximateRadius(A) / NATURALLENGTH;
     Z = std::abs(Z);
 
     if (!advanced) {
@@ -987,15 +999,21 @@ inline double GetBetaCorrections(int Z, int A, double Q, double E, int betaType,
     } else if (dm.configOptions.betaDecay.Default == "Gamow-Teller") {
         decayType = GAMOW_TELLER;
         //std::cout << "GT" << "\n";
-    } else if (dm.configOptions.betaDecay.Default == "FU"){
+    } else if ((dm.configOptions.betaDecay.Default == "FU") and (Labs == 2)) {
         decayType = FU;
         //std::cout << "FU" << "\n";
     } else {
-        std::cout << "No decay type" << std::endl;
+        decayType = FERMI;
+        //std::cout << "No decay type" << std::endl;
     }
+    
+    float fb = dm.configOptions.formfactors.fb ;
+    float fc1 = dm.configOptions.formfactors.fc1 ;
+    float fd = dm.configOptions.formfactors.fd ;
 
     double cShape, cNS;
-    std::tie(cShape, cNS) = CCorrectionComponents(W, W0, Z, A, R, betaType, decayType, 1.27, -229, 1, 4.*A, 1*A, 0, Labs);
+    std::tie(cShape, cNS) = CCorrectionComponents(W, W0, Z, A, R, betaType, decayType, 1.27, -229, fc1, fb*A, 1.*A, 0, Labs);
+    // std::tie(cShape, cNS) = CCorrectionComponents(W, W0, Z, A, R, betaType, decayType, 1.27, -229, 1.0, fb*A, 1.*A, 0, Labs);
     double CCorr = cShape + cNS;
     auto t1 = std::chrono::high_resolution_clock::now();
     // Calcul des corrections dépendant de W
@@ -1019,8 +1037,7 @@ inline double GetBetaCorrections(int Z, int A, double Q, double E, int betaType,
                / RC_O1corr 
                * RecoilCorrection(W, W0, A, 0, 0)
                * AtomicMismatchCorrection(W, W0, Z, A, betaType) 
-               * QCorrection(W, W0, Z, A, betaType)
-               ;
+               * QCorrection(W, W0, Z, A, betaType) ;
 } 
 
 
